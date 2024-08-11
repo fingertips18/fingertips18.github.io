@@ -1,17 +1,23 @@
 import { Link } from "react-router-dom";
 
+import { DARKLOGO, LIGHTLOGO } from "@/constants/assets";
+import { Theme, useTheme } from "@/lib/hooks/use-theme";
 import { AppRoutes } from "@/routes/app-routes";
-import { LIGHTLOGO } from "@/constants/assets";
 
 const Logo = () => {
+  const { theme } = useTheme();
+
+  const logo =
+    theme === Theme.dark || theme === Theme.system ? DARKLOGO : LIGHTLOGO;
+
   return (
     <Link
       to={AppRoutes.root}
       className="hover:scale-95 transition-all hover:drop-shadow-glow"
     >
-      <img src={LIGHTLOGO} alt="Logo" className="h-6" />
+      <img src={logo} alt="Logo" className="h-6" />
     </Link>
   );
 };
 
-export default Logo;
+export { Logo };
