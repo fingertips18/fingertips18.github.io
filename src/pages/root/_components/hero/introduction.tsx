@@ -62,7 +62,7 @@ const Introduction = () => {
       <span className="text-foreground/80">React Native</span>,{" "}
       <span className="text-foreground/80">Flutter</span>, and{" "}
       <span className="text-foreground/80">Express.js</span>. My skills include
-      working with <span className="text-foreground/80">MongoDB</span>,
+      working with <span className="text-foreground/80">MongoDB</span>,{" "}
       <span className="text-foreground/80">Supabase</span>,{" "}
       <span className="text-foreground/80">Firebase</span>, and{" "}
       <span className="text-foreground/80">Prisma</span>. Additionally, I am

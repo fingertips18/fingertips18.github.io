@@ -66,6 +66,20 @@
   body {
     @apply bg-background text-foreground font-poppins;
   }
+
+  ::-webkit-scrollbar {
+    @apply w-1;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-muted-foreground/20;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/80 rounded-full;
+    transition: all 5s ease-out;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/80;
+  }
 }
 
 @layer utilities {

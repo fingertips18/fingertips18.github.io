@@ -13,8 +13,11 @@ const Hero = () => {
   const isMounted = useClient();
 
   return (
-    <section className="min-h-[calc(100dvh_-_56px)] mt-14 flex-center flex-col gap-y-12 lg:gap-y-24 p-6 lg:py-6 lg:px-0 relative">
-      <div className="flex-center lg:flex-between flex-col-reverse lg:flex-row gap-y-4 lg:gap-y-8 gap-x-24 w-full">
+    <section
+      className="min-h-dvh flex-center flex-col gap-y-12 lg:gap-y-24 p-6 lg:py-6 lg:px-0 relative border-b"
+      id="about"
+    >
+      <div className="mt-14 flex-center lg:flex-between flex-col-reverse lg:flex-row gap-y-4 lg:gap-y-8 gap-x-24 w-full">
         <div
           className={cn(
             "flex items-center lg:items-start flex-col lg:gap-2 transition-opacity duration-500 ease-in-out",
