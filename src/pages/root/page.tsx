@@ -1,5 +1,11 @@
+import { Hero } from "./_components/hero";
+
 const RootPage = () => {
-  return <div>RootPage</div>;
+  return (
+    <>
+      <Hero />
+    </>
+  );
 };
 
 export default RootPage;

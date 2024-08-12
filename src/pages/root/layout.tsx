@@ -1,17 +1,18 @@
 import { Outlet } from "react-router-dom";
 
+import { ModeToggle } from "@/common/components/mode-toggle";
 import { Header } from "@/common/components/header";
-
-import { ModeToggle } from "./_components/mode-toggle";
 
 const RootLayout = () => {
   return (
     <>
       <Header />
-      <main className="h-[calc(100dvh_-_56px)] max-w-screen-lg mx-auto py-8">
+      <main className="h-full max-w-screen-lg mx-auto max-xl:overflow-x-hidden">
         <Outlet />
       </main>
-      <ModeToggle />
+      <div className="fixed bottom-6 right-6 lg:hidden">
+        <ModeToggle />
+      </div>
     </>
   );
 };
