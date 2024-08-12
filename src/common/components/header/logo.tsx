@@ -13,9 +13,9 @@ const Logo = () => {
   return (
     <Link
       to={AppRoutes.root}
-      className="hover:scale-95 transition-all hover:drop-shadow-glow"
+      className="hover:scale-95 transition-all hover:drop-shadow-primary-glow"
     >
-      <img src={logo} alt="Logo" className="h-6" />
+      <img src={logo} alt="Logo" className="h-4 lg:h-6" />
     </Link>
   );
 };

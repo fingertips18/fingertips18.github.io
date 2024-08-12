@@ -23,9 +23,17 @@ export const theme = {
       poppins: ["Poppins", "sans-serif"],
     },
     dropShadow: {
-      glow: [
-        "0 0px 20px hsl(var(--primary))",
-        "0 0px 65px hsl(var(--primary))",
+      "primary-glow": [
+        "0 0px 25px hsl(var(--primary))",
+        "0 0px 50px hsl(var(--primary))",
+      ],
+      "purple-glow": [
+        "0 0px 25px rgba(139, 47, 201, 0.2)",
+        "0 0px 50px rgba(139, 47, 201, 0.8)",
+      ],
+      "foreground-glow": [
+        "0 0px 25px hsl(var(--foreground))",
+        "0 0px 50px hsl(var(--foreground))",
       ],
     },
     colors: {
@@ -77,10 +85,16 @@ export const theme = {
         from: { height: "var(--radix-accordion-content-height)" },
         to: { height: "0" },
       },
+      blink: {
+        "0%": { opacity: 1 },
+        "50%": { opacity: 0 },
+        "100%": { opacity: 1 },
+      },
     },
     animation: {
       "accordion-down": "accordion-down 0.2s ease-out",
       "accordion-up": "accordion-up 0.2s ease-out",
+      blink: "blink 1s step-start infinite",
     },
   },
 };
