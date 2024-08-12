@@ -10,10 +10,15 @@ const Logo = () => {
   const logo =
     theme === Theme.dark || theme === Theme.system ? DARKLOGO : LIGHTLOGO;
 
+  const onClick = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <Link
       to={AppRoutes.root}
       className="hover:scale-95 transition-all hover:drop-shadow-primary-glow"
+      onClick={onClick}
     >
       <img src={logo} alt="Logo" className="h-4 lg:h-6" />
     </Link>

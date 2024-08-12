@@ -18,7 +18,7 @@ const ModeToggle = () => {
   const lg = width > 1024;
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <Hint asChild label="Mode">
         <DropdownMenuTrigger asChild>
           <Button
