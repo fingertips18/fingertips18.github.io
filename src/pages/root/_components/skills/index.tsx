@@ -1,3 +1,6 @@
+import { QUERYELEMENTS, ROOTSECTIONS } from "@/constants/enums";
+import { cn } from "@/lib/utils";
+
 import { GradientOverlay } from "./gradient-overlay";
 import { Frontend } from "./frontend";
 import { Backend } from "./backend";
@@ -7,8 +10,11 @@ import { Tools } from "./tools";
 const Skills = () => {
   return (
     <section
-      className="min-h-dvh h-dvh pt-14 flex-between flex-col gap-y-6 overflow-x-hidden"
-      id="skills"
+      className={cn(
+        "min-h-dvh h-dvh pt-14 flex-between flex-col gap-y-6 overflow-x-hidden border-b",
+        QUERYELEMENTS.rootSection
+      )}
+      id={ROOTSECTIONS.skills}
     >
       <div className="leading-none flex-center flex-col">
         <h4 className="text-xs lg:text-sm font-bold text-center tracking-widest pt-6 lg:pb-2">

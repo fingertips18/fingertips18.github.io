@@ -18,7 +18,7 @@ const ProfilePicture = () => {
     >
       <Background />
       <div
-        className="absolute w-full h-full transition-transform duration-500 ease-in-out border lg:border-2 rounded-full border-[#DC97FF]"
+        className="absolute w-full h-full transition-transform duration-500 ease-in-out border lg:border-4 rounded-full border-secondary"
         style={{
           transformStyle: "preserve-3d",
           transform: `rotateY(${flipped ? 180 : 0}deg)`,

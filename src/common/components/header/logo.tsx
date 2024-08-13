@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useLenis } from "lenis/react";
 
 import { DARKLOGO, LIGHTLOGO } from "@/constants/assets";
 import { Theme, useTheme } from "@/lib/hooks/use-theme";
@@ -6,13 +7,12 @@ import { AppRoutes } from "@/routes/app-routes";
 
 const Logo = () => {
   const { theme } = useTheme();
+  const lenis = useLenis();
 
   const logo =
     theme === Theme.dark || theme === Theme.system ? DARKLOGO : LIGHTLOGO;
 
-  const onClick = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const onClick = () => lenis?.scrollTo(0);
 
   return (
     <Link

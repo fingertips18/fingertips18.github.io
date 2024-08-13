@@ -1,3 +1,4 @@
+import { Experience } from "./_components/experience";
 import { Skills } from "./_components/skills";
 import { Hero } from "./_components/hero";
 
@@ -6,6 +7,7 @@ const RootPage = () => {
     <>
       <Hero />
       <Skills />
+      <Experience />
     </>
   );
 };
