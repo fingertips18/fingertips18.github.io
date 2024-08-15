@@ -24,8 +24,8 @@ const ProjectPreview = ({
 }: ProjectPreviewProps) => {
   return (
     <>
-      {type === PROJECTTYPES.web ? (
-        <div className="aspect-video relative">
+      <div className="aspect-video relative">
+        {type === PROJECTTYPES.web ? (
           <iframe
             className="w-full h-full"
             src={source}
@@ -34,15 +34,15 @@ const ProjectPreview = ({
             referrerPolicy="strict-origin-when-cross-origin"
             allowFullScreen
           />
-        </div>
-      ) : (
-        <LocalImageLoader
-          hash={blurHash!}
-          src={source}
-          alt={name}
-          className="aspect-video object-cover object-center"
-        />
-      )}
+        ) : (
+          <LocalImageLoader
+            hash={blurHash!}
+            src={source}
+            alt={name}
+            className="aspect-video object-cover object-center"
+          />
+        )}
+      </div>
 
       <div className="space-y-2 p-4 mt-2 flex-grow text-start">
         <h3 className="text-lg font-bold leading-none flex items-center flex-wrap gap-x-2 gap-y-1">
