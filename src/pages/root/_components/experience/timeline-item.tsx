@@ -101,7 +101,12 @@ const TimelineItem = ({
                 key={`${s.company}-${s}`}
                 className="flex-center gap-x-2 text-xs text-secondary-foreground/80"
               >
-                <div className="rounded-full h-6 w-6 bg-white overflow-hidden flex-center p-0.5">
+                <div
+                  style={{
+                    boxShadow: "hsl(var(--primary)) 0px 4px 24px",
+                  }}
+                  className="rounded-full h-6 w-6 bg-white overflow-hidden flex-center p-0.5"
+                >
                   <img
                     src={s.image}
                     alt={s.company}
@@ -119,9 +124,7 @@ const TimelineItem = ({
         <p className="!font-semibold !text-sm">Skills Gained</p>
         <div className="flex item-start flex-wrap gap-1.5 mt-4">
           {skills.map((s) => (
-            <Badge key={`${company}-${s}`} variant="secondary">
-              {s}
-            </Badge>
+            <Badge key={`${company}-${s}`}>{s}</Badge>
           ))}
         </div>
       </div>

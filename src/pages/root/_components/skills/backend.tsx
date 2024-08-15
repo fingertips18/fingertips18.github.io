@@ -1,4 +1,4 @@
-import { BACKEND } from "@/constants/collections";
+import { BACKEND } from "@/constants/skills";
 
 import { SkillIcon } from "./skill-icon";
 

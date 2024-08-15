@@ -1,4 +1,4 @@
-import { TOOLS } from "@/constants/collections";
+import { TOOLS } from "@/constants/skills";
 
 import { SkillIcon } from "./skill-icon";
 
