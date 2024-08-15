@@ -10,6 +10,9 @@ import mycaa from "@/assets/images/mycaa.png";
 import tritokPreview from "@/assets/images/tritok-preview.png";
 import leafonicPreview from "@/assets/images/leafonic-preview.png";
 import flixSagePreview from "@/assets/images/flixsage-preview.png";
+import usm from "@/assets/images/usm-seal.png";
+import mnhs from "@/assets/images/mnhs-seal.jpeg";
+import ktmsces from "@/assets/images/ktmsces-seal.jpeg";
 
 import wave from "@/assets/gifs/wave.gif";
 
@@ -25,5 +28,8 @@ export const MYCAA = mycaa;
 export const TRITOKPREVIEW = tritokPreview;
 export const LEAFONICPREVIEW = leafonicPreview;
 export const FLIXSAGEPREVIEW = flixSagePreview;
+export const USM = usm;
+export const MNHS = mnhs;
+export const KTMSCES = ktmsces;
 
 export const WAVE = wave;

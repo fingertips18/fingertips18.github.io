@@ -44,8 +44,8 @@ const ProjectItem = (props: ProjectItemProps) => {
         </AlertDialogTrigger>
         <AlertDialogContent className="overflow-y-auto no-scrollbar">
           <AlertDialogHeader>
-            {props.type === PROJECTTYPES.web ? (
-              <div className="aspect-video relative">
+            <div className="aspect-video relative">
+              {props.type === PROJECTTYPES.web ? (
                 <iframe
                   className="w-full h-full rounded-md"
                   src={props.source}
@@ -54,15 +54,15 @@ const ProjectItem = (props: ProjectItemProps) => {
                   referrerPolicy="strict-origin-when-cross-origin"
                   allowFullScreen
                 />
-              </div>
-            ) : (
-              <LocalImageLoader
-                hash={props.blurHash!}
-                src={props.source}
-                alt={props.name}
-                className="aspect-video object-cover object-center rounded-md"
-              />
-            )}
+              ) : (
+                <LocalImageLoader
+                  hash={props.blurHash!}
+                  src={props.source}
+                  alt={props.name}
+                  className="aspect-video object-cover object-center rounded-md"
+                />
+              )}
+            </div>
 
             <AlertDialogTitle className="flex items-center gap-x-2">
               {props.name}{" "}

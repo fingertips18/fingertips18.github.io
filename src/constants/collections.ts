@@ -26,7 +26,7 @@ export const ROOTMENU = [
   },
   {
     label: ROOTSECTIONS.education,
-    id: "",
+    id: `#${ROOTSECTIONS.education}`,
   },
   {
     label: ROOTSECTIONS.contact,
