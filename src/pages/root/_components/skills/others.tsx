@@ -1,4 +1,4 @@
-import { OTHERS } from "@/constants/collections";
+import { OTHERS } from "@/constants/skills";
 
 import { SkillIcon } from "./skill-icon";
 

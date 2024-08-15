@@ -1,18 +1,18 @@
 import { VerticalTimeline } from "react-vertical-timeline-component";
 import "react-vertical-timeline-component/style.min.css";
+import { BriefcaseBusiness } from "lucide-react";
 
 import { QUERYELEMENTS, ROOTSECTIONS } from "@/constants/enums";
-import { EXPERIENCES } from "@/constants/collections";
+import { EXPERIENCES } from "@/constants/experiences";
 import { cn } from "@/lib/utils";
 
 import { TimelineItem } from "./timeline-item";
-import { BriefcaseBusiness } from "lucide-react";
 
 const Experience = () => {
   return (
     <section
       className={cn(
-        "min-h-dvh flex-center flex-col gap-y-2 lg:gap-y-6 border-b pt-14 pb-6 px-2 lg:px-0",
+        "min-h-dvh flex items-center flex-col gap-y-2 lg:gap-y-6 border-b pt-14 pb-6 px-2 lg:px-0",
         QUERYELEMENTS.rootSection
       )}
       id={ROOTSECTIONS.experience}
@@ -23,7 +23,7 @@ const Experience = () => {
         <BriefcaseBusiness className="w-5 lg:w-8 h-5 lg:h-8 sm:absolute xs:right-6 lg:right-0 opacity-50" />
       </div>
       <p className="text-xs lg:text-sm text-muted-foreground text-center lg:mt-2 w-3/4 lg:w-full">
-        Here are details of my experience as a software engineer, including my
+        Here are details of my experience as a software developer, including my
         roles across various companies and projects.
       </p>
       <VerticalTimeline

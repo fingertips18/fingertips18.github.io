@@ -10,3 +10,8 @@ export const enum ROOTSECTIONS {
 export const enum QUERYELEMENTS {
   rootSection = "root-section",
 }
+
+export const enum PROJECTTYPES {
+  web = "web",
+  mobile = "mobile",
+}

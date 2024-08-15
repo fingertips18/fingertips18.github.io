@@ -1,4 +1,4 @@
-import { FRONTEND } from "@/constants/collections";
+import { FRONTEND } from "@/constants/skills";
 
 import { SkillIcon } from "./skill-icon";
 
