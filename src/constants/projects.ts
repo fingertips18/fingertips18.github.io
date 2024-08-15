@@ -106,5 +106,6 @@ export const PROJECTS = [
     subtitle: "(Movie or Any Show Guesser 🪄)",
     desc: "With FlixSage, users can effortlessly upload an image related to a movie, whether it's a poster, screenshot, or promotional still. Once uploaded, the app employs advanced image recognition algorithms to identify the title, cast members, synopsis, and other pertinent information associated with the movie depicted in the image. This seamless process eliminates the need for manual searching and typing, providing users with instant access to comprehensive details about the movie they're interested in. Whether you're browsing through your photo gallery or stumbling upon intriguing movie visuals online, FlixSage ensures that you have all the essential information at your fingertips, making your movie-watching experience more informed and enjoyable.",
     stack: ["Flutter", "Firebase", "Bloc", "AI", "GetIt", "Go Router"],
+    type: PROJECTTYPES.mobile,
   },
 ];
