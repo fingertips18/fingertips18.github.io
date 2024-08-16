@@ -9,7 +9,7 @@ const Contact = () => {
   return (
     <section
       className={cn(
-        "min-h-dvh pt-14 pb-6 flex-between flex-col gap-y-6 px-4 xl:px-0 overflow-hidden border-b",
+        "min-h-dvh pt-14 pb-6 flex-between flex-col gap-y-6 px-4 xl:px-0 overflow-hidden",
         QUERYELEMENTS.rootSection
       )}
       id={ROOTSECTIONS.contact}

@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import ToasterProvider from "@/lib/providers/toaster-provider";
 import { ModeToggle } from "@/common/components/mode-toggle";
 import { Header } from "@/common/components/header";
+import { Footer } from "@/common/components/footer";
 
 const RootLayout = () => {
   return (
@@ -14,6 +15,7 @@ const RootLayout = () => {
       <div className="fixed bottom-6 right-6 lg:hidden">
         <ModeToggle />
       </div>
+      <Footer />
     </ToasterProvider>
   );
 };
