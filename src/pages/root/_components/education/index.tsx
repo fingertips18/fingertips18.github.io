@@ -1,13 +1,17 @@
-import { Bolt, GraduationCap } from "lucide-react";
+import { VerticalTimeline } from "react-vertical-timeline-component";
+import { GraduationCap } from "lucide-react";
 
 import { QUERYELEMENTS, ROOTSECTIONS } from "@/constants/enums";
+import { EDUCATIONS } from "@/constants/education";
 import { cn } from "@/lib/utils";
+
+import EducationItem from "./education-item";
 
 const Education = () => {
   return (
     <section
       className={cn(
-        "min-h-dvh h-dvh flex flex-col gap-y-2 lg:gap-y-6 border-b pt-14 pb-6 px-2 lg:px-0",
+        "min-h-dvh flex flex-col gap-y-2 lg:gap-y-6 border-b pt-14 pb-6 px-2 lg:px-0",
         QUERYELEMENTS.rootSection
       )}
       id={ROOTSECTIONS.education}
@@ -20,19 +24,17 @@ const Education = () => {
       <p className="text-xs lg:text-sm text-muted-foreground text-center lg:mt-2 w-3/4 mx-auto">
         Throughout my academic journey, each experience has played a distinct
         role in my development. Here’s an overview of the key milestones in my
-        academic journey.
+        educational path.
       </p>
 
-      <div className="flex-center gap-x-4 w-full h-full">
-        <Bolt className="w-8 h-8 animate-spin" />
-        <p className="text-lg font-bold">Under Construction</p>
-      </div>
-      {/* <VerticalTimeline
+      <VerticalTimeline
         lineColor="hsl(var(--foreground) / 0.6)"
         className="mt-4 lg:mt-20"
       >
-        <VerticalTimelineElement></VerticalTimelineElement>
-      </VerticalTimeline> */}
+        {EDUCATIONS.map((e, i) => (
+          <EducationItem key={`${e.name}-${i}`} {...e} />
+        ))}
+      </VerticalTimeline>
     </section>
   );
 };

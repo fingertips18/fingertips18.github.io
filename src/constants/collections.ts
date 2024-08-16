@@ -30,7 +30,7 @@ export const ROOTMENU = [
   },
   {
     label: ROOTSECTIONS.contact,
-    id: "",
+    id: `#${ROOTSECTIONS.contact}`,
   },
 ];
 

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useLenis } from "lenis/react";
 
 import {
   AlertDialog,
@@ -32,17 +33,29 @@ interface ProjectItemProps {
 }
 
 const ProjectItem = (props: ProjectItemProps) => {
+  const lenis = useLenis();
+
+  const onDialogOpen = () => lenis?.stop();
+
+  const onDialogClose = () => lenis?.start();
+
   return (
     <div
       className="w-full rounded-lg backdrop-blur-lg overflow-hidden bg-primary/5 
       border drop-shadow-2xl flex justify-between flex-col hover:drop-shadow-purple-glow
-      transition-all duration-500 ease-in-out hover:-translate-y-2 cursor-pointer"
+      transition-all duration-500 ease-in-out hover:-translate-y-2 cursor-pointer blur-performance"
     >
       <AlertDialog>
-        <AlertDialogTrigger>
+        <AlertDialogTrigger
+          onClick={onDialogOpen}
+          className="h-full w-full flex-between flex-col"
+        >
           <ProjectPreview {...props} />
         </AlertDialogTrigger>
-        <AlertDialogContent className="overflow-y-auto no-scrollbar">
+        <AlertDialogContent
+          data-lenis-prevent
+          className="overflow-y-auto no-scrollbar h-4/5 lg:h-fit"
+        >
           <AlertDialogHeader>
             <div className="aspect-video relative">
               {props.type === PROJECTTYPES.web ? (
@@ -64,7 +77,7 @@ const ProjectItem = (props: ProjectItemProps) => {
               )}
             </div>
 
-            <AlertDialogTitle className="flex items-center gap-x-2">
+            <AlertDialogTitle className="flex items-center flex-wrap gap-x-2 gap-y-1">
               {props.name}{" "}
               <span className="text-sm text-muted-foreground leading-none">
                 {props.subtitle}
@@ -93,7 +106,7 @@ const ProjectItem = (props: ProjectItemProps) => {
           </div>
 
           <AlertDialogFooter>
-            <AlertDialogCancel>Close</AlertDialogCancel>
+            <AlertDialogCancel onClick={onDialogClose}>Close</AlertDialogCancel>
             <AlertDialogAction asChild>
               {props.type === PROJECTTYPES.web ? (
                 <Link to={props.source}>View Live</Link>

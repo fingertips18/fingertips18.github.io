@@ -22,7 +22,7 @@ const ModeToggle = () => {
       <Hint asChild label="Mode">
         <DropdownMenuTrigger asChild>
           <Button
-            variant={lg ? "outline" : "default"}
+            variant={lg ? "ghost" : "default"}
             size="icon"
             className="rounded-full outline-none border-none focus-visible:border-none 
             focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 

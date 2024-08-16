@@ -33,6 +33,7 @@ const TimelineItem = ({
 }: TimelineItemProps) => {
   return (
     <VerticalTimelineElement
+      className="blur-performance"
       contentStyle={{
         background: "hsl(var(--secondary) / 0.2)",
         border: "1px solid hsl(var(--secondary) / 0.5)",

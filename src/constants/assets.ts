@@ -13,6 +13,7 @@ import flixSagePreview from "@/assets/images/flixsage-preview.png";
 import usm from "@/assets/images/usm-seal.png";
 import mnhs from "@/assets/images/mnhs-seal.jpeg";
 import ktmsces from "@/assets/images/ktmsces-seal.jpeg";
+import cmes from "@/assets/images/cmes-seal.jpeg";
 
 import wave from "@/assets/gifs/wave.gif";
 
@@ -31,5 +32,6 @@ export const FLIXSAGEPREVIEW = flixSagePreview;
 export const USM = usm;
 export const MNHS = mnhs;
 export const KTMSCES = ktmsces;
+export const CMES = cmes;
 
 export const WAVE = wave;
