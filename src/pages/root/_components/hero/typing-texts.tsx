@@ -70,7 +70,7 @@ const TypingTexts = ({
   return (
     <div className="flex items-start justify-center font-semibold text-lg lg:text-2xl">
       I create
-      <div className="text-[#8B2FC9] ml-2">
+      <div className="text-[#8B2FC9] ml-1.5">
         {displayText}
         <span className="inline-block w-0.5 h-[1em] animate-blink ease-in-out">
           |

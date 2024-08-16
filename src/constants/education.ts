@@ -3,6 +3,7 @@ import { EDUCATIONTYPES } from "./enums";
 
 export const EDUCATIONS = [
   {
+    source: "https://www.usm.edu.ph",
     name: "University of Southern Mindanao",
     logo: USM,
     department: "College of Engineering and Information Technology",
@@ -72,16 +73,18 @@ export const EDUCATIONS = [
     type: EDUCATIONTYPES.college,
   },
   {
+    source: "https://www.facebook.com/MatanaoNHS",
     name: "Matanao National High School",
     logo: MNHS,
     department:
       "Senior - Information and Communication Technology (ICT) Strand",
     date: "June 2017 - April 2019",
     honor: "With High Honors",
-    desc: "I graduated from Matanao National High School (MNHS) with the distinction of With High Honors. This achievement reflects my dedication and commitment to academic excellence throughout my senior high school years.",
+    desc: "I graduated from Matanao National High School (MNHS) - Senior High with the distinction of With High Honors. This achievement reflects my dedication and commitment to academic excellence throughout my senior high school years.",
     type: EDUCATIONTYPES.seniorHigh,
   },
   {
+    source: "https://www.facebook.com/MatanaoNHS",
     name: "Matanao National High School",
     logo: MNHS,
     department: "Junior - Science, Technology, Engineering and Mathematics",
@@ -91,6 +94,8 @@ export const EDUCATIONS = [
     type: EDUCATIONTYPES.juniorHigh,
   },
   {
+    source:
+      "https://www.facebook.com/p/DepEd-Tayo-Youth-Formation-Ceboza-Elementary-School-100079755368493/?_rdr",
     name: "Ceboza Matanao Elementary School",
     logo: CMES,
     sub: {

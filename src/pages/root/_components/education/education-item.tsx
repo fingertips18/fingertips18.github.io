@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/common/components/shadcn/badge";
 
 interface EducationItemProps {
+  source: string;
   name: string;
   logo: string;
   sub?: {
@@ -32,6 +33,7 @@ interface EducationItemProps {
 }
 
 const EducationItem = ({
+  source,
   name,
   logo,
   sub,
@@ -65,11 +67,13 @@ const EducationItem = ({
         outline: "2px solid hsl(var(--primary))",
       }}
       icon={
-        <img
-          src={logo}
-          alt={name}
-          className="rounded-full w-full h-full object-cover scale-90"
-        />
+        <Link to={source} target="_blank">
+          <img
+            src={logo}
+            alt={name}
+            className="rounded-full w-full h-full object-cover scale-90"
+          />
+        </Link>
       }
     >
       <div className="flex items-start gap-x-4">
@@ -150,7 +154,7 @@ const EducationItem = ({
                   <Link to={p.demo} target="_blank">
                     <Badge
                       key={p.title}
-                      className="bg-secondary/20 whitespace-nowrap gap-x-2 py-1 px-2.5 cursor-pointer w-fit"
+                      className="bg-secondary/20 whitespace-nowrap gap-x-2 py-1 px-2.5 cursor-pointer w-fit mt-1.5"
                     >
                       <SiYoutube color={SiYoutubeHex} className="w-4 h-4" />
                       {p.title} Demo
