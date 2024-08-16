@@ -7,13 +7,21 @@ import {
   DropdownMenuTrigger,
 } from "@/common/components/shadcn/dropdown-menu";
 import { Button } from "@/common/components/shadcn/button";
+import { useClient } from "@/lib/hooks/use-client";
 import { useResize } from "@/lib/hooks/use-resize";
 import { useTheme } from "@/lib/hooks/use-theme";
 import { Hint } from "@/common/components/hint";
 
+import { Skeleton } from "./shadcn/skeleton";
+
 const ModeToggle = () => {
   const { setTheme } = useTheme();
+  const isMounted = useClient();
   const { width } = useResize();
+
+  if (!isMounted) {
+    return <Skeleton className="w-10 h-10" />;
+  }
 
   const lg = width > 1024;
 

@@ -6,6 +6,7 @@ import { useRootSectionStore } from "@/lib/stores/use-root-section-store";
 import { useElementsByQuery } from "@/lib/hooks/use-elements-by-query";
 import { Button } from "@/common/components/shadcn/button";
 import { ROOTMENU } from "@/constants/collections";
+import { useClient } from "@/lib/hooks/use-client";
 import { QUERYELEMENTS } from "@/constants/enums";
 import { Hint } from "@/common/components/hint";
 import { cn } from "@/lib/utils";
@@ -14,6 +15,7 @@ const Menu = () => {
   const { active, onActive } = useRootSectionStore((state) => state);
   const rootSections = useElementsByQuery(`.${QUERYELEMENTS.rootSection}`);
   const lenis = useLenis();
+  const isMounted = useClient();
 
   const sectionOffsets = useMemo(() => {
     const sections = [];
@@ -54,15 +56,19 @@ const Menu = () => {
   };
 
   return (
-    <nav className="flex-center lg:px-4">
-      <ul className="hidden lg:flex-center gap-x-10">
+    <nav className="flex-center lg:px-4 flex-grow">
+      <ul
+        className={cn(
+          "hidden lg:flex-center gap-x-10 transition-opacity duration-1000 ease-in-out",
+          isMounted ? "opacity-100" : "opacity-0"
+        )}
+      >
         {ROOTMENU.map((m, i) => (
           <li
             key={`${m.label}-${i}`}
             className={cn(
               "capitalize text-sm font-semibold leading-none hover:scale-95 transition-all cursor-pointer hover:drop-shadow-primary-glow hover:text-accent",
-              active === m.label && "text-accent",
-              m.id.length === 0 && "pointer-events-none text-muted-foreground"
+              active === m.label && "text-accent"
             )}
             onClick={() => onClick(m.label)}
           >
