@@ -15,3 +15,10 @@ export const enum PROJECTTYPES {
   web = "web",
   mobile = "mobile",
 }
+
+export const enum EDUCATIONTYPES {
+  college = "college",
+  seniorHigh = "senior-high",
+  juniorHigh = "junior-high",
+  elementary = "elementary",
+}

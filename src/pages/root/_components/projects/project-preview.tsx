@@ -24,7 +24,7 @@ const ProjectPreview = ({
 }: ProjectPreviewProps) => {
   return (
     <>
-      <div className="aspect-video relative">
+      <div className="aspect-video relative w-full">
         {type === PROJECTTYPES.web ? (
           <iframe
             className="w-full h-full"
@@ -44,7 +44,7 @@ const ProjectPreview = ({
         )}
       </div>
 
-      <div className="space-y-2 p-4 mt-2 flex-grow text-start">
+      <div className="space-y-2 p-4 mt-2 flex-1 text-start">
         <h3 className="text-lg font-bold leading-none flex items-center flex-wrap gap-x-2 gap-y-1">
           {name}
           {subtitle && (
