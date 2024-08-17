@@ -41,9 +41,9 @@ const ProjectItem = (props: ProjectItemProps) => {
 
   return (
     <div
-      className="w-full rounded-lg backdrop-blur-lg overflow-hidden bg-primary/5 
+      className="w-full rounded-lg overflow-hidden bg-primary/5 
       border drop-shadow-2xl flex justify-between flex-col hover:drop-shadow-purple-glow
-      transition-all duration-500 ease-in-out hover:-translate-y-2 cursor-pointer blur-performance"
+      transition-all duration-500 ease-in-out hover:-translate-y-2 cursor-pointer"
     >
       <AlertDialog>
         <AlertDialogTrigger

@@ -46,11 +46,9 @@ const EducationItem = ({
 }: EducationItemProps) => {
   return (
     <VerticalTimelineElement
-      className="blur-performance"
       contentStyle={{
         background: "hsl(var(--secondary) / 0.2)",
         border: "1px solid hsl(var(--secondary) / 0.5)",
-        backdropFilter: "blur(20px)",
         color: "hsl(var(--secondary-foreground))",
         display: "flex",
         flexDirection: "column",
