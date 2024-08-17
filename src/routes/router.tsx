@@ -16,6 +16,9 @@ export const router = createBrowserRouter(
       {/* Root */}
       <Route index element={<RootPage />} />
 
+      {/* Github 404 */}
+      <Route path={AppRoutes.github404} element={<NotFoundPage />} />
+
       {/* Not Found */}
       <Route path={AppRoutes.notFound} element={<NotFoundPage />} />
     </Route>
