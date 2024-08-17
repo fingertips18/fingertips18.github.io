@@ -109,9 +109,13 @@ const ProjectItem = (props: ProjectItemProps) => {
             <AlertDialogCancel onClick={onDialogClose}>Close</AlertDialogCancel>
             <AlertDialogAction asChild>
               {props.type === PROJECTTYPES.web ? (
-                <Link to={props.source}>View Live</Link>
+                <Link to={props.live!} target="_blank" onClick={onDialogClose}>
+                  View Live
+                </Link>
               ) : (
-                <Link to={FORMLINK}>Fill out form</Link>
+                <Link to={FORMLINK} target="_blank" onClick={onDialogClose}>
+                  Fill out form
+                </Link>
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
