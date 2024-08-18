@@ -13,9 +13,13 @@ import { AppRoutes } from "./app-routes";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route path={AppRoutes.root} element={<RootLayout />}>
+    <Route
+      path={AppRoutes.root}
+      element={<RootLayout />}
+      errorElement={<ErrorPage />}
+    >
       {/* Root */}
-      <Route index element={<RootPage />} errorElement={<ErrorPage />} />
+      <Route index element={<RootPage />} />
 
       {/* Github 404 */}
       <Route path={AppRoutes.github404} element={<NotFoundPage />} />
