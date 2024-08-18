@@ -37,6 +37,7 @@ const ContactForm = () => {
       email: "",
       name: "",
       subject: "",
+      message: "",
     },
   });
   const [pending, setPending] = useState(false);
@@ -55,13 +56,13 @@ const ContactForm = () => {
       )
       .then(() => {
         form.reset();
-        setPending(false);
         toast.success("Message sent. Thanks for reaching out!");
       })
-      .catch(() => {
-        setPending(false);
-        toast.error("Something went wrong. Please try again later.");
-      });
+      .catch(() =>
+        toast.error("Something went wrong. Please try again later.")
+      );
+
+    setPending(false);
   };
 
   return (
@@ -152,10 +153,10 @@ const ContactForm = () => {
           type="submit"
           disabled={pending}
           className="py-2 w-full bg-gradient-to-r from-[#310055] to-[#DC97FF]
-          hover:brightness-125 transition-all rounded-md active:scale-95
+          hover:brightness-125 transition-all rounded-md active:scale-95 flex-center
           hover:drop-shadow-purple-glow font-semibold text-white disabled:brightness-90"
         >
-          {pending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Submit"}
+          {pending ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit"}
         </button>
       </form>
     </Form>
