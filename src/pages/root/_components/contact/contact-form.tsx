@@ -14,7 +14,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/common/components/shadcn/form";
-import { PUBLIC_KEY, SERVICE_ID, TEMPLATE_ID } from "@/constants/contact";
 import { Textarea } from "@/common/components/shadcn/textarea";
 import { Input } from "@/common/components/shadcn/input";
 
@@ -43,15 +42,16 @@ const ContactForm = () => {
   const [pending, startTransition] = useTransition();
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    await emailjs.send(SERVICE_ID, TEMPLATE_ID, values, {
-      publicKey: PUBLIC_KEY,
-    });
-
     startTransition(() => {
       emailjs
-        .send(SERVICE_ID, TEMPLATE_ID, values, {
-          publicKey: PUBLIC_KEY,
-        })
+        .send(
+          import.meta.env.VITE_SERVICE_ID,
+          import.meta.env.VITE_TEMPLATE_ID,
+          values,
+          {
+            publicKey: import.meta.env.VITE_PUBLIC_KEY,
+          }
+        )
         .then(() => toast.success("Message sent. Thanks for reaching out!"))
         .catch(() =>
           toast.error("Something went wrong. Please try again later.")
