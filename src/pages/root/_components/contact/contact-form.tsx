@@ -45,11 +45,11 @@ const ContactForm = () => {
     startTransition(() => {
       emailjs
         .send(
-          import.meta.env.VITE_SERVICE_ID,
-          import.meta.env.VITE_TEMPLATE_ID,
+          import.meta.env.VITE_EMAILJS_SERVICE_ID,
+          import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
           values,
           {
-            publicKey: import.meta.env.VITE_PUBLIC_KEY,
+            publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
           }
         )
         .then(() => toast.success("Message sent. Thanks for reaching out!"))
