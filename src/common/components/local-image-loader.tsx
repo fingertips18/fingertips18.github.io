@@ -31,6 +31,7 @@ const LocalImageLoader = ({
       <img
         src={src}
         alt={alt}
+        loading="lazy"
         onLoad={() => setLoaded(true)}
         className={cn(className, loaded ? "block" : "hidden")}
       />

@@ -91,15 +91,14 @@ export const theme = {
         "100%": { opacity: 1 },
       },
       "loop-scroll": {
-        from: { transform: "translateX(0)" },
-        to: { transform: "translateX(-100%)" },
+        to: { transform: "translateX(calc(-50% - .5rem))" },
       },
     },
     animation: {
       "accordion-down": "accordion-down 0.2s ease-out",
       "accordion-up": "accordion-up 0.2s ease-out",
       blink: "blink 1s step-start infinite",
-      "loop-scroll": "loop-scroll 50s linear infinite",
+      "loop-scroll": "loop-scroll 5s linear infinite",
     },
   },
 };
