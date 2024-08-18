@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import emailjs from "@emailjs/browser";
 import { Loader2 } from "lucide-react";
-import { useTransition } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -39,24 +39,29 @@ const ContactForm = () => {
       subject: "",
     },
   });
-  const [pending, startTransition] = useTransition();
+  const [pending, setPending] = useState(false);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    startTransition(() => {
-      emailjs
-        .send(
-          import.meta.env.VITE_EMAILJS_SERVICE_ID,
-          import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-          values,
-          {
-            publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
-          }
-        )
-        .then(() => toast.success("Message sent. Thanks for reaching out!"))
-        .catch(() =>
-          toast.error("Something went wrong. Please try again later.")
-        );
-    });
+    setPending(true);
+
+    await emailjs
+      .send(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID,
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+        values,
+        {
+          publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
+        }
+      )
+      .then(() => {
+        form.reset();
+        setPending(false);
+        toast.success("Message sent. Thanks for reaching out!");
+      })
+      .catch(() => {
+        setPending(false);
+        toast.error("Something went wrong. Please try again later.");
+      });
   };
 
   return (
@@ -148,7 +153,7 @@ const ContactForm = () => {
           disabled={pending}
           className="py-2 w-full bg-gradient-to-r from-[#310055] to-[#DC97FF]
           hover:brightness-125 transition-all rounded-md active:scale-95
-          hover:drop-shadow-purple-glow font-semibold text-white"
+          hover:drop-shadow-purple-glow font-semibold text-white disabled:brightness-90"
         >
           {pending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Submit"}
         </button>

@@ -11,7 +11,7 @@ const Skills = () => {
   return (
     <section
       className={cn(
-        "min-h-dvh h-dvh pt-14 flex-between flex-col gap-y-6 overflow-x-hidden border-b",
+        "min-h-dvh h-dvh pt-14 flex-between flex-col gap-y-6 border-b",
         QUERYELEMENTS.rootSection
       )}
       id={ROOTSECTIONS.skills}
