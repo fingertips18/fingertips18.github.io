@@ -12,6 +12,7 @@ export const EXPERIENCES = [
     image: FINGERTIPS,
     position: "Freelance Software Developer",
     company: "Fingertips",
+    link: "https://fingertips18.github.io",
     setup: "Remote",
     date: "July 2022 – June 2024",
     highlights: [
