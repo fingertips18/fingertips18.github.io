@@ -20,7 +20,7 @@ const Experience = () => {
       <div className="flex items-center gap-x-2 w-full pt-6 lg:relative">
         <span className="w-[32px] lg:w-[128px] h-1 rounded-full bg-muted-foreground tracking-widest" />
         <h2 className="text-lg lg:text-4xl font-bold">WORK EXPERIENCE</h2>
-        <BriefcaseBusiness className="w-5 lg:w-8 h-5 lg:h-8 sm:absolute xs:right-6 lg:right-0 opacity-50" />
+        <BriefcaseBusiness className="w-5 lg:w-8 h-5 lg:h-8 sm:absolute xs:right-6 lg:right-4 xl:right-0 opacity-50" />
       </div>
       <p className="text-xs lg:text-sm text-muted-foreground text-center lg:mt-2 w-3/4 lg:w-full">
         Here are details of my experience as a software developer, including my

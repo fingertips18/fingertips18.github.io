@@ -16,7 +16,7 @@ const Hero = () => {
   return (
     <section
       className={cn(
-        "min-h-dvh flex-center flex-col gap-y-12 lg:gap-y-24 p-6 lg:py-6 lg:px-0 relative border-b",
+        "min-h-dvh flex-center flex-col gap-y-12 lg:gap-y-24 p-6 lg:py-6 relative border-b lg:px-4 xl:px-0",
         QUERYELEMENTS.rootSection
       )}
       id={ROOTSECTIONS.about}

@@ -9,7 +9,7 @@ const Introduction = () => {
     <>
       <p className="text-muted-foreground text-sm mt-2">
         I am a dedicated{" "}
-        <span className="text-foreground/80">full-stack developer</span> with a
+        <span className="text-foreground/80">software developer</span> with a
         strong foundation in both{" "}
         <span className="text-foreground/80">web</span> and{" "}
         <span className="text-foreground/80">mobile technologies.</span>{" "}
@@ -17,7 +17,7 @@ const Introduction = () => {
         <span className="text-foreground/80">
           Bachelor's degree in Computer Science
         </span>{" "}
-        and <span className="text-foreground/80">3</span> professional{" "}
+        and <span className="text-foreground/80">at least 3</span>{" "}
         <span className="text-foreground/80">years</span> of{" "}
         <span className="text-foreground/80">experience</span>.
       </p>
