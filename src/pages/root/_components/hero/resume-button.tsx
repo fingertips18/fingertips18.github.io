@@ -4,7 +4,7 @@ const ResumeButton = () => {
   return (
     <Link
       to={
-        "https://drive.google.com/file/d/1ywkfqZul3nNBCcz4u2HPbgM7o5GLs0Sr/view?usp=sharing"
+        "https://drive.google.com/file/d/1kS_OEN015F7EtHYZjqu7W2viITWOCquE/view?usp=sharing"
       }
       target="_blank"
     >
