@@ -16,7 +16,7 @@ const Projects = () => {
       id={ROOTSECTIONS.projects}
     >
       <div className="flex items-center justify-end gap-x-2 w-full pt-6 lg:relative">
-        <Terminal className="w-5 lg:w-8 h-5 lg:h-8 sm:absolute xs:left-6 lg:left-0 opacity-50" />
+        <Terminal className="w-5 lg:w-8 h-5 lg:h-8 sm:absolute xs:left-6 lg:left-4 xl:left-0 opacity-50" />
         <h2 className="text-lg lg:text-4xl font-bold">PROJECTS</h2>
         <span className="w-[32px] lg:w-[128px] h-1 rounded-full bg-muted-foreground tracking-widest" />
       </div>

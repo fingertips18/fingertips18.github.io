@@ -1,4 +1,8 @@
-import { SiGmail, SiLinkedin, SiSkype } from "@icons-pack/react-simple-icons";
+import {
+  SiGmail,
+  SiLinkedin,
+  SiCalendly,
+} from "@icons-pack/react-simple-icons";
 
 export const CONTACTS = [
   {
@@ -7,9 +11,9 @@ export const CONTACTS = [
     href: "mailto:developer.ghiantan@gmail.com",
   },
   {
-    icon: SiSkype,
-    label: "Skype",
-    href: "https://join.skype.com/invite/tzHUaI1UakyK",
+    icon: SiCalendly,
+    label: "Calendly",
+    href: "https://calendly.com/developer-ghiantan/1-hour-meeting",
   },
   {
     icon: SiLinkedin,

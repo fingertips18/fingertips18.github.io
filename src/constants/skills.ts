@@ -83,10 +83,6 @@ import {
   SiUnityHex,
   SiVercel,
   SiVercelHex,
-  SiVisualstudio,
-  SiVisualstudiocode,
-  SiVisualstudiocodeHex,
-  SiVisualstudioHex,
   SiVite,
   SiViteHex,
   SiZod,
@@ -322,15 +318,5 @@ export const TOOLS = [
     icon: SiPostman,
     hexColor: SiPostmanHex,
     label: "Postman",
-  },
-  {
-    icon: SiVisualstudiocode,
-    hexColor: SiVisualstudiocodeHex,
-    label: "Visual Studio Code",
-  },
-  {
-    icon: SiVisualstudio,
-    hexColor: SiVisualstudioHex,
-    label: "Visual Studio",
   },
 ];
