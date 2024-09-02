@@ -17,7 +17,7 @@ const Introduction = () => {
         <span className="text-foreground/80">
           Bachelor's degree in Computer Science
         </span>{" "}
-        and <span className="text-foreground/80">at least 3</span>{" "}
+        and <span className="text-foreground/80">at least 2</span>{" "}
         <span className="text-foreground/80">years</span> of{" "}
         <span className="text-foreground/80">experience</span>.
       </p>
@@ -54,7 +54,7 @@ const Introduction = () => {
       <span className="text-foreground/80">
         Bachelor's degree in Computer Science
       </span>{" "}
-      and <span className="text-foreground/80">3</span> professional{" "}
+      and <span className="text-foreground/80">at least 2</span>{" "}
       <span className="text-foreground/80">years</span> of{" "}
       <span className="text-foreground/80">experience</span>. I excel in
       creating scalable solutions using{" "}
