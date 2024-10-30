@@ -116,4 +116,13 @@ export const PROJECTS = [
     ],
     type: PROJECTTYPES.mobile,
   },
+  {
+    source: "https://www.youtube.com/embed/TFSYu5EvtE4?si=7n85K09BIbUm037V",
+    name: "New Alimodian Portal",
+    subtitle: "(Barangay Certificates Management System 📜)",
+    desc: "A web platform for Barangay New Alimodian where officers manage resident info and process certificate requests, while residents can easily request and track certificates online.",
+    stack: ["Laravel", "MySQL", "Tailwind CSS", "blade-php"],
+    type: PROJECTTYPES.web,
+    live: "https://new-alimodian-portal.up.railway.app/",
+  },
 ];
