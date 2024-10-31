@@ -1,4 +1,4 @@
-import { QUERYELEMENTS, ROOTSECTIONS } from "@/constants/enums";
+import { QUERYELEMENT, ROOTSECTION } from "@/constants/enums";
 import { useClient } from "@/lib/hooks/use-client";
 import { BUILDS } from "@/constants/collections";
 import { WAVE } from "@/constants/assets";
@@ -17,9 +17,9 @@ const Hero = () => {
     <section
       className={cn(
         "min-h-dvh flex-center flex-col gap-y-12 lg:gap-y-24 p-6 lg:py-6 relative border-b lg:px-4 xl:px-0",
-        QUERYELEMENTS.rootSection
+        QUERYELEMENT.rootSection
       )}
-      id={ROOTSECTIONS.about}
+      id={ROOTSECTION.about}
     >
       <div className="mt-14 flex-center lg:flex-between flex-col-reverse lg:flex-row gap-y-4 lg:gap-y-8 gap-x-24 w-full">
         <div

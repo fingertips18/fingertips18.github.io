@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useLenis } from "lenis/react";
+import { useState } from "react";
 
 import {
   AlertDialog,
@@ -15,14 +16,15 @@ import {
 import { LocalImageLoader } from "@/common/components/local-image-loader";
 import { Button } from "@/common/components/shadcn/button";
 import { Badge } from "@/common/components/shadcn/badge";
-import { PROJECTTYPES } from "@/constants/enums";
+import { PROJECTTYPE } from "@/constants/enums";
 import { FORMLINK } from "@/constants/projects";
 
 import { AppRequestButton } from "./app-request-button";
 import { ProjectPreview } from "./project-preview";
+import { cn } from "@/lib/utils";
 
 interface ProjectItemProps {
-  source: string;
+  preview: string;
   blurHash?: string;
   name: string;
   subtitle?: string;
@@ -34,6 +36,7 @@ interface ProjectItemProps {
 
 const ProjectItem = (props: ProjectItemProps) => {
   const lenis = useLenis();
+  const [loaded, setLoaded] = useState(false);
 
   const onDialogOpen = () => lenis?.stop();
 
@@ -41,9 +44,13 @@ const ProjectItem = (props: ProjectItemProps) => {
 
   return (
     <div
-      className="w-full rounded-lg overflow-hidden bg-primary/5 
-      border drop-shadow-2xl flex justify-between flex-col hover:drop-shadow-purple-glow
-      transition-all duration-500 ease-in-out hover:-translate-y-2 cursor-pointer"
+      className={cn(
+        `w-full rounded-lg overflow-hidden bg-primary/5 drop-shadow-2xl 
+        flex justify-between flex-col hover:drop-shadow-purple-glow cursor-pointer 
+        transition-all duration-500 ease-in-out hover:-translate-y-2`,
+        loaded && "border"
+      )}
+      onLoad={() => setLoaded(true)}
     >
       <AlertDialog>
         <AlertDialogTrigger
@@ -58,10 +65,10 @@ const ProjectItem = (props: ProjectItemProps) => {
         >
           <AlertDialogHeader>
             <div className="aspect-video relative">
-              {props.type === PROJECTTYPES.web ? (
+              {props.type === PROJECTTYPE.web ? (
                 <iframe
                   className="w-full h-full rounded-md"
-                  src={props.source}
+                  src={props.preview}
                   title={`${props.name} Preview`}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   referrerPolicy="strict-origin-when-cross-origin"
@@ -70,7 +77,7 @@ const ProjectItem = (props: ProjectItemProps) => {
               ) : (
                 <LocalImageLoader
                   hash={props.blurHash!}
-                  src={props.source}
+                  src={props.preview}
                   alt={props.name}
                   className="aspect-video object-cover object-center rounded-md"
                 />
@@ -108,7 +115,7 @@ const ProjectItem = (props: ProjectItemProps) => {
           <AlertDialogFooter>
             <AlertDialogCancel onClick={onDialogClose}>Close</AlertDialogCancel>
             <AlertDialogAction asChild>
-              {props.type === PROJECTTYPES.web ? (
+              {props.type === PROJECTTYPE.web ? (
                 <Link to={props.live!} target="_blank" onClick={onDialogClose}>
                   View Live
                 </Link>
@@ -123,7 +130,7 @@ const ProjectItem = (props: ProjectItemProps) => {
       </AlertDialog>
 
       <div className="bg-primary/20 px-2 py-2.5 flex-center">
-        {props.type === PROJECTTYPES.web ? (
+        {props.type === PROJECTTYPE.web ? (
           <Button
             asChild
             variant={"link"}

@@ -1,5 +1,5 @@
 import { CMES, KTMSCES, MNHS, USM } from "./assets";
-import { EDUCATIONTYPES } from "./enums";
+import { EDUCATIONTYPE } from "./enums";
 
 export const EDUCATIONS = [
   {
@@ -70,7 +70,7 @@ export const EDUCATIONS = [
         ],
       },
     ],
-    type: EDUCATIONTYPES.college,
+    type: EDUCATIONTYPE.college,
   },
   {
     source: "https://www.facebook.com/MatanaoNHS",
@@ -81,7 +81,7 @@ export const EDUCATIONS = [
     date: "June 2017 - April 2019",
     honor: "With High Honors",
     desc: "I graduated from Matanao National High School (MNHS) - Senior High with the distinction of With High Honors. This achievement reflects my dedication and commitment to academic excellence throughout my senior high school years.",
-    type: EDUCATIONTYPES.seniorHigh,
+    type: EDUCATIONTYPE.seniorHigh,
   },
   {
     source: "https://www.facebook.com/MatanaoNHS",
@@ -91,7 +91,7 @@ export const EDUCATIONS = [
     date: "August 2013 - June 2017",
     honor: "With Honors",
     desc: "I completed my junior high school education at Matanao National High School (MNHS), graduating with the distinction of With Honors. This recognition highlights my consistent academic performance and dedication during those formative years.",
-    type: EDUCATIONTYPES.juniorHigh,
+    type: EDUCATIONTYPE.juniorHigh,
   },
   {
     source:
@@ -106,6 +106,6 @@ export const EDUCATIONS = [
     date: "June 2007 - March 2013",
     honor: "Valedictorian",
     desc: "I began my elementary education at Kapital Tomas Monteverde Sr. Central Elementary School, and later transferred to Ceboza Matanao Elementary School in Grade 5. I graduated from Ceboza Matanao Elementary School as the class Valedictorian, an honor that reflects my commitment to academic excellence from an early age.",
-    type: EDUCATIONTYPES.elementary,
+    type: EDUCATIONTYPE.elementary,
   },
 ];

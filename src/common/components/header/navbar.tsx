@@ -3,14 +3,14 @@ import { useCallback, useEffect, useMemo } from "react";
 import { useRootSectionStore } from "@/lib/stores/use-root-section-store";
 import { useElementsByQuery } from "@/lib/hooks/use-elements-by-query";
 import { useClient } from "@/lib/hooks/use-client";
-import { QUERYELEMENTS } from "@/constants/enums";
+import { QUERYELEMENT } from "@/constants/enums";
 
 import { SpreadMenu } from "./spread-menu";
 import { SheetMenu } from "./sheet-menu";
 
 const Navbar = () => {
   const { active, onActive } = useRootSectionStore((state) => state);
-  const rootSections = useElementsByQuery(`.${QUERYELEMENTS.rootSection}`);
+  const rootSections = useElementsByQuery(`.${QUERYELEMENT.rootSection}`);
   const isMounted = useClient();
 
   const sectionOffsets = useMemo(() => {

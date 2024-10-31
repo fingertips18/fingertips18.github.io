@@ -1,6 +1,6 @@
 import { Terminal } from "lucide-react";
 
-import { QUERYELEMENTS, ROOTSECTIONS } from "@/constants/enums";
+import { QUERYELEMENT, ROOTSECTION } from "@/constants/enums";
 import { PROJECTS } from "@/constants/projects";
 import { cn } from "@/lib/utils";
 
@@ -11,9 +11,9 @@ const Projects = () => {
     <section
       className={cn(
         "min-h-dvh flex items-center flex-col gap-y-2 lg:gap-y-6 border-b pt-14 pb-6 px-2 lg:px-0",
-        QUERYELEMENTS.rootSection
+        QUERYELEMENT.rootSection
       )}
-      id={ROOTSECTIONS.projects}
+      id={ROOTSECTION.projects}
     >
       <div className="flex items-center justify-end gap-x-2 w-full pt-6 lg:relative">
         <Terminal className="w-5 lg:w-8 h-5 lg:h-8 sm:absolute xs:left-6 lg:left-4 xl:left-0 opacity-50" />

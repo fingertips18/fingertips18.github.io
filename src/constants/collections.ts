@@ -5,32 +5,32 @@ import {
   SiStackoverflow,
 } from "@icons-pack/react-simple-icons";
 
-import { ROOTSECTIONS } from "./enums";
+import { ROOTSECTION } from "./enums";
 
 export const ROOTMENU = [
   {
-    label: ROOTSECTIONS.about,
-    id: `#${ROOTSECTIONS.about}`,
+    label: ROOTSECTION.about,
+    id: `#${ROOTSECTION.about}`,
   },
   {
-    label: ROOTSECTIONS.skills,
-    id: `#${ROOTSECTIONS.skills}`,
+    label: ROOTSECTION.skills,
+    id: `#${ROOTSECTION.skills}`,
   },
   {
-    label: ROOTSECTIONS.experience,
-    id: `#${ROOTSECTIONS.experience}`,
+    label: ROOTSECTION.experience,
+    id: `#${ROOTSECTION.experience}`,
   },
   {
-    label: ROOTSECTIONS.projects,
-    id: `#${ROOTSECTIONS.projects}`,
+    label: ROOTSECTION.projects,
+    id: `#${ROOTSECTION.projects}`,
   },
   {
-    label: ROOTSECTIONS.education,
-    id: `#${ROOTSECTIONS.education}`,
+    label: ROOTSECTION.education,
+    id: `#${ROOTSECTION.education}`,
   },
   {
-    label: ROOTSECTIONS.contact,
-    id: `#${ROOTSECTIONS.contact}`,
+    label: ROOTSECTION.contact,
+    id: `#${ROOTSECTION.contact}`,
   },
 ];
 
