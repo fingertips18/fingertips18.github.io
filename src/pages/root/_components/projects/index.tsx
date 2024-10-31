@@ -46,7 +46,7 @@ const Projects = () => {
           </>
         ) : (
           <>
-            {[...Array(6)].map((_, i) => (
+            {[...Array(9)].map((_, i) => (
               <ProjectItemSkeleton key={`project-item-skeleton-${i}`} />
             ))}
           </>

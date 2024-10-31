@@ -3,9 +3,9 @@ import { useEffect } from "react";
 import ReactGA from "react-ga4";
 
 import ToasterProvider from "@/lib/providers/toaster-provider";
+import { AppRoutes } from "@/routes/app-routes";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
-import { AppRoutes } from "@/routes/app-routes";
 
 const RootLayout = () => {
   useEffect(() => {
