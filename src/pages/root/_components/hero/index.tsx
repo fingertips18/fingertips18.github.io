@@ -1,5 +1,5 @@
 import { QUERYELEMENT, ROOTSECTION } from "@/constants/enums";
-import { useClient } from "@/lib/hooks/use-client";
+import { useMounted } from "@/lib/hooks/useMounted";
 import { BUILDS } from "@/constants/collections";
 import { WAVE } from "@/constants/assets";
 import { cn } from "@/lib/utils";
@@ -11,7 +11,7 @@ import { TypingTexts } from "./typing-texts";
 import SocialButtons from "./social-buttons";
 
 const Hero = () => {
-  const isMounted = useClient();
+  const isMounted = useMounted();
 
   return (
     <section

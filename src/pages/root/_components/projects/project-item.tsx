@@ -18,10 +18,11 @@ import { Button } from "@/components/shadcn/button";
 import { Badge } from "@/components/shadcn/badge";
 import { PROJECTTYPE } from "@/constants/enums";
 import { FORMLINK } from "@/constants/projects";
+import { cn } from "@/lib/utils";
 
 import { AppRequestButton } from "./app-request-button";
 import { ProjectPreview } from "./project-preview";
-import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/shadcn/skeleton";
 
 interface ProjectItemProps {
   preview: string;
@@ -148,4 +149,52 @@ const ProjectItem = (props: ProjectItemProps) => {
   );
 };
 
-export { ProjectItem };
+const getRandomWidth = () => {
+  // Change the min and max values as needed
+  const minWidth = 32; // Minimum width in pixels
+  const maxWidth = 128; // Maximum width in pixels
+  return Math.floor(Math.random() * (maxWidth - minWidth + 1)) + minWidth;
+};
+
+const ProjectItemSkeleton = () => {
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <div
+      className={cn(
+        `w-full rounded-lg overflow-hidden bg-primary/5 drop-shadow-2xl flex justify-between flex-col`,
+        loaded && "border"
+      )}
+      onLoad={() => setLoaded(true)}
+    >
+      <Skeleton className="aspect-video" />
+      <div className="h-4/5 lg:h-fit space-y-2.5 p-2">
+        <Skeleton className="w-4/5 h-6" />
+        <div className="space-y-1">
+          <Skeleton className="w-full h-2" />
+          <Skeleton className="w-4/5 h-2" />
+          <Skeleton className="w-11/12 h-2" />
+          <Skeleton className="w-3/4 h-2" />
+          <Skeleton className="w-full h-2" />
+        </div>
+        <Skeleton className="w-[112px] h-4" />
+        <div className="flex item-start flex-wrap gap-1.5">
+          {[...Array(12)].map((_, i) => (
+            <Skeleton
+              key={`badge-skeleton-${i}`}
+              style={{
+                width: getRandomWidth(),
+              }}
+              className="rounded-full h-4"
+            />
+          ))}
+        </div>
+      </div>
+      <div className="bg-primary/10 px-2 py-2.5 flex-center mt-4">
+        <Skeleton className="w-24 h-5" />
+      </div>
+    </div>
+  );
+};
+
+export { ProjectItem, ProjectItemSkeleton };

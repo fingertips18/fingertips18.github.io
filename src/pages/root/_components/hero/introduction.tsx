@@ -1,4 +1,4 @@
-import { useResize } from "@/lib/hooks/use-resize";
+import { useResize } from "@/lib/hooks/useResize";
 
 const Introduction = () => {
   const { width } = useResize();
