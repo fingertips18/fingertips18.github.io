@@ -1,9 +1,9 @@
 import { LocalImageLoader } from "@/common/components/local-image-loader";
 import { Badge } from "@/common/components/shadcn/badge";
-import { PROJECTTYPES } from "@/constants/enums";
+import { PROJECTTYPE } from "@/constants/enums";
 
 interface ProjectPreviewProps {
-  source: string;
+  preview: string;
   blurHash?: string;
   name: string;
   subtitle?: string;
@@ -14,7 +14,7 @@ interface ProjectPreviewProps {
 }
 
 const ProjectPreview = ({
-  source,
+  preview,
   blurHash,
   name,
   subtitle,
@@ -25,10 +25,10 @@ const ProjectPreview = ({
   return (
     <>
       <div className="aspect-video relative w-full">
-        {type === PROJECTTYPES.web ? (
+        {type === PROJECTTYPE.web ? (
           <iframe
             className="w-full h-full"
-            src={source}
+            src={preview}
             title={`${name} Preview`}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             referrerPolicy="strict-origin-when-cross-origin"
@@ -37,7 +37,7 @@ const ProjectPreview = ({
         ) : (
           <LocalImageLoader
             hash={blurHash!}
-            src={source}
+            src={preview}
             alt={name}
             className="aspect-video object-cover object-center"
           />

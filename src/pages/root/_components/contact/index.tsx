@@ -1,5 +1,5 @@
 import { Separator } from "@/common/components/shadcn/separator";
-import { QUERYELEMENTS, ROOTSECTIONS } from "@/constants/enums";
+import { QUERYELEMENT, ROOTSECTION } from "@/constants/enums";
 import { cn } from "@/lib/utils";
 
 import { OtherContacts } from "./other-contacts";
@@ -10,9 +10,9 @@ const Contact = () => {
     <section
       className={cn(
         "min-h-dvh pt-14 pb-6 flex-between flex-col gap-y-6 px-4 xl:px-0 overflow-hidden",
-        QUERYELEMENTS.rootSection
+        QUERYELEMENT.rootSection
       )}
-      id={ROOTSECTIONS.contact}
+      id={ROOTSECTION.contact}
     >
       <div className="leading-none flex-center flex-col">
         <h4 className="text-xs lg:text-sm font-bold text-center tracking-widest pt-6 lg:pb-2">

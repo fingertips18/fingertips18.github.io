@@ -25,7 +25,7 @@ const ProfilePicture = () => {
         }}
       >
         <div
-          className="absolute w-full h-full flex-center rounded-full"
+          className="absolute w-full h-full flex-center rounded-full overflow-hidden"
           style={{
             backfaceVisibility: "hidden",
           }}

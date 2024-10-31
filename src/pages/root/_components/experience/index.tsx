@@ -2,7 +2,7 @@ import { VerticalTimeline } from "react-vertical-timeline-component";
 import "react-vertical-timeline-component/style.min.css";
 import { BriefcaseBusiness } from "lucide-react";
 
-import { QUERYELEMENTS, ROOTSECTIONS } from "@/constants/enums";
+import { QUERYELEMENT, ROOTSECTION } from "@/constants/enums";
 import { EXPERIENCES } from "@/constants/experiences";
 import { cn } from "@/lib/utils";
 
@@ -13,9 +13,9 @@ const Experience = () => {
     <section
       className={cn(
         "min-h-dvh flex items-center flex-col gap-y-2 lg:gap-y-6 border-b pt-14 pb-6 px-2 lg:px-0",
-        QUERYELEMENTS.rootSection
+        QUERYELEMENT.rootSection
       )}
-      id={ROOTSECTIONS.experience}
+      id={ROOTSECTION.experience}
     >
       <div className="flex items-center gap-x-2 w-full pt-6 lg:relative">
         <span className="w-[32px] lg:w-[128px] h-1 rounded-full bg-muted-foreground tracking-widest" />

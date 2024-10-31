@@ -1,7 +1,7 @@
 import { createJSONStorage, persist } from "zustand/middleware";
 import { create } from "zustand";
 
-import { ROOTSECTIONS } from "@/constants/enums";
+import { ROOTSECTION } from "@/constants/enums";
 
 interface RootSectionStore {
   active: string;
@@ -12,9 +12,9 @@ interface RootSectionStore {
 const useRootSectionStore = create(
   persist<RootSectionStore>(
     (set) => ({
-      active: ROOTSECTIONS.about,
+      active: ROOTSECTION.about,
       onActive: (active: string) => set({ active }),
-      onClear: () => set({ active: ROOTSECTIONS.about }),
+      onClear: () => set({ active: ROOTSECTION.about }),
     }),
     { name: "root-section", storage: createJSONStorage(() => sessionStorage) }
   )

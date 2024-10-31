@@ -4,13 +4,13 @@ import {
   TRIKTOOKPREVIEW_HASH,
 } from "./hashes";
 import { FLIXSAGEPREVIEW, LEAFONICPREVIEW, TRITOKPREVIEW } from "./assets";
-import { PROJECTTYPES } from "./enums";
+import { PROJECTTYPE } from "./enums";
 
 export const FORMLINK = "https://forms.gle/PFHoohMazvKMeKCh7";
 
 export const PROJECTS = [
   {
-    source: "https://www.youtube.com/embed/SBOBtfs9XiI?si=vpB3x8Mg3x4F2ipa",
+    preview: "https://www.youtube.com/embed/SBOBtfs9XiI?si=vpB3x8Mg3x4F2ipa",
     name: "Tweetch",
     subtitle: "(Twitch Clone 🎮)",
     desc: "Tweetch is a Twitch clone crafted with personal preferences in mind. Designed to emulate the popular live streaming platform, this project aims to provide a familiar experience while incorporating custom features and enhancements tailored to individual needs.",
@@ -28,11 +28,11 @@ export const PROJECTS = [
       "Next Themes",
       "Tailwind CSS",
     ],
-    type: PROJECTTYPES.web,
+    type: PROJECTTYPE.web,
     live: "https://tweetch.vercel.app",
   },
   {
-    source: "https://www.youtube.com/embed/pWdMyb9P70I?si=ZZvSe9ja1Ax-3-U1",
+    preview: "https://www.youtube.com/embed/pWdMyb9P70I?si=ZZvSe9ja1Ax-3-U1",
     name: "GrainGuru",
     subtitle: "(Rice Price Forecaster 🌾)",
     desc: "Leveraging an LSTM model, I developed a web application that compares and forecasts the current and future prices of different rice varieties in Cotabato.",
@@ -50,20 +50,20 @@ export const PROJECTS = [
       "Uploadthing",
       "Zod",
     ],
-    type: PROJECTTYPES.web,
+    type: PROJECTTYPE.web,
     live: "https://grainguru.vercel.app",
   },
   {
-    source: "https://www.youtube.com/embed/yada96hMy48?si=MkaDE6ltknpxi8Pm",
+    preview: "https://www.youtube.com/embed/yada96hMy48?si=MkaDE6ltknpxi8Pm",
     name: "ScrollWheel Date Picker",
     subtitle: "(Flutter Package 📅)",
     desc: "I developed a Flutter package that offers a unique, scrollable, and flat perspective wheel-type date picker, inspired by the sleek design seen in TikTok. This package allows developers to easily integrate an intuitive and visually appealing date picker into their Flutter applications. The date picker is fully customizable, providing smooth scrolling and a modern, flat design that enhances the user experience. It's perfect for applications where a stylish and user-friendly date selection is essential.",
     stack: ["Dart", "Flutter", "Pub Dev", "Change Notifier"],
-    type: PROJECTTYPES.web,
+    type: PROJECTTYPE.web,
     live: "https://pub.dev/packages/scroll_wheel_date_picker",
   },
   {
-    source: TRITOKPREVIEW,
+    preview: TRITOKPREVIEW,
     blurHash: TRIKTOOKPREVIEW_HASH,
     name: "TriTok",
     subtitle: "(TikTok Clone 🎥)",
@@ -82,10 +82,10 @@ export const PROJECTS = [
       "Retrofit",
       "Secure Storage",
     ],
-    type: PROJECTTYPES.mobile,
+    type: PROJECTTYPE.mobile,
   },
   {
-    source: LEAFONICPREVIEW,
+    preview: LEAFONICPREVIEW,
     blurHash: LEAFONICPREVIEW_HASH,
     name: "Leafonic",
     subtitle: "(Corynespora Leaf Disease Detector 🌿)",
@@ -97,10 +97,10 @@ export const PROJECTS = [
       "Image processing",
       "Convolutional Neural Network (CNN)",
     ],
-    type: PROJECTTYPES.mobile,
+    type: PROJECTTYPE.mobile,
   },
   {
-    source: FLIXSAGEPREVIEW,
+    preview: FLIXSAGEPREVIEW,
     blurHash: FLIXSAGEPREVIEW_HASH,
     name: "FlixSage",
     subtitle: "(Movie or Any Show Guesser 🪄)",
@@ -114,15 +114,15 @@ export const PROJECTS = [
       "Go Router",
       "Object Box",
     ],
-    type: PROJECTTYPES.mobile,
+    type: PROJECTTYPE.mobile,
   },
   {
-    source: "https://www.youtube.com/embed/TFSYu5EvtE4?si=7n85K09BIbUm037V",
+    preview: "https://www.youtube.com/embed/TFSYu5EvtE4?si=7n85K09BIbUm037V",
     name: "New Alimodian Portal",
     subtitle: "(Barangay Certificates Management System 📜)",
     desc: "A web platform for Barangay New Alimodian where officers manage resident info and process certificate requests, while residents can easily request and track certificates online.",
     stack: ["Laravel", "MySQL", "Tailwind CSS", "blade-php"],
-    type: PROJECTTYPES.web,
+    type: PROJECTTYPE.web,
     live: "https://new-alimodian-portal.up.railway.app/",
   },
 ];
