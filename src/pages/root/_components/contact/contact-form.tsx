@@ -13,9 +13,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/common/components/shadcn/form";
-import { Textarea } from "@/common/components/shadcn/textarea";
-import { Input } from "@/common/components/shadcn/input";
+} from "@/components/shadcn/form";
+import { Textarea } from "@/components/shadcn/textarea";
+import { Input } from "@/components/shadcn/input";
 
 const formSchema = z.object({
   email: z

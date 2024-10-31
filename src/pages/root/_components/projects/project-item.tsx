@@ -12,10 +12,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/common/components/shadcn/alert-dialog";
-import { LocalImageLoader } from "@/common/components/local-image-loader";
-import { Button } from "@/common/components/shadcn/button";
-import { Badge } from "@/common/components/shadcn/badge";
+} from "@/components/shadcn/alert-dialog";
+import { LocalImageLoader } from "@/components/common/local-image-loader";
+import { Button } from "@/components/shadcn/button";
+import { Badge } from "@/components/shadcn/badge";
 import { PROJECTTYPE } from "@/constants/enums";
 import { FORMLINK } from "@/constants/projects";
 

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 import { SOCIALS } from "@/constants/collections";
-import { Hint } from "@/common/components/hint";
+import { Hint } from "@/components/common/hint";
 
 const Socials = () => {
   return (

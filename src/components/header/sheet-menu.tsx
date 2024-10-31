@@ -9,10 +9,10 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/common/components/shadcn/sheet";
-import { Button } from "@/common/components/shadcn/button";
+} from "@/components/shadcn/sheet";
+import { Button } from "@/components/shadcn/button";
 import { ROOTMENU } from "@/constants/collections";
-import { Hint } from "@/common/components/hint";
+import { Hint } from "@/components/common/hint";
 import { cn } from "@/lib/utils";
 
 import { ModeToggle } from "./mode-toggle";

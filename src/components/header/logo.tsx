@@ -3,14 +3,16 @@ import { useLenis } from "lenis/react";
 
 import { DARKLOGO, LIGHTLOGO } from "@/constants/assets";
 import { Theme, useTheme } from "@/lib/hooks/use-theme";
+import { Skeleton } from "@/components/shadcn/skeleton";
 import { useClient } from "@/lib/hooks/use-client";
+import { useResize } from "@/lib/hooks/use-resize";
 import { AppRoutes } from "@/routes/app-routes";
-import { Skeleton } from "../shadcn/skeleton";
 
 const Logo = () => {
   const { theme } = useTheme();
   const isMounted = useClient();
   const lenis = useLenis();
+  const { width } = useResize();
 
   if (!isMounted) {
     return <Skeleton className="w-20 lg:w-28 h-6 lg:h-8" />;
@@ -21,13 +23,21 @@ const Logo = () => {
 
   const onClick = () => lenis?.scrollTo(0);
 
+  const lg = width > 1024;
+
   return (
     <Link
       to={AppRoutes.root}
       className="hover:scale-95 transition-all hover:drop-shadow-primary-glow"
       onClick={onClick}
     >
-      <img src={logo} alt="Logo" className="h-4 lg:h-6" />
+      <img
+        src={logo}
+        alt="Logo"
+        width="100%"
+        height={lg ? 24 : 16}
+        className="h-4 lg:h-6 object-contain"
+      />
     </Link>
   );
 };

@@ -1,6 +1,6 @@
 import { RefreshCcw } from "lucide-react";
 
-import { Button } from "@/common/components/shadcn/button";
+import { Button } from "@/components/shadcn/button";
 
 const ErrorPage = () => {
   return (

@@ -1,4 +1,4 @@
-import { Separator } from "@/common/components/shadcn/separator";
+import { Separator } from "@/components/shadcn/separator";
 import { QUERYELEMENT, ROOTSECTION } from "@/constants/enums";
 import { cn } from "@/lib/utils";
 

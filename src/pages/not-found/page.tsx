@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-import { Button } from "@/common/components/shadcn/button";
+import { Button } from "@/components/shadcn/button";
 import { AppRoutes } from "@/routes/app-routes";
 
 const NotFoundPage = () => {

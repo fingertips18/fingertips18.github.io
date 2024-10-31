@@ -2,7 +2,7 @@ import { VerticalTimelineElement } from "react-vertical-timeline-component";
 import { SiYoutube, SiYoutubeHex } from "@icons-pack/react-simple-icons";
 import { Link } from "react-router-dom";
 
-import { Badge } from "@/common/components/shadcn/badge";
+import { Badge } from "@/components/shadcn/badge";
 
 interface EducationItemProps {
   source: string;

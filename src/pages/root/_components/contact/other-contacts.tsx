@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 import { useClient } from "@/lib/hooks/use-client";
-import { Hint } from "@/common/components/hint";
+import { Hint } from "@/components/common/hint";
 import { CONTACTS } from "@/constants/contact";
 import { cn } from "@/lib/utils";
 

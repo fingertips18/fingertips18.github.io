@@ -1,5 +1,5 @@
-import { LocalImageLoader } from "@/common/components/local-image-loader";
-import { Badge } from "@/common/components/shadcn/badge";
+import { LocalImageLoader } from "@/components/common/local-image-loader";
+import { Badge } from "@/components/shadcn/badge";
 import { PROJECTTYPE } from "@/constants/enums";
 
 interface ProjectPreviewProps {
