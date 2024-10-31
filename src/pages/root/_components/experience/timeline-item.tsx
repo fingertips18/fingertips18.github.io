@@ -56,14 +56,20 @@ const TimelineItem = ({
             <img
               src={image}
               alt={company}
+              width="100%"
+              height="100%"
               className="rounded-full w-full h-full border object-cover cursor-pointer"
+              loading="lazy"
             />
           </Link>
         ) : (
           <img
             src={image}
             alt={company}
+            width="100%"
+            height="100%"
             className="rounded-full w-full h-full border object-cover"
+            loading="lazy"
           />
         )
       }
@@ -72,7 +78,10 @@ const TimelineItem = ({
         <img
           src={image}
           alt="company"
+          width={64}
+          height={64}
           className="rounded-sm drop-shadow-primary-glow h-16 w-16 object-cover"
+          loading="lazy"
         />
         <div className="leading-none">
           <h3 className="font-bold">{position}</h3>
@@ -109,7 +118,10 @@ const TimelineItem = ({
                   <img
                     src={s.image}
                     alt={s.company}
+                    width="100%"
+                    height="100%"
                     className="w-full h-full object-scale-down"
+                    loading="lazy"
                   />
                 </div>
                 {s.company}

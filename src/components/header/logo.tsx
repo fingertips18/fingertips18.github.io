@@ -37,6 +37,7 @@ const Logo = () => {
         width="100%"
         height={lg ? 24 : 16}
         className="h-4 lg:h-6 object-contain"
+        loading="eager"
       />
     </Link>
   );
