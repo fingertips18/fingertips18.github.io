@@ -34,7 +34,7 @@ const Logo = () => {
       <img
         src={logo}
         alt="Logo"
-        width="100%"
+        width={lg ? 102 : 68}
         height={lg ? 24 : 16}
         className="h-4 lg:h-6 object-contain"
         loading="eager"

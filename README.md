@@ -1,4 +1,4 @@
-![](public/banner.png)
+![](public/banner.webp)
 
 # 📂 Welcome to My Portfolio | [fingertips18.github.io](https://fingertips18.github.io/)
 

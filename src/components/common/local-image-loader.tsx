@@ -37,9 +37,11 @@ const LocalImageLoader = ({
         src={src}
         alt={alt}
         loading="lazy"
+        width="100%"
+        height="100%"
         onLoad={() => setLoaded(true)}
         className={cn(
-          "transition-opacity duration-500 ease-in-out",
+          "transition-opacity duration-500 ease-in-out w-full h-full",
           loaded ? "opacity-100" : "opacity-0",
           className
         )}
