@@ -5,12 +5,12 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/common/components/shadcn/dropdown-menu";
-import { Skeleton } from "@/common/components/shadcn/skeleton";
-import { Button } from "@/common/components/shadcn/button";
+} from "@/components/shadcn/dropdown-menu";
+import { Skeleton } from "@/components/shadcn/skeleton";
+import { Button } from "@/components/shadcn/button";
 import { useClient } from "@/lib/hooks/use-client";
 import { useTheme } from "@/lib/hooks/use-theme";
-import { Hint } from "@/common/components/hint";
+import { Hint } from "@/components/common/hint";
 
 const ModeToggle = () => {
   const { setTheme } = useTheme();

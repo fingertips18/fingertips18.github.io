@@ -8,8 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/common/components/shadcn/dialog";
-import { Button } from "@/common/components/shadcn/button";
+} from "@/components/shadcn/dialog";
+import { Button } from "@/components/shadcn/button";
 import { FORMLINK } from "@/constants/projects";
 
 const AppRequestButton = () => {

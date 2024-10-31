@@ -2,7 +2,7 @@ import { VerticalTimelineElement } from "react-vertical-timeline-component";
 import "react-vertical-timeline-component/style.min.css";
 import { Link } from "react-router-dom";
 
-import { Badge } from "@/common/components/shadcn/badge";
+import { Badge } from "@/components/shadcn/badge";
 
 interface TimelineItemProps {
   image: string;

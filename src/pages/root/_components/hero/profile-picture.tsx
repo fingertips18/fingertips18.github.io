@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { LocalImageLoader } from "@/common/components/local-image-loader";
+import { LocalImageLoader } from "@/components/common/local-image-loader";
 import { FINGERTIPS, ME } from "@/constants/assets";
 import { FINGERTIPS_HASH, ME_HASH } from "@/constants/hashes";
 
