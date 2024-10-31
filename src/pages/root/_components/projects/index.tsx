@@ -1,12 +1,17 @@
 import { Terminal } from "lucide-react";
+import { useRef } from "react";
 
 import { QUERYELEMENT, ROOTSECTION } from "@/constants/enums";
+import { useObserver } from "@/lib/hooks/useObserver";
 import { PROJECTS } from "@/constants/projects";
 import { cn } from "@/lib/utils";
 
-import { ProjectItem } from "./project-item";
+import { ProjectItem, ProjectItemSkeleton } from "./project-item";
 
 const Projects = () => {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const { isVisible } = useObserver({ elementRef: wrapperRef });
+
   return (
     <section
       className={cn(
@@ -14,6 +19,7 @@ const Projects = () => {
         QUERYELEMENT.rootSection
       )}
       id={ROOTSECTION.projects}
+      ref={wrapperRef}
     >
       <div className="flex items-center justify-end gap-x-2 w-full pt-6 lg:relative">
         <Terminal className="w-5 lg:w-8 h-5 lg:h-8 sm:absolute xs:left-6 lg:left-4 xl:left-0 opacity-50" />
@@ -32,9 +38,19 @@ const Projects = () => {
         }}
         className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-8 gap-4"
       >
-        {PROJECTS.map((p) => (
-          <ProjectItem key={p.name} {...p} />
-        ))}
+        {isVisible ? (
+          <>
+            {PROJECTS.map((p) => (
+              <ProjectItem key={p.name} {...p} />
+            ))}
+          </>
+        ) : (
+          <>
+            {[...Array(6)].map((_, i) => (
+              <ProjectItemSkeleton key={`project-item-skeleton-${i}`} />
+            ))}
+          </>
+        )}
       </div>
     </section>
   );

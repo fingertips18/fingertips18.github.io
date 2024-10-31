@@ -2,15 +2,15 @@ import { Link } from "react-router-dom";
 import { useLenis } from "lenis/react";
 
 import { DARKLOGO, LIGHTLOGO } from "@/constants/assets";
-import { Theme, useTheme } from "@/lib/hooks/use-theme";
+import { Theme, useTheme } from "@/lib/hooks/useTheme";
 import { Skeleton } from "@/components/shadcn/skeleton";
-import { useClient } from "@/lib/hooks/use-client";
-import { useResize } from "@/lib/hooks/use-resize";
+import { useMounted } from "@/lib/hooks/useMounted";
+import { useResize } from "@/lib/hooks/useResize";
 import { AppRoutes } from "@/routes/app-routes";
 
 const Logo = () => {
   const { theme } = useTheme();
-  const isMounted = useClient();
+  const isMounted = useMounted();
   const lenis = useLenis();
   const { width } = useResize();
 

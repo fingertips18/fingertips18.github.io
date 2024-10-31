@@ -1,6 +1,6 @@
 import { Toaster } from "sonner";
 
-import { useTheme } from "@/lib/hooks/use-theme";
+import { useTheme } from "@/lib/hooks/useTheme";
 
 interface ToasterProviderProps {
   children: React.ReactNode;

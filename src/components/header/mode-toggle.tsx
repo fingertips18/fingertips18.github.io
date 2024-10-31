@@ -8,13 +8,13 @@ import {
 } from "@/components/shadcn/dropdown-menu";
 import { Skeleton } from "@/components/shadcn/skeleton";
 import { Button } from "@/components/shadcn/button";
-import { useClient } from "@/lib/hooks/use-client";
-import { useTheme } from "@/lib/hooks/use-theme";
+import { useMounted } from "@/lib/hooks/useMounted";
+import { useTheme } from "@/lib/hooks/useTheme";
 import { Hint } from "@/components/common/hint";
 
 const ModeToggle = () => {
   const { setTheme } = useTheme();
-  const isMounted = useClient();
+  const isMounted = useMounted();
 
   if (!isMounted) {
     return <Skeleton className="w-10 h-10" />;

@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
 
-import { useClient } from "@/lib/hooks/use-client";
+import { useMounted } from "@/lib/hooks/useMounted";
 import { Hint } from "@/components/common/hint";
 import { CONTACTS } from "@/constants/contact";
 import { cn } from "@/lib/utils";
 
 const OtherContacts = () => {
-  const isMounted = useClient();
+  const isMounted = useMounted();
 
   return (
     <ul
