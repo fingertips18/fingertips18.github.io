@@ -1,26 +1,26 @@
 ![](public/banner.png)
 
-# 📂 Welcome to My Portfolio - [fingertips18.github.io](https://fingertips18.github.io/)
+# 📂 Welcome to My Portfolio | [fingertips18.github.io](https://fingertips18.github.io/)
 
 This portfolio highlights my 🖼️ `background`, 🛠️ `skills`, 🌟 `experiences`, and 📚 `education`, showcasing a diverse collection of 📁 `projects`, including 📱`apps`, 🌐 `web applications` and more. Explore my work and see how I bring ideas to life!
 
 # 🚀 About Me
 
-I am a dedicated `full-stack developer` with a strong foundation in both `web` and `mobile` technologies. Leveraging a `Bachelor's degree in Computer Science` and `3` professional `years` of `experience`.
+I am a dedicated `full-stack developer` with a strong foundation in both `web` and `mobile` technologies. Leveraging a `Bachelor's degree in Computer Science` and at least `2` professional `years` of `experience`.
 
-I specialize in creating robust, scalable solutions using `React.js`, `React Native`, and `Flutter` for front-end development, coupled with `Express.js`, `Python`, `Go` and `Rust` for backend. My expertise extends to working with databases and cloud platforms, including `MongoDB`, `Supabase`, `Firebase` and `SQLite`, as well as utilizing `Prisma` for `ORM` and `TensorFlow` for `machine learning` applications.
+I specialize in creating robust, scalable solutions using `React.js`, `NextJS`, and `Flutter` for front-end development, coupled with `Express.js`, `Go`, `.NET` and `Python` for backend. My expertise extends to working with databases and cloud platforms, including `MongoDB`, `Supabase`, `Firebase`, `AWS` and `Azure`, as well as utilizing `Prisma` for `ORM` and `TensorFlow` for `machine learning` applications.
 
 In addition to my primary focus on building user-centric web and mobile applications, I am also passionate about `game development`. I create games using `Unity`, `Flutter` and `Vanilla JavaScript` as a hobby, which enhances my problem-solving skills and creativity in software design.
 
 # 🛠️ Tech Stack
 
-- `Frontend` - React.js, Next.js, React Native, Flutter
+- `Frontend` - React.js, Next.js, Flutter
 
-- `Backend` - Express.js, Python, Go, Rust
+- `Backend` - Express.js, .NET, Go, Python
 
 - `Databases` - MongoDB, Supabase, Firebase, SQLite, MySQL, PostgreSQL
 
-- `Cloud & Microservices` - Google Cloud, Microsoft Azure
+- `Cloud & Microservices` - AWS, Google Cloud, Microsoft Azure
 
 - `Others` - Unity, Tensorflow, Figma, Rive, Photoshop, Postman, Trello, Notion
 
@@ -39,6 +39,8 @@ Here are some of the key projects featured in my portfolio:
 - [Leafonic](https://forms.gle/PFHoohMazvKMeKCh7) - A mobile application using a **Convolutional Neural Network (CNN)** powered by **TensorFlow** to classify the health of 𝗥𝘂𝗯𝗯𝗲𝗿 𝗧𝗿𝗲𝗲 𝗟𝗲𝗮𝘃𝗲𝘀 (𝘏𝘦𝘷𝘦𝘢 𝘣𝘳𝘢𝘴𝘪𝘭𝘪𝘦𝘯𝘴𝘪𝘴).
 
 - [FlixSage](https://forms.gle/PFHoohMazvKMeKCh7) - Harnessing the power of **AI**, FlixSage provides **insights** from **images** related to a particular **movie**, **series** or any type of **shows**.
+
+- [New Alimodian Portal](https://new-alimodian-portal.up.railway.app) - Developed a web platform for **Barangay New Alimodian**, enabling streamlined management of resident information and efficient handling of certificate requests.
 
 # 🎓 Education
 

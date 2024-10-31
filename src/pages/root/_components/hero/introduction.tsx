@@ -24,15 +24,17 @@ const Introduction = () => {
       <p className="text-muted-foreground text-sm">
         I specialize in creating robust, scalable solutions using{" "}
         <span className="text-foreground/80">React.js</span>,{" "}
-        <span className="text-foreground/80">React Native</span>, and{" "}
+        <span className="text-foreground/80">NextJS</span> and{" "}
         <span className="text-foreground/80">Flutter</span> for front-end
         development, coupled with{" "}
         <span className="text-foreground/80">Express.js</span> for backend
         services. My expertise extends to working with databases and cloud
         platforms, including <span className="text-foreground/80">MongoDB</span>
-        , <span className="text-foreground/80">Supabase</span>, and{" "}
-        <span className="text-foreground/80">Firebase</span>, as well as
-        utilizing <span className="text-foreground/80">Prisma</span> for ORM and{" "}
+        , <span className="text-foreground/80">Supabase</span>,{" "}
+        <span className="text-foreground/80">Firebase</span>,{" "}
+        <span className="text-foreground/80">AWS</span> and{" "}
+        <span className="text-foreground/80">Azure</span> as well as utilizing{" "}
+        <span className="text-foreground/80">Prisma</span> for ORM and{" "}
         <span className="text-foreground/80">TensorFlow</span> for machine
         learning applications.
       </p>
@@ -59,13 +61,15 @@ const Introduction = () => {
       <span className="text-foreground/80">experience</span>. I excel in
       creating scalable solutions using{" "}
       <span className="text-foreground/80">React.js</span>,{" "}
-      <span className="text-foreground/80">React Native</span>,{" "}
+      <span className="text-foreground/80">NextJS</span>,{" "}
       <span className="text-foreground/80">Flutter</span>, and{" "}
       <span className="text-foreground/80">Express.js</span>. My skills include
       working with <span className="text-foreground/80">MongoDB</span>,{" "}
       <span className="text-foreground/80">Supabase</span>,{" "}
-      <span className="text-foreground/80">Firebase</span>, and{" "}
-      <span className="text-foreground/80">Prisma</span>. Additionally, I am
+      <span className="text-foreground/80">MongoDB</span>,{" "}
+      <span className="text-foreground/80">Firebase</span>,{" "}
+      <span className="text-foreground/80">AWS</span> and{" "}
+      <span className="text-foreground/80">Azure</span>. Additionally, I am
       passionate about game development, creating games with{" "}
       <span className="text-foreground/80">Unity</span>,{" "}
       <span className="text-foreground/80">Flutter</span>, and{" "}
