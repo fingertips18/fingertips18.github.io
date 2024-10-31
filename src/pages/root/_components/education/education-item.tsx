@@ -69,7 +69,10 @@ const EducationItem = ({
           <img
             src={logo}
             alt={name}
+            width="100%"
+            height="100%"
             className="rounded-full w-full h-full object-cover scale-90"
+            loading="lazy"
           />
         </Link>
       }
@@ -78,7 +81,10 @@ const EducationItem = ({
         <img
           src={logo}
           alt={name}
+          width={64}
+          height={64}
           className="rounded-sm drop-shadow-primary-glow h-16 w-16 object-cover"
+          loading="lazy"
         />
         <div className="leading-tight space-y-0.5">
           <h3 className="font-bold">{name}</h3>
@@ -95,7 +101,10 @@ const EducationItem = ({
           <img
             src={sub.logo}
             alt={sub.name}
+            width={64}
+            height={64}
             className="rounded-sm drop-shadow-primary-glow h-16 w-16 object-cover"
+            loading="lazy"
           />
           <div className="leading-tight space-y-0.5">
             <h3 className="font-bold">{sub.name}</h3>
