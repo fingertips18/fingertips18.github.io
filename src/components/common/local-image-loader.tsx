@@ -1,5 +1,5 @@
+import { SyntheticEvent, useState } from "react";
 import { Blurhash } from "react-blurhash";
-import { useState } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -17,6 +17,7 @@ const LocalImageLoader = ({
   alt,
 }: LocalImageLoaderProps) => {
   const [loaded, setLoaded] = useState(false);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   return (
     <div className="relative w-full h-full">
@@ -37,9 +38,14 @@ const LocalImageLoader = ({
         src={src}
         alt={alt}
         loading="lazy"
-        width="100%"
-        height="100%"
-        onLoad={() => setLoaded(true)}
+        decoding="async"
+        width={dimensions.width}
+        height={dimensions.height}
+        onLoad={(e: SyntheticEvent<HTMLImageElement>) => {
+          setLoaded(true);
+          const { naturalWidth, naturalHeight } = e.currentTarget;
+          setDimensions({ width: naturalWidth, height: naturalHeight });
+        }}
         className={cn(
           "transition-opacity duration-500 ease-in-out w-full h-full",
           loaded ? "opacity-100" : "opacity-0",
