@@ -1,4 +1,7 @@
+import { useRef } from "react";
+
 import { QUERYELEMENT, ROOTSECTION } from "@/constants/enums";
+import { useObserver } from "@/lib/hooks/useObserver";
 import { cn } from "@/lib/utils";
 
 import { GradientOverlay } from "./gradient-overlay";
@@ -8,13 +11,17 @@ import { Others } from "./others";
 import { Tools } from "./tools";
 
 const Skills = () => {
+  const sectionRef = useRef<HTMLElement>(null);
+  const { isVisible } = useObserver({ elementRef: sectionRef, threshold: 0.5 });
+
   return (
     <section
+      id={ROOTSECTION.skills}
+      ref={sectionRef}
       className={cn(
         "min-h-dvh h-dvh pt-14 flex-between flex-col gap-y-6 border-b",
         QUERYELEMENT.rootSection
       )}
-      id={ROOTSECTION.skills}
     >
       <div className="leading-none flex-center flex-col">
         <h4 className="text-xs lg:text-sm font-bold text-center tracking-widest pt-6 lg:pb-2">
@@ -28,7 +35,12 @@ const Skills = () => {
           years.
         </p>
       </div>
-      <div className="w-full flex-center flex-col gap-y-4 relative">
+      <div
+        className={cn(
+          "w-full flex-center flex-col gap-y-4 relative transition-opacity duration-500 ease-in-out",
+          isVisible ? "opacity-100" : "opacity-0"
+        )}
+      >
         <Frontend />
         <Backend />
         <Others />

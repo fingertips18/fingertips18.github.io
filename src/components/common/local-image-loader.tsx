@@ -8,6 +8,7 @@ interface LocalImageLoaderProps {
   className?: string;
   src: string;
   alt: string;
+  loadLazy?: boolean;
 }
 
 const LocalImageLoader = ({
@@ -15,6 +16,7 @@ const LocalImageLoader = ({
   className,
   src,
   alt,
+  loadLazy = true,
 }: LocalImageLoaderProps) => {
   const [loaded, setLoaded] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -37,7 +39,7 @@ const LocalImageLoader = ({
       <img
         src={src}
         alt={alt}
-        loading="lazy"
+        loading={loadLazy ? "lazy" : undefined}
         decoding="async"
         width={dimensions.width}
         height={dimensions.height}

@@ -49,6 +49,7 @@ const ProfilePicture = () => {
             src={FINGERTIPS}
             alt="Fingertips"
             hash={FINGERTIPS_HASH}
+            loadLazy={false}
             className="w-full h-full object-cover rounded-full"
           />
         </div>

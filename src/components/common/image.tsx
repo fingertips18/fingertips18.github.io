@@ -5,12 +5,13 @@ interface ImageProps extends ImgHTMLAttributes<HTMLImageElement> {
 }
 
 const Image = React.forwardRef<HTMLImageElement, ImageProps>(
-  ({ className, ...props }) => {
+  ({ className, ...props }, ref) => {
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
     return (
       <img
         {...props}
+        ref={ref}
         width={dimensions.width}
         height={dimensions.height}
         className={className}

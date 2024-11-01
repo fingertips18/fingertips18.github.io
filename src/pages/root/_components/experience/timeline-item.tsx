@@ -72,12 +72,10 @@ const TimelineItem = ({
       }
     >
       <div className="flex items-start  gap-x-4">
-        <img
+        <Image
           src={image}
           alt="company"
-          width={64}
-          height={64}
-          className="rounded-sm drop-shadow-primary-glow h-16 w-16 object-cover"
+          className="rounded-sm drop-shadow-primary-glow h-16 w-16 object-scale-down"
           loading="lazy"
         />
         <div className="leading-none">
@@ -115,7 +113,7 @@ const TimelineItem = ({
                   <Image
                     src={s.image}
                     alt={s.company}
-                    className="w-full h-full object-scale-down"
+                    className="object-scale-down"
                     loading="lazy"
                   />
                 </div>

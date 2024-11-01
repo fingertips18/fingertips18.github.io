@@ -5,14 +5,19 @@ import { Hint } from "@/components/common/hint";
 import { CONTACTS } from "@/constants/contact";
 import { cn } from "@/lib/utils";
 
-const OtherContacts = () => {
+interface OtherContactsProps {
+  isVisible: boolean;
+}
+
+const OtherContacts = ({ isVisible }: OtherContactsProps) => {
   const isMounted = useMounted();
 
   return (
     <ul
       className={cn(
         "flex-center gap-x-6 transition-opacity duration-500 ease-in-out",
-        isMounted ? "opacity-100" : "opacity-0"
+        isMounted ? "opacity-100" : "opacity-0",
+        isVisible ? "opacity-100" : "opacity-0"
       )}
     >
       {CONTACTS.map((c) => {

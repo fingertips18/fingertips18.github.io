@@ -1,18 +1,25 @@
-import { Separator } from "@/components/shadcn/separator";
+import { useRef } from "react";
+
 import { QUERYELEMENT, ROOTSECTION } from "@/constants/enums";
+import { Separator } from "@/components/shadcn/separator";
+import { useObserver } from "@/lib/hooks/useObserver";
 import { cn } from "@/lib/utils";
 
 import { OtherContacts } from "./other-contacts";
 import { ContactForm } from "./contact-form";
 
 const Contact = () => {
+  const sectionRef = useRef<HTMLElement>(null);
+  const { isVisible } = useObserver({ elementRef: sectionRef, threshold: 0.5 });
+
   return (
     <section
+      id={ROOTSECTION.contact}
+      ref={sectionRef}
       className={cn(
         "min-h-dvh pt-14 pb-6 flex-between flex-col gap-y-6 px-4 xl:px-0 overflow-hidden",
         QUERYELEMENT.rootSection
       )}
-      id={ROOTSECTION.contact}
     >
       <div className="leading-none flex-center flex-col">
         <h4 className="text-xs lg:text-sm font-bold text-center tracking-widest pt-6 lg:pb-2">
@@ -26,7 +33,7 @@ const Contact = () => {
         </p>
       </div>
 
-      <ContactForm />
+      <ContactForm isVisible={isVisible} />
 
       <div className="flex-center w-full gap-x-4">
         <Separator />
@@ -36,7 +43,7 @@ const Contact = () => {
         <Separator />
       </div>
 
-      <OtherContacts />
+      <OtherContacts isVisible={isVisible} />
     </section>
   );
 };
