@@ -36,7 +36,11 @@ const Projects = () => {
         style={{
           gridAutoRows: "1fr",
         }}
-        className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-8 gap-4"
+        className={cn(
+          `w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-8 gap-4
+          transition-opacity duration-500 ease-in-out`,
+          isVisible ? "opacity-100" : "opacity-0"
+        )}
       >
         {isVisible ? (
           <>

@@ -54,7 +54,7 @@ const Hero = () => {
               alt="Wave"
               width={lg ? 30.16 : 20.11} // 181 original width
               height={lg ? 32.16 : 21.44} // 193 original height
-              className="w-[20.11px] lg:w-[30.16px] h-[21.44px] lg:h-[32.16px] relative -top-0.5 lg:-top-2"
+              className="relative -top-0.5 lg:-top-2"
             />
           </div>
           <h1 className="text-2xl lg:text-4xl font-bold flex items-center flex-col lg:flex-row">
