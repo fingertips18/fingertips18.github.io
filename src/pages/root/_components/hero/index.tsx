@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { QUERYELEMENT, ROOTSECTION } from "@/constants/enums";
 import { useObserver } from "@/lib/hooks/useObserver";
 import { useMounted } from "@/lib/hooks/useMounted";
+import { useResize } from "@/lib/hooks/useResize";
 import { BUILDS } from "@/constants/collections";
 import { WAVE } from "@/constants/assets";
 import { cn } from "@/lib/utils";
@@ -15,8 +16,11 @@ import SocialButtons from "./social-buttons";
 
 const Hero = () => {
   const sectionRef = useRef<HTMLElement>(null);
-  const { isVisible } = useObserver({ elementRef: sectionRef, threshold: 0.2 });
+  const { isVisible } = useObserver({ elementRef: sectionRef });
   const isMounted = useMounted();
+  const { width } = useResize();
+
+  const lg = width > 1024;
 
   return (
     <section
@@ -30,14 +34,17 @@ const Hero = () => {
       <div
         className={cn(
           `mt-14 flex-center lg:flex-between flex-col-reverse lg:flex-row gap-y-4 
-          lg:gap-y-8 gap-x-24 w-full transition-opacity duration-500 ease-in-out`,
+          lg:gap-y-8 gap-x-24 w-full transition-opacity duration-1000 ease-in-out`,
           isVisible ? "opacity-100" : "opacity-0"
         )}
       >
         <div
           className={cn(
-            "flex items-center lg:items-start flex-col lg:gap-2 transition-opacity duration-500 ease-in-out",
-            isMounted ? "opacity-100" : "opacity-0"
+            "transition-opacity duration-500 ease-in-out",
+            isMounted ? "opacity-100" : "opacity-0",
+            isVisible
+              ? "flex items-center lg:items-start flex-col lg:gap-2"
+              : "hidden"
           )}
         >
           <div className="flex items-start justify-center gap-x-2 relative">
@@ -45,9 +52,9 @@ const Hero = () => {
             <img
               src={WAVE}
               alt="Wave"
-              width={181}
-              height={193}
-              className="w-5 lg:w-8 h-5 lg:h-8 relative -top-0.5 lg:-top-2"
+              width={lg ? 30.16 : 20.11} // 181 original width
+              height={lg ? 32.16 : 21.44} // 193 original height
+              className="w-[20.11px] lg:w-[30.16px] h-[21.44px] lg:h-[32.16px] relative -top-0.5 lg:-top-2"
             />
           </div>
           <h1 className="text-2xl lg:text-4xl font-bold flex items-center flex-col lg:flex-row">
@@ -61,10 +68,10 @@ const Hero = () => {
           <ResumeButton />
         </div>
 
-        <ProfilePicture />
+        <ProfilePicture isVisible={isVisible} />
       </div>
 
-      <SocialButtons isMounted={isMounted} isVisible={isVisible} />
+      {isVisible && <SocialButtons isMounted={isMounted} />}
     </section>
   );
 };

@@ -40,7 +40,6 @@ const LocalImageLoader = ({
         src={src}
         alt={alt}
         loading={loadLazy ? "lazy" : undefined}
-        decoding="async"
         width={dimensions.width}
         height={dimensions.height}
         onLoad={(e: SyntheticEvent<HTMLImageElement>) => {

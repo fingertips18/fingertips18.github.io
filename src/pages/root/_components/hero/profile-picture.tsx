@@ -3,18 +3,26 @@ import { useState } from "react";
 import { LocalImageLoader } from "@/components/common/local-image-loader";
 import { FINGERTIPS_HASH, ME_HASH } from "@/constants/hashes";
 import { FINGERTIPS, ME } from "@/constants/assets";
+import { cn } from "@/lib/utils";
 
 import { Background } from "./background";
 
-const ProfilePicture = () => {
+interface ProfilePictureProps {
+  isVisible: boolean;
+}
+
+const ProfilePicture = ({ isVisible }: ProfilePictureProps) => {
   const [flipped, setFlipped] = useState(false);
 
   return (
     <div
-      className="relative rounded-full w-[256px] lg:min-w-[364px] h-[256px] lg:min-h-[364px] cursor-pointer flex-center"
+      className={cn(
+        "relative rounded-full w-[256px] lg:min-w-[364px] h-[256px] lg:min-h-[364px] cursor-pointer",
+        isVisible ? "flex-center" : "hidden"
+      )}
+      style={{ perspective: "1000px" }}
       onMouseEnter={() => setFlipped(true)}
       onMouseLeave={() => setFlipped(false)}
-      style={{ perspective: "1000px" }}
     >
       <Background />
       <div
@@ -34,7 +42,7 @@ const ProfilePicture = () => {
             src={ME}
             alt="Me"
             hash={ME_HASH}
-            className="w-full h-full object-cover rounded-full"
+            className="object-cover rounded-full"
           />
         </div>
 
@@ -50,7 +58,7 @@ const ProfilePicture = () => {
             alt="Fingertips"
             hash={FINGERTIPS_HASH}
             loadLazy={false}
-            className="w-full h-full object-cover rounded-full"
+            className="object-cover rounded-full"
           />
         </div>
       </div>

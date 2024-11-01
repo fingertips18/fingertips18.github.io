@@ -12,7 +12,7 @@ import { Tools } from "./tools";
 
 const Skills = () => {
   const sectionRef = useRef<HTMLElement>(null);
-  const { isVisible } = useObserver({ elementRef: sectionRef, threshold: 0.5 });
+  const { isVisible } = useObserver({ elementRef: sectionRef });
 
   return (
     <section
@@ -37,15 +37,19 @@ const Skills = () => {
       </div>
       <div
         className={cn(
-          "w-full flex-center flex-col gap-y-4 relative transition-opacity duration-500 ease-in-out",
+          "w-full flex-center flex-col gap-y-4 relative transition-opacity duration-1000 ease-in-out",
           isVisible ? "opacity-100" : "opacity-0"
         )}
       >
-        <Frontend />
-        <Backend />
-        <Others />
-        <Tools />
-        <GradientOverlay />
+        {isVisible && (
+          <>
+            <Frontend />
+            <Backend />
+            <Others />
+            <Tools />
+            <GradientOverlay />
+          </>
+        )}
       </div>
       <p className="text-xs text-muted-foreground text-center max-w-screen-sm mx-auto w-4/5 lg:w-full lg:mt-6 pb-6">
         Currently expanding my skill set by delving into{" "}
