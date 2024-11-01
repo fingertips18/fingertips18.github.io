@@ -16,6 +16,7 @@ import {
 } from "@/components/shadcn/form";
 import { Textarea } from "@/components/shadcn/textarea";
 import { Input } from "@/components/shadcn/input";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   email: z
@@ -30,7 +31,11 @@ const formSchema = z.object({
     .optional(),
 });
 
-const ContactForm = () => {
+interface ContactFormProps {
+  isVisible: boolean;
+}
+
+const ContactForm = ({ isVisible }: ContactFormProps) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -69,8 +74,11 @@ const ContactForm = () => {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="border border-primary/50 rounded-md w-full lg:w-3/5 bg-primary/10
-        p-4 lg:p-6 transition-all duration-500 ease-in-out hover:shadow-2xl hover:shadow-primary/50 space-y-4"
+        className={cn(
+          `border border-primary/50 rounded-md w-full lg:w-3/5 bg-primary/10 p-4 lg:p-6 
+          transition-all duration-500 ease-in-out hover:shadow-2xl hover:shadow-primary/50 space-y-4`,
+          isVisible ? "opacity-100" : "opacity-0"
+        )}
       >
         <FormField
           control={form.control}

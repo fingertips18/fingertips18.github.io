@@ -6,14 +6,16 @@ import { cn } from "@/lib/utils";
 
 interface SocialButtonsProps {
   isMounted: boolean;
+  isVisible: boolean;
 }
 
-const SocialButtons = ({ isMounted }: SocialButtonsProps) => {
+const SocialButtons = ({ isMounted, isVisible }: SocialButtonsProps) => {
   return (
     <ul
       className={cn(
         "flex-center gap-x-6 transition-opacity duration-500 ease-in-out",
-        isMounted ? "opacity-100" : "opacity-0"
+        isMounted ? "opacity-100" : "opacity-0",
+        isVisible ? "opacity-100" : "opacity-0"
       )}
     >
       {SOCIALS.map((s) => {

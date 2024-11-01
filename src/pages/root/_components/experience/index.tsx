@@ -1,21 +1,27 @@
 import { VerticalTimeline } from "react-vertical-timeline-component";
 import "react-vertical-timeline-component/style.min.css";
 import { BriefcaseBusiness } from "lucide-react";
+import { useRef } from "react";
 
 import { QUERYELEMENT, ROOTSECTION } from "@/constants/enums";
+import { useObserver } from "@/lib/hooks/useObserver";
 import { EXPERIENCES } from "@/constants/experiences";
 import { cn } from "@/lib/utils";
 
 import { TimelineItem } from "./timeline-item";
 
 const Experience = () => {
+  const sectionRef = useRef<HTMLElement>(null);
+  const { isVisible } = useObserver({ elementRef: sectionRef });
+
   return (
     <section
+      id={ROOTSECTION.experience}
+      ref={sectionRef}
       className={cn(
         "min-h-dvh flex items-center flex-col gap-y-2 lg:gap-y-6 border-b pt-14 pb-6 px-2 lg:px-0",
         QUERYELEMENT.rootSection
       )}
-      id={ROOTSECTION.experience}
     >
       <div className="flex items-center gap-x-2 w-full pt-6 lg:relative">
         <span className="w-[32px] lg:w-[128px] h-1 rounded-full bg-muted-foreground tracking-widest" />
@@ -28,7 +34,10 @@ const Experience = () => {
       </p>
       <VerticalTimeline
         lineColor="hsl(var(--foreground) / 0.6)"
-        className="mt-4 lg:mt-20"
+        className={cn(
+          "mt-4 lg:mt-20 transition-opacity duration-500 ease-in-out",
+          isVisible ? "opacity-100" : "opacity-0"
+        )}
       >
         {EXPERIENCES.map((e) => (
           <TimelineItem key={e.company} {...e} />

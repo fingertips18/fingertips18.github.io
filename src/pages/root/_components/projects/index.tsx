@@ -9,17 +9,17 @@ import { cn } from "@/lib/utils";
 import { ProjectItem, ProjectItemSkeleton } from "./project-item";
 
 const Projects = () => {
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const { isVisible } = useObserver({ elementRef: wrapperRef });
+  const sectionRef = useRef<HTMLElement>(null);
+  const { isVisible } = useObserver({ elementRef: sectionRef });
 
   return (
     <section
+      id={ROOTSECTION.projects}
+      ref={sectionRef}
       className={cn(
         "min-h-dvh flex items-center flex-col gap-y-2 lg:gap-y-6 border-b pt-14 pb-6 px-2 lg:px-0",
         QUERYELEMENT.rootSection
       )}
-      id={ROOTSECTION.projects}
-      ref={wrapperRef}
     >
       <div className="flex items-center justify-end gap-x-2 w-full pt-6 lg:relative">
         <Terminal className="w-5 lg:w-8 h-5 lg:h-8 sm:absolute xs:left-6 lg:left-4 xl:left-0 opacity-50" />
@@ -46,7 +46,7 @@ const Projects = () => {
           </>
         ) : (
           <>
-            {[...Array(9)].map((_, i) => (
+            {[...Array(7)].map((_, i) => (
               <ProjectItemSkeleton key={`project-item-skeleton-${i}`} />
             ))}
           </>
