@@ -36,7 +36,7 @@ const Logo = () => {
         alt="Logo"
         width={lg ? 89.9 : 74.91}
         height={lg ? 21.2 : 17.66}
-        className="w-[74.91px] lg:w-[89.9px] h-[17.66px] lg:h-[21.2px] object-contain"
+        className="object-contain"
         loading="eager"
       />
     </Link>

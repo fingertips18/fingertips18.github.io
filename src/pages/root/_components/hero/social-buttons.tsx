@@ -21,15 +21,19 @@ const SocialButtons = ({ isMounted }: SocialButtonsProps) => {
 
         return (
           <Hint key={s.href} asChild label={s.label} side="top">
-            <Link
-              to={s.href}
-              target="_blank"
-              className="rounded-full border border-muted-foreground p-2.5
-              hover:scale-105 hover:-translate-y-2 transition-all
-              ease-in-out cursor-pointer hover:bg-muted-foreground group hover:drop-shadow-foreground-glow"
+            <li
+              className="rounded-full border border-muted-foreground hover:scale-105 
+                hover:-translate-y-2 transition-all ease-in-out cursor-pointer size-10
+                hover:bg-muted-foreground group hover:drop-shadow-foreground-glow"
             >
-              <Icon className="w-4 h-4 transition-colors ease-in-out group-hover:text-background pointer-events-none" />
-            </Link>
+              <Link
+                to={s.href}
+                target="_blank"
+                className="w-full h-full flex-center"
+              >
+                <Icon className="w-4 h-4 ease-in-out group-hover:text-background" />
+              </Link>
+            </li>
           </Hint>
         );
       })}

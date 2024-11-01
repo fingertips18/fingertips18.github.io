@@ -39,7 +39,7 @@ const LocalImageLoader = ({
       <img
         src={src}
         alt={alt}
-        loading={loadLazy ? "lazy" : undefined}
+        loading={loadLazy ? "lazy" : "eager"}
         width={dimensions.width}
         height={dimensions.height}
         onLoad={(e: SyntheticEvent<HTMLImageElement>) => {
@@ -48,7 +48,7 @@ const LocalImageLoader = ({
           setDimensions({ width: naturalWidth, height: naturalHeight });
         }}
         className={cn(
-          "transition-opacity duration-500 ease-in-out w-full h-full",
+          "transition-opacity duration-500 ease-in-out",
           loaded ? "opacity-100" : "opacity-0",
           className
         )}
