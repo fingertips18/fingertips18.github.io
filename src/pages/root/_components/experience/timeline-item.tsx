@@ -3,6 +3,7 @@ import "react-vertical-timeline-component/style.min.css";
 import { Link } from "react-router-dom";
 
 import { Badge } from "@/components/shadcn/badge";
+import { Image } from "@/components/common/image";
 
 interface TimelineItemProps {
   image: string;
@@ -53,21 +54,17 @@ const TimelineItem = ({
       icon={
         link ? (
           <Link to={link} target="_blank">
-            <img
+            <Image
               src={image}
               alt={company}
-              width="100%"
-              height="100%"
               className="rounded-full w-full h-full border object-cover cursor-pointer"
               loading="lazy"
             />
           </Link>
         ) : (
-          <img
+          <Image
             src={image}
             alt={company}
-            width="100%"
-            height="100%"
             className="rounded-full w-full h-full border object-cover"
             loading="lazy"
           />
@@ -115,11 +112,9 @@ const TimelineItem = ({
                   }}
                   className="rounded-full h-6 w-6 bg-white overflow-hidden flex-center p-0.5"
                 >
-                  <img
+                  <Image
                     src={s.image}
                     alt={s.company}
-                    width="100%"
-                    height="100%"
                     className="w-full h-full object-scale-down"
                     loading="lazy"
                   />

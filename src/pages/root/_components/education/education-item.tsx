@@ -3,6 +3,7 @@ import { SiYoutube, SiYoutubeHex } from "@icons-pack/react-simple-icons";
 import { Link } from "react-router-dom";
 
 import { Badge } from "@/components/shadcn/badge";
+import { Image } from "@/components/common/image";
 
 interface EducationItemProps {
   source: string;
@@ -66,11 +67,9 @@ const EducationItem = ({
       }}
       icon={
         <Link to={source} target="_blank">
-          <img
+          <Image
             src={logo}
             alt={name}
-            width="100%"
-            height="100%"
             className="rounded-full w-full h-full object-cover scale-90"
             loading="lazy"
           />

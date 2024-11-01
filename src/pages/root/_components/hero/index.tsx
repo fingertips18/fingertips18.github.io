@@ -33,6 +33,8 @@ const Hero = () => {
             <img
               src={WAVE}
               alt="Wave"
+              width={181}
+              height={193}
               className="w-6 lg:w-10 h-5 lg:h-8 relative -top-0.5 lg:-top-1.5"
             />
           </div>
