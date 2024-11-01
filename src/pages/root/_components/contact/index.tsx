@@ -10,14 +10,14 @@ import { ContactForm } from "./contact-form";
 
 const Contact = () => {
   const sectionRef = useRef<HTMLElement>(null);
-  const { isVisible } = useObserver({ elementRef: sectionRef, threshold: 0.5 });
+  const { isVisible } = useObserver({ elementRef: sectionRef });
 
   return (
     <section
       id={ROOTSECTION.contact}
       ref={sectionRef}
       className={cn(
-        "min-h-dvh pt-14 pb-6 flex-between flex-col gap-y-6 px-4 xl:px-0 overflow-hidden",
+        "min-h-dvh pt-14 pb-6 flex-between flex-col gap-y-6 lg:gap-y-0 px-4 xl:px-0 overflow-hidden",
         QUERYELEMENT.rootSection
       )}
     >
@@ -33,17 +33,28 @@ const Contact = () => {
         </p>
       </div>
 
-      <ContactForm isVisible={isVisible} />
+      <div
+        className={cn(
+          `flex-center flex-col gap-y-6 lg:gap-y-12 flex-1 w-full h-full
+          transition-opacity duration-500 ease-in-out`,
+          isVisible ? "opacity-100" : "opacity-0"
+        )}
+      >
+        {isVisible && (
+          <>
+            <ContactForm />
+            <div className="flex-center w-full gap-x-4">
+              <Separator />
+              <p className="whitespace-nowrap text-xs font-semibold text-muted-foreground">
+                or via
+              </p>
+              <Separator />
+            </div>
 
-      <div className="flex-center w-full gap-x-4">
-        <Separator />
-        <p className="whitespace-nowrap text-xs font-semibold text-muted-foreground">
-          or via
-        </p>
-        <Separator />
+            <OtherContacts />
+          </>
+        )}
       </div>
-
-      <OtherContacts isVisible={isVisible} />
     </section>
   );
 };
