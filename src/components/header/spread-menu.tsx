@@ -1,3 +1,4 @@
+import { useLocation } from "react-router-dom";
 import { useLenis } from "lenis/react";
 
 import { ROOTMENU } from "@/constants/collections";
@@ -10,6 +11,7 @@ interface SpreadMenuProps {
 
 const SpreadMenu = ({ active, isMounted }: SpreadMenuProps) => {
   const lenis = useLenis();
+  const location = useLocation();
 
   const onClick = (id: string) => {
     const section = document.getElementById(id);
@@ -19,7 +21,14 @@ const SpreadMenu = ({ active, isMounted }: SpreadMenuProps) => {
   };
 
   return (
-    <nav className="hidden lg:flex-center px-4 flex-grow">
+    <nav
+      className={cn(
+        "hidden lg:flex-center px-4 flex-grow transition-opacity duration-500 ease-in-out",
+        location.pathname === "/"
+          ? "opacity-100"
+          : "opacity-0 pointer-events-none"
+      )}
+    >
       <ul
         className={cn(
           "flex-center gap-x-10 transition-opacity duration-1000 ease-in-out",

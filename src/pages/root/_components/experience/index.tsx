@@ -36,7 +36,7 @@ const Experience = () => {
         lineColor="hsl(var(--foreground) / 0.6)"
         className={cn(
           "mt-4 lg:mt-20 transition-opacity duration-500 ease-in-out",
-          isVisible ? "opacity-100" : "opacity-0"
+          isVisible ? "opacity-100 visible" : "opacity-0 invisible"
         )}
       >
         {EXPERIENCES.map((e) => (

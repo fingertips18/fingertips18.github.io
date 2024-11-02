@@ -13,6 +13,10 @@ import {
   SiCss3Hex,
   SiDart,
   SiDartHex,
+  SiDocker,
+  SiDockerHex,
+  SiDotnet,
+  SiDotnetHex,
   SiExpress,
   SiExpressHex,
   SiFigma,
@@ -37,6 +41,8 @@ import {
   SiJavascriptHex,
   SiJupyter,
   SiJupyterHex,
+  SiLaravel,
+  SiLaravelHex,
   SiMongodb,
   SiMongodbHex,
   SiMysql,
@@ -57,14 +63,20 @@ import {
   SiPrismaHex,
   SiPython,
   SiPythonHex,
+  SiRailway,
+  SiRailwayHex,
   SiReact,
   SiReactHex,
   SiReacthookform,
   SiReacthookformHex,
   SiRedux,
   SiReduxHex,
+  SiRender,
+  SiRenrenHex,
   SiRive,
   SiRiveHex,
+  SiSentry,
+  SiSentryHex,
   SiShadcnui,
   SiShadcnuiHex,
   SiSupabase,
@@ -189,6 +201,16 @@ export const BACKEND = [
     label: "Go",
   },
   {
+    icon: SiLaravel,
+    hexColor: SiLaravelHex,
+    label: "Laravel",
+  },
+  {
+    icon: SiDotnet,
+    hexColor: SiDotnetHex,
+    label: ".NET",
+  },
+  {
     icon: SiMongodb,
     hexColor: SiMongodbHex,
     label: "MongoDB",
@@ -252,6 +274,16 @@ export const OTHERS = [
     label: "Netlify",
   },
   {
+    icon: SiRender,
+    hexColor: SiRenrenHex,
+    label: "Render",
+  },
+  {
+    icon: SiRailway,
+    hexColor: SiRailwayHex,
+    label: "Railway",
+  },
+  {
     icon: SiGithubpages,
     hexColor: SiGithubpagesHex,
     label: "Github Pages",
@@ -279,6 +311,11 @@ export const OTHERS = [
 ];
 
 export const TOOLS = [
+  {
+    icon: SiDocker,
+    hexColor: SiDockerHex,
+    label: "Docker",
+  },
   {
     icon: SiGooglecolab,
     hexColor: SiGooglecolabHex,
@@ -318,5 +355,10 @@ export const TOOLS = [
     icon: SiPostman,
     hexColor: SiPostmanHex,
     label: "Postman",
+  },
+  {
+    icon: SiSentry,
+    hexColor: SiSentryHex,
+    label: "Sentry",
   },
 ];

@@ -5,6 +5,7 @@ import {
 } from "react-router-dom";
 
 import NotFoundPage from "@/pages/not-found/page";
+import { SkillsPage } from "@/pages/skills/page";
 import RootLayout from "@/pages/root/layout";
 import ErrorPage from "@/pages/error/page";
 import RootPage from "@/pages/root/page";
@@ -20,6 +21,9 @@ export const router = createBrowserRouter(
     >
       {/* Root */}
       <Route index element={<RootPage />} />
+
+      {/* Skills */}
+      <Route path={AppRoutes.skills} element={<SkillsPage />} />
 
       {/* Github 404 */}
       <Route path={AppRoutes.github404} element={<NotFoundPage />} />

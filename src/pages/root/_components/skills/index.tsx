@@ -1,7 +1,9 @@
+import { Link } from "react-router-dom";
 import { useRef } from "react";
 
 import { QUERYELEMENT, ROOTSECTION } from "@/constants/enums";
 import { useObserver } from "@/lib/hooks/useObserver";
+import { AppRoutes } from "@/routes/app-routes";
 import { cn } from "@/lib/utils";
 
 import { GradientOverlay } from "./gradient-overlay";
@@ -34,10 +36,16 @@ const Skills = () => {
           Showcasing the skills I've developed and refined over the past 3
           years.
         </p>
+        <Link
+          to={AppRoutes.skills}
+          className="mt-2 text-sm hover:text-accent hover:drop-shadow-purple-glow underline-offset-4 hover:underline"
+        >
+          View All
+        </Link>
       </div>
       <div
         className={cn(
-          "w-full flex-center flex-col gap-y-4 relative transition-opacity duration-1000 ease-in-out",
+          "w-full h-full flex-center flex-col gap-y-4 relative transition-opacity duration-1000 ease-in-out",
           isVisible ? "opacity-100" : "opacity-0"
         )}
       >

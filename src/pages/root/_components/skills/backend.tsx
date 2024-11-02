@@ -2,7 +2,7 @@ import { useVisibility } from "@/lib/hooks/useVisibility";
 import { BACKEND } from "@/constants/skills";
 import { cn } from "@/lib/utils";
 
-import { SkillIcon } from "./skill-icon";
+import { SkillIcon } from "../../../../components/common/skill-icon";
 
 const Backend = () => {
   const { isVisible } = useVisibility();
@@ -15,11 +15,19 @@ const Backend = () => {
           !isVisible && "paused"
         )}
       >
-        {BACKEND.concat(BACKEND).map((b, i) => (
+        {BACKEND.map((b, i) => (
           <SkillIcon
             key={`backend-${b.label}-${i}`}
             Icon={b.icon}
             hexColor={b.hexColor}
+          />
+        ))}
+        {BACKEND.map((b, i) => (
+          <SkillIcon
+            key={`backend-${b.label}-${i}`}
+            Icon={b.icon}
+            hexColor={b.hexColor}
+            ariaHidden="true"
           />
         ))}
       </ul>
