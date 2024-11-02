@@ -6,15 +6,17 @@ import { cn } from "@/lib/utils";
 interface SkillIconProps {
   Icon: IconType;
   hexColor: string;
+  ariaHidden?: React.AriaAttributes["aria-hidden"];
 }
 
-const SkillIcon = ({ Icon, hexColor }: SkillIconProps) => {
+const SkillIcon = ({ Icon, hexColor, ariaHidden }: SkillIconProps) => {
   const [hovered, setHovered] = useState(false);
 
   return (
     <li
+      aria-hidden={ariaHidden}
       className={cn(
-        "rounded-full p-4 border",
+        "rounded-full p-4 border bg-foreground/5",
         hovered ? "border-foreground/15" : "border-border"
       )}
       onMouseEnter={() => setHovered(true)}

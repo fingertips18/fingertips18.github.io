@@ -2,7 +2,7 @@ import { useVisibility } from "@/lib/hooks/useVisibility";
 import { OTHERS } from "@/constants/skills";
 import { cn } from "@/lib/utils";
 
-import { SkillIcon } from "./skill-icon";
+import { SkillIcon } from "../../../../components/common/skill-icon";
 
 const Others = () => {
   const { isVisible } = useVisibility();
@@ -15,11 +15,19 @@ const Others = () => {
           !isVisible && "paused"
         )}
       >
-        {OTHERS.concat(OTHERS).map((o, i) => (
+        {OTHERS.map((o, i) => (
           <SkillIcon
             key={`others-${o.label}-${i}`}
             Icon={o.icon}
             hexColor={o.hexColor}
+          />
+        ))}
+        {OTHERS.map((o, i) => (
+          <SkillIcon
+            key={`others-${o.label}-${i}`}
+            Icon={o.icon}
+            hexColor={o.hexColor}
+            ariaHidden="true"
           />
         ))}
       </ul>

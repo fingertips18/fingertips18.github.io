@@ -35,8 +35,8 @@ const Contact = () => {
 
       <div
         className={cn(
-          `flex-center flex-col gap-y-6 lg:gap-y-12 flex-1 w-full h-full
-          transition-opacity duration-500 ease-in-out`,
+          `flex-center flex-col gap-y-6 lg:gap-y-12 flex-1 w-full
+           h-full transition-opacity duration-500 ease-in-out`,
           isVisible ? "opacity-100" : "opacity-0"
         )}
       >

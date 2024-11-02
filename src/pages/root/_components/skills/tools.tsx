@@ -2,7 +2,7 @@ import { useVisibility } from "@/lib/hooks/useVisibility";
 import { TOOLS } from "@/constants/skills";
 import { cn } from "@/lib/utils";
 
-import { SkillIcon } from "./skill-icon";
+import { SkillIcon } from "../../../../components/common/skill-icon";
 
 const Tools = () => {
   const { isVisible } = useVisibility();
@@ -15,11 +15,19 @@ const Tools = () => {
           !isVisible && "paused"
         )}
       >
-        {TOOLS.concat([...TOOLS, ...TOOLS]).map((t, i) => (
+        {TOOLS.map((t, i) => (
           <SkillIcon
             key={`tools-${t.label}-${i}`}
             Icon={t.icon}
             hexColor={t.hexColor}
+          />
+        ))}
+        {TOOLS.map((t, i) => (
+          <SkillIcon
+            key={`tools-${t.label}-${i}`}
+            Icon={t.icon}
+            hexColor={t.hexColor}
+            ariaHidden="true"
           />
         ))}
       </ul>
