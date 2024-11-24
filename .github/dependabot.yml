@@ -1,0 +1,23 @@
+version: 2
+updates:
+  # Update npm dependencies in the client directory
+  - package-ecosystem: "npm"
+    directory: /
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    reviewers:
+      - Fingertips18
+
+  # Update GitHub Actions dependencies in the root directory
+  - package-ecosystem: "github-actions"
+    directory: /
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    reviewers:
+      - Fingertips18
