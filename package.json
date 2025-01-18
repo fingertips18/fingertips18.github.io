@@ -1,11 +1,10 @@
 {
   "homepage": "https://fingertips18.github.io",
-  "name": "fingertips18.github.io",
+  "name": "portfolio",
   "private": true,
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
     "dev": "vite",
     "build": "tsc && vite build",
