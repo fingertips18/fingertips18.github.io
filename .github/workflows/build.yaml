@@ -36,6 +36,9 @@ jobs:
       - name: Run Build
         run: npm run build
 
+      - name: Check `dist` folder
+        run: ls -alh dist
+
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
