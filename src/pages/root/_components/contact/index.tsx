@@ -9,7 +9,7 @@ import { OtherContacts } from "./other-contacts";
 import { ContactForm } from "./contact-form";
 
 const Contact = () => {
-  const sectionRef = useRef<HTMLElement>(null);
+  const sectionRef = useRef<HTMLElement | null>(null);
   const { isVisible } = useObserver({ elementRef: sectionRef });
 
   return (

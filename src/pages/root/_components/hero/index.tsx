@@ -15,7 +15,7 @@ import { TypingTexts } from "./typing-texts";
 import SocialButtons from "./social-buttons";
 
 const Hero = () => {
-  const sectionRef = useRef<HTMLElement>(null);
+  const sectionRef = useRef<HTMLElement | null>(null);
   const { isVisible } = useObserver({ elementRef: sectionRef });
   const isMounted = useMounted();
   const { width } = useResize();

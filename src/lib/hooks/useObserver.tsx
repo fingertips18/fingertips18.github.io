@@ -1,7 +1,7 @@
 import { RefObject, useEffect, useState } from "react";
 
 interface useObserverProps {
-  elementRef: RefObject<HTMLElement>;
+  elementRef: RefObject<HTMLElement | null>;
   threshold?: number;
   root?: Element | Document | null;
   rootMargin?: string;

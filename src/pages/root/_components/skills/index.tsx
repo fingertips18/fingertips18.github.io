@@ -13,7 +13,7 @@ import { Others } from "./others";
 import { Tools } from "./tools";
 
 const Skills = () => {
-  const sectionRef = useRef<HTMLElement>(null);
+  const sectionRef = useRef<HTMLElement | null>(null);
   const { isVisible } = useObserver({ elementRef: sectionRef });
 
   return (
