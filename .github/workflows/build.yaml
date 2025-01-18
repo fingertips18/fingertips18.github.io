@@ -4,9 +4,6 @@ on:
   pull_request:
     branches:
       - main
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
@@ -46,4 +43,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: ./dist
+          path: dist
