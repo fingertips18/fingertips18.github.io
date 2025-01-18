@@ -1,12 +1,17 @@
 name: Portfolio - Deploy
 
 on:
+  workflow_run:
+    workflows: ["Portfolio - Build"]
+    types:
+      - completed
   workflow_dispatch:
 
 jobs:
   deploy:
     name: Deploy Application
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Checkout Code
