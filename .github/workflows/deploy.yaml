@@ -1,10 +1,6 @@
 name: Portfolio - Deploy
 
 on:
-  workflow_run:
-    workflows: ["Portfolio - Build"]
-    types:
-      - completed
   workflow_dispatch:
 
 jobs:
@@ -21,7 +17,7 @@ jobs:
         with:
           name: dist-artifact
           github-token: ${{ github.token }}
-          run-id: ${{ github.event.workflow_run.id }}
+          run-id: ${{ vars.RUN_ID }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
