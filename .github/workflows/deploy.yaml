@@ -18,6 +18,7 @@ jobs:
           name: dist-artifact
           github-token: ${{ github.token }}
           run-id: ${{ vars.RUN_ID }}
+          path: dist/
 
       - name: Setup Node
         uses: actions/setup-node@v4
