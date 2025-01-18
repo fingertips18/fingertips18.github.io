@@ -11,7 +11,6 @@ jobs:
   deploy:
     name: Deploy Application
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Checkout Code
@@ -22,7 +21,7 @@ jobs:
         with:
           name: dist
           run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ secrets.GH_PAT }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
