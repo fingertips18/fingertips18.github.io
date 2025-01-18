@@ -16,13 +16,13 @@ In addition to my primary focus on building user-centric web and mobile applicat
 
 - `Frontend` - React.js, Next.js, Flutter
 
-- `Backend` - Express.js, .NET, Go, Python
+- `Backend` - Go, .NET, Express.js, Python
 
 - `Databases` - MongoDB, Supabase, Firebase, SQLite, MySQL, PostgreSQL
 
 - `Cloud & Microservices` - AWS, Google Cloud, Microsoft Azure
 
-- `Others` - Unity, Tensorflow, Figma, Rive, Photoshop, Postman, Trello, Notion
+- `Others` - Unity, Tensorflow, Figma, Rive, Photoshop, Postman, Trello, Notion, Slack
 
 # 📁 Projects
 
@@ -63,8 +63,6 @@ Here are some of the key projects featured in my portfolio:
 Feel free to reach out if you have any questions or would like to collaborate on a project.
 
 - `Email`: [developer.ghiantan@gmail.com](mailto:developer@ghiantan.com)
-
-- `LinkedIn`: [LinkedIn](https://www.linkedin.com/in/ghiantan)
 
 ## 🤝 Contributing
 
