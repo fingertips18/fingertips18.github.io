@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { ProjectItem, ProjectItemSkeleton } from "./project-item";
 
 const Projects = () => {
-  const sectionRef = useRef<HTMLElement>(null);
+  const sectionRef = useRef<HTMLElement | null>(null);
   const { isVisible } = useObserver({ elementRef: sectionRef });
 
   return (

@@ -1,16 +1,16 @@
 import { VerticalTimeline } from "react-vertical-timeline-component";
-import { useObserver } from "@/lib/hooks/useObserver";
 import { GraduationCap } from "lucide-react";
 import { useRef } from "react";
 
 import { QUERYELEMENT, ROOTSECTION } from "@/constants/enums";
+import { useObserver } from "@/lib/hooks/useObserver";
 import { EDUCATIONS } from "@/constants/education";
 import { cn } from "@/lib/utils";
 
 import EducationItem from "./education-item";
 
 const Education = () => {
-  const sectionRef = useRef<HTMLElement>(null);
+  const sectionRef = useRef<HTMLElement | null>(null);
   const { isVisible } = useObserver({ elementRef: sectionRef });
 
   return (

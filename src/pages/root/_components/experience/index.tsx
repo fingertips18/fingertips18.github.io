@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { TimelineItem } from "./timeline-item";
 
 const Experience = () => {
-  const sectionRef = useRef<HTMLElement>(null);
+  const sectionRef = useRef<HTMLElement | null>(null);
   const { isVisible } = useObserver({ elementRef: sectionRef });
 
   return (
