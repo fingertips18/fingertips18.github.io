@@ -62,7 +62,7 @@ Here are some of the key projects featured in my portfolio:
 
 Feel free to reach out if you have any questions or would like to collaborate on a project.
 
-- `Email`: [developer.ghiantan@gmail.com](mailto:developer@ghiantan.com)
+`Email`: [developer.ghiantan@gmail.com](mailto:developer@ghiantan.com)
 
 ## 🤝 Contributing
 
