@@ -12,16 +12,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Cache Node Modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.npm
-            node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
       - name: Download Build Artifact
         uses: dawidd6/action-download-artifact@v7
         with:
@@ -43,7 +33,7 @@ jobs:
           node-version: latest
 
       - name: Install Dependencies
-        run: npm ci --cache .npm --prefer-offline
+        run: npm install gh-pages --save-dev
 
       - name: Deploy to GitHub Pages
         run: npx gh-pages -d dist --repo https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Fingertips18/fingertips18.github.io.git
