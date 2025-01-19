@@ -34,6 +34,11 @@ jobs:
         run: npm ci --cache .npm --prefer-offline
 
       - name: Run Build
+        env:
+          VITE_GOOGLE_MEASUREMENT_ID: ${{ secrets.VITE_GOOGLE_MEASUREMENT_ID }}
+          VITE_EMAILJS_SERVICE_ID: ${{ secrets.VITE_EMAILJS_SERVICE_ID }}
+          VITE_EMAILJS_PUBLIC_KEY: ${{ secrets.VITE_EMAILJS_PUBLIC_KEY }}
+          VITE_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_TEMPLATE_ID }}
         run: npm run build
 
       - name: Check `dist` folder
