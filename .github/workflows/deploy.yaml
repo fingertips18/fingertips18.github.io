@@ -16,7 +16,7 @@ jobs:
         uses: dawidd6/action-download-artifact@v7
         with:
           name: dist-artifact
-          github-token: ${{ github.token }}
+          github_token: ${{ github.token }}
           workflow: build.yaml
           workflow_search: true
           workflow_conclusion: success
@@ -24,8 +24,8 @@ jobs:
 
       - name: Setup Git Identity
         run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
 
       - name: Setup Node
         uses: actions/setup-node@v4
