@@ -24,7 +24,7 @@
     "@radix-ui/react-tooltip": "^1.1.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lenis": "^1.1.14",
+    "lenis": "^1.1.19",
     "lucide-react": "^0.473.0",
     "react": "^18.2.0",
     "react-blurhash": "^0.3.0",
