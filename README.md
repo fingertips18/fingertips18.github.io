@@ -1,6 +1,6 @@
-![](public/banner.webp)
+<img src="public/banner.png" alt="Banner" width="100%" />
 
-# 📂 Welcome to My Portfolio | [fingertips18.github.io](https://fingertips18.github.io/)
+# 📂 Welcome to My Portfolio
 
 This portfolio highlights my 🖼️ `background`, 🛠️ `skills`, 🌟 `experiences`, and 📚 `education`, showcasing a diverse collection of 📁 `projects`, including 📱`apps`, 🌐 `web applications` and more. Explore my work and see how I bring ideas to life!
 
