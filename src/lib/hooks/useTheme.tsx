@@ -1,6 +1,6 @@
 import { useContext } from "react";
 
-import { ThemeProviderContext } from "@/lib/providers/theme-provider";
+import { ThemeProviderContext } from "@/providers/theme-provider";
 
 export enum Theme {
   system = "system",

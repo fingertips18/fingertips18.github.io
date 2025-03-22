@@ -1,9 +1,10 @@
+import { ReactNode } from "react";
 import { Toaster } from "sonner";
 
 import { useTheme } from "@/lib/hooks/useTheme";
 
 interface ToasterProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 const ToasterProvider = ({ children }: ToasterProviderProps) => {
@@ -11,12 +12,7 @@ const ToasterProvider = ({ children }: ToasterProviderProps) => {
 
   return (
     <>
-      <Toaster
-        richColors
-        theme={theme}
-        position="bottom-right"
-        pauseWhenPageIsHidden
-      />
+      <Toaster richColors theme={theme} position="bottom-right" />
       {children}
     </>
   );
