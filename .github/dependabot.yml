@@ -9,8 +9,6 @@ updates:
       prefix: "chore"
       include: "scope"
     open-pull-requests-limit: 10
-    reviewers:
-      - Fingertips18
 
   # Update GitHub Actions dependencies in the root directory
   - package-ecosystem: "github-actions"
@@ -21,5 +19,3 @@ updates:
       prefix: "chore"
       include: "scope"
     open-pull-requests-limit: 10
-    reviewers:
-      - Fingertips18
