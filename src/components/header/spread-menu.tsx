@@ -3,6 +3,7 @@ import { useLenis } from "lenis/react";
 
 import { ROOTMENU } from "@/constants/collections";
 import { cn } from "@/lib/utils";
+import { AppRoutes } from "@/routes/app-routes";
 
 interface SpreadMenuProps {
   active: string;
@@ -14,17 +15,19 @@ const SpreadMenu = ({ active, isMounted }: SpreadMenuProps) => {
   const location = useLocation();
 
   const onClick = (id: string) => {
+    if (!lenis) return;
+
     const section = document.getElementById(id);
     if (section) {
-      lenis?.scrollTo(section);
+      lenis.scrollTo(section);
     }
   };
 
   return (
     <nav
       className={cn(
-        "hidden lg:flex-center px-4 flex-grow transition-opacity duration-500 ease-in-out",
-        location.pathname === "/"
+        "hidden lg:flex items-center justify-center px-4 flex-grow transition-opacity duration-500 ease-in-out",
+        location.pathname === AppRoutes.root
           ? "opacity-100"
           : "opacity-0 pointer-events-none"
       )}
@@ -35,9 +38,9 @@ const SpreadMenu = ({ active, isMounted }: SpreadMenuProps) => {
           isMounted ? "opacity-100" : "opacity-0"
         )}
       >
-        {ROOTMENU.map((m, i) => (
+        {ROOTMENU.map((m) => (
           <li
-            key={`${m.label}-${i}`}
+            key={m.label}
             className={cn(
               "capitalize text-sm font-semibold leading-none hover:scale-95 transition-all cursor-pointer hover:drop-shadow-primary-glow hover:text-accent",
               active === m.label && "text-accent"
