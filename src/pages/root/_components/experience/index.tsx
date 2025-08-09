@@ -1,11 +1,12 @@
-import { VerticalTimeline } from "react-vertical-timeline-component";
 import "react-vertical-timeline-component/style.min.css";
+
 import { BriefcaseBusiness } from "lucide-react";
 import { useRef } from "react";
+import { VerticalTimeline } from "react-vertical-timeline-component";
 
 import { QUERYELEMENT, ROOTSECTION } from "@/constants/enums";
-import { useObserver } from "@/lib/hooks/useObserver";
 import { EXPERIENCES } from "@/constants/experiences";
+import { useObserver } from "@/lib/hooks/useObserver";
 import { cn } from "@/lib/utils";
 
 import { TimelineItem } from "./timeline-item";

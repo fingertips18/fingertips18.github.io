@@ -98,7 +98,6 @@ import {
   SiZod,
   SiZodHex,
 } from "@icons-pack/react-simple-icons";
-
 import { SiAdobephotoshop } from "react-icons/si";
 
 export const FRONTEND = [

@@ -1,18 +1,18 @@
 import { useRef } from "react";
 
-import { QUERYELEMENT, ROOTSECTION } from "@/constants/enums";
-import { useObserver } from "@/lib/hooks/useObserver";
-import { useMounted } from "@/lib/hooks/useMounted";
-import { useResize } from "@/lib/hooks/useResize";
-import { BUILDS } from "@/constants/collections";
 import { WAVE } from "@/constants/assets";
+import { BUILDS } from "@/constants/collections";
+import { QUERYELEMENT, ROOTSECTION } from "@/constants/enums";
+import { useMounted } from "@/lib/hooks/useMounted";
+import { useObserver } from "@/lib/hooks/useObserver";
+import { useResize } from "@/lib/hooks/useResize";
 import { cn } from "@/lib/utils";
 
+import { Introduction } from "./introduction";
 import { ProfilePicture } from "./profile-picture";
 import { ResumeButton } from "./resume-button";
-import { Introduction } from "./introduction";
-import { TypingTexts } from "./typing-texts";
 import SocialButtons from "./social-buttons";
+import { TypingTexts } from "./typing-texts";
 
 const Hero = () => {
   const sectionRef = useRef<HTMLElement | null>(null);

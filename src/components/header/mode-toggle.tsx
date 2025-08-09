@@ -1,5 +1,7 @@
 import { Moon, Sun } from "lucide-react";
 
+import { Hint } from "@/components/common/hint";
+import { Button } from "@/components/shadcn/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,10 +9,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/shadcn/dropdown-menu";
 import { Skeleton } from "@/components/shadcn/skeleton";
-import { Button } from "@/components/shadcn/button";
 import { useMounted } from "@/lib/hooks/useMounted";
 import { useTheme } from "@/lib/hooks/useTheme";
-import { Hint } from "@/components/common/hint";
 
 const ModeToggle = () => {
   const { setTheme } = useTheme();

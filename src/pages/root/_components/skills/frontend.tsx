@@ -1,8 +1,7 @@
-import { useVisibility } from "@/lib/hooks/useVisibility";
+import { SkillIcon } from "@/components/common/skill-icon";
 import { FRONTEND } from "@/constants/skills";
+import { useVisibility } from "@/lib/hooks/useVisibility";
 import { cn } from "@/lib/utils";
-
-import { SkillIcon } from "../../../../components/common/skill-icon";
 
 const Frontend = () => {
   const { isVisible } = useVisibility();

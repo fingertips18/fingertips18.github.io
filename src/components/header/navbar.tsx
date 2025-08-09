@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo } from "react";
 
-import { useRootSectionStore } from "@/lib/stores/useRootSectionStore";
+import { QUERYELEMENT } from "@/constants/enums";
 import { useElementsByQuery } from "@/lib/hooks/useElementsByQuery";
 import { useMounted } from "@/lib/hooks/useMounted";
-import { QUERYELEMENT } from "@/constants/enums";
+import { useRootSectionStore } from "@/lib/stores/useRootSectionStore";
 
-import { SpreadMenu } from "./spread-menu";
 import { SheetMenu } from "./sheet-menu";
+import { SpreadMenu } from "./spread-menu";
 
 const Navbar = () => {
   const { active, onActive } = useRootSectionStore((state) => state);

@@ -1,6 +1,6 @@
+import { Logo } from "./logo";
 import { ModeToggle } from "./mode-toggle";
 import { Navbar } from "./navbar";
-import { Logo } from "./logo";
 
 const Header = () => {
   return (

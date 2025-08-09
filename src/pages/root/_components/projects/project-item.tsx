@@ -1,7 +1,8 @@
-import { Link } from "react-router-dom";
 import { useLenis } from "lenis/react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
+import { LocalImageLoader } from "@/components/common/local-image-loader";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,16 +14,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/shadcn/alert-dialog";
-import { LocalImageLoader } from "@/components/common/local-image-loader";
-import { Button } from "@/components/shadcn/button";
 import { Badge } from "@/components/shadcn/badge";
+import { Button } from "@/components/shadcn/button";
+import { Skeleton } from "@/components/shadcn/skeleton";
 import { PROJECTTYPE } from "@/constants/enums";
 import { FORMLINK } from "@/constants/projects";
 import { cn } from "@/lib/utils";
 
 import { AppRequestButton } from "./app-request-button";
 import { ProjectPreview } from "./project-preview";
-import { Skeleton } from "@/components/shadcn/skeleton";
 
 interface ProjectItemProps {
   preview: string;

@@ -1,8 +1,8 @@
 import { useState } from "react";
 
 import { LocalImageLoader } from "@/components/common/local-image-loader";
-import { FINGERTIPS_HASH, ME_HASH } from "@/constants/hashes";
 import { FINGERTIPS, ME } from "@/constants/assets";
+import { FINGERTIPS_HASH, ME_HASH } from "@/constants/hashes";
 import { cn } from "@/lib/utils";
 
 import { Background } from "./background";

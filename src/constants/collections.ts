@@ -3,7 +3,6 @@ import {
   SiGithub,
   SiStackoverflow,
 } from "@icons-pack/react-simple-icons";
-
 import { SiLinkedin } from "react-icons/si";
 
 import { ROOTSECTION } from "./enums";

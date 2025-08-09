@@ -1,11 +1,11 @@
-import { Outlet } from "react-router-dom";
 import { useEffect } from "react";
 import ReactGA from "react-ga4";
+import { Outlet } from "react-router-dom";
 
+import { Footer } from "@/components/footer";
+import { Header } from "@/components/header";
 import ToasterProvider from "@/providers/toaster-provider";
 import { AppRoutes } from "@/routes/app-routes";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
 
 const RootLayout = () => {
   useEffect(() => {

@@ -1,17 +1,17 @@
-import { Link } from "react-router-dom";
+import { useLenis } from "lenis/react";
 import { useRef } from "react";
+import { Link } from "react-router-dom";
 
 import { QUERYELEMENT, ROOTSECTION } from "@/constants/enums";
 import { useObserver } from "@/lib/hooks/useObserver";
-import { AppRoutes } from "@/routes/app-routes";
 import { cn } from "@/lib/utils";
+import { AppRoutes } from "@/routes/app-routes";
 
-import { GradientOverlay } from "./gradient-overlay";
-import { Frontend } from "./frontend";
 import { Backend } from "./backend";
+import { Frontend } from "./frontend";
+import { GradientOverlay } from "./gradient-overlay";
 import { Others } from "./others";
 import { Tools } from "./tools";
-import { useLenis } from "lenis/react";
 
 const Skills = () => {
   const sectionRef = useRef<HTMLElement | null>(null);

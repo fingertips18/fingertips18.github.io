@@ -1,5 +1,5 @@
-import { useLocation } from "react-router-dom";
 import { useLenis } from "lenis/react";
+import { useLocation } from "react-router-dom";
 
 import { ROOTMENU } from "@/constants/collections";
 import { cn } from "@/lib/utils";

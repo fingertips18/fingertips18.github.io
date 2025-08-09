@@ -2,8 +2,8 @@ import { MoveLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { SkillIcon } from "@/components/common/skill-icon";
-import { AppRoutes } from "@/routes/app-routes";
 import { BACKEND, FRONTEND, OTHERS, TOOLS } from "@/constants/skills";
+import { AppRoutes } from "@/routes/app-routes";
 
 const SkillsPage = () => {
   return (

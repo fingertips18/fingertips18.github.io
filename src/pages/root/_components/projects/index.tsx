@@ -2,8 +2,8 @@ import { Terminal } from "lucide-react";
 import { useRef } from "react";
 
 import { QUERYELEMENT, ROOTSECTION } from "@/constants/enums";
-import { useObserver } from "@/lib/hooks/useObserver";
 import { PROJECTS } from "@/constants/projects";
+import { useObserver } from "@/lib/hooks/useObserver";
 import { cn } from "@/lib/utils";
 
 import { ProjectItem, ProjectItemSkeleton } from "./project-item";

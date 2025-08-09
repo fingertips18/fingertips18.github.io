@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 
+import { Button } from "@/components/shadcn/button";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +10,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/shadcn/dialog";
-import { Button } from "@/components/shadcn/button";
 import { FORMLINK } from "@/constants/projects";
 
 const AppRequestButton = () => {
