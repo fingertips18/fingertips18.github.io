@@ -97,89 +97,89 @@ import {
   SiViteHex,
   SiZod,
   SiZodHex,
-} from "@icons-pack/react-simple-icons";
-import { SiAdobephotoshop } from "react-icons/si";
+} from '@icons-pack/react-simple-icons';
+import { SiAdobephotoshop } from 'react-icons/si';
 
 export const FRONTEND = [
   {
     icon: SiHtml5,
     hexColor: SiHtml5Hex,
-    label: "HTML",
+    label: 'HTML',
   },
   {
     icon: SiCss,
     hexColor: SiCssHex,
-    label: "CSS",
+    label: 'CSS',
   },
   {
     icon: SiJavascript,
     hexColor: SiJavascriptHex,
-    label: "Javascript",
+    label: 'Javascript',
   },
   {
     icon: SiTypescript,
     hexColor: SiTypeformHex,
-    label: "Typescript",
+    label: 'Typescript',
   },
   {
     icon: SiDart,
     hexColor: SiDartHex,
-    label: "Dart",
+    label: 'Dart',
   },
   {
     icon: SiReact,
     hexColor: SiReactHex,
-    label: "React JS",
+    label: 'React JS',
   },
   {
     icon: SiNextdotjs,
     hexColor: SiNextdotjsHex,
-    label: "Next JS",
+    label: 'Next JS',
   },
   {
     icon: SiFlutter,
     hexColor: SiFlutterHex,
-    label: "Flutter",
+    label: 'Flutter',
   },
   {
     icon: SiShadcnui,
     hexColor: SiShadcnuiHex,
-    label: "Shadcnui",
+    label: 'Shadcnui',
   },
   {
     icon: SiTailwindcss,
     hexColor: SiTailwindcssHex,
-    label: "TailwindCSS",
+    label: 'TailwindCSS',
   },
   {
     icon: SiBootstrap,
     hexColor: SiBootstrapHex,
-    label: "Bootstrap",
+    label: 'Bootstrap',
   },
   {
     icon: SiRedux,
     hexColor: SiReduxHex,
-    label: "Redux",
+    label: 'Redux',
   },
   {
     icon: SiZod,
     hexColor: SiZodHex,
-    label: "Zod",
+    label: 'Zod',
   },
   {
     icon: SiReacthookform,
     hexColor: SiReacthookformHex,
-    label: "React Hook Form",
+    label: 'React Hook Form',
   },
   {
     icon: SiClerk,
     hexColor: SiClerkHex,
-    label: "Clerk",
+    label: 'Clerk',
   },
   {
     icon: SiVite,
     hexColor: SiViteHex,
-    label: "Vite",
+    label: 'Vite',
   },
 ];
 
@@ -187,62 +187,62 @@ export const BACKEND = [
   {
     icon: SiNodedotjs,
     hexColor: SiNodedotjsHex,
-    label: "Node JS",
+    label: 'Node JS',
   },
   {
     icon: SiExpress,
     hexColor: SiExpressHex,
-    label: "Express JS",
+    label: 'Express JS',
   },
   {
     icon: SiGo,
     hexColor: SiGoHex,
-    label: "Go",
+    label: 'Go',
   },
   {
     icon: SiLaravel,
     hexColor: SiLaravelHex,
-    label: "Laravel",
+    label: 'Laravel',
   },
   {
     icon: SiDotnet,
     hexColor: SiDotnetHex,
-    label: ".NET",
+    label: '.NET',
   },
   {
     icon: SiMongodb,
     hexColor: SiMongodbHex,
-    label: "MongoDB",
+    label: 'MongoDB',
   },
   {
     icon: SiSupabase,
     hexColor: SiSupabaseHex,
-    label: "Supabase",
+    label: 'Supabase',
   },
   {
     icon: SiFirebase,
     hexColor: SiFirebaseHex,
-    label: "Firebase",
+    label: 'Firebase',
   },
   {
     icon: SiPrisma,
     hexColor: SiPrismaHex,
-    label: "Prisma ORM",
+    label: 'Prisma ORM',
   },
   {
     icon: SiMysql,
     hexColor: SiMysqlHex,
-    label: "MySQL",
+    label: 'MySQL',
   },
   {
     icon: SiPostgresql,
     hexColor: SiPostgresqlHex,
-    label: "PostgreSQL",
+    label: 'PostgreSQL',
   },
   {
     icon: SiSwagger,
     hexColor: SiSwaggerHex,
-    label: "Swagger",
+    label: 'Swagger',
   },
 ];
 
@@ -250,62 +250,62 @@ export const OTHERS = [
   {
     icon: SiGit,
     hexColor: SiGitHex,
-    label: "Git",
+    label: 'Git',
   },
   {
     icon: SiGithub,
     hexColor: SiGithubHex,
-    label: "GitHub",
+    label: 'GitHub',
   },
   {
     icon: SiBitbucket,
     hexColor: SiBitbucketHex,
-    label: "Bitbucket",
+    label: 'Bitbucket',
   },
   {
     icon: SiVercel,
     hexColor: SiVercelHex,
-    label: "Vercel",
+    label: 'Vercel',
   },
   {
     icon: SiNetlify,
     hexColor: SiNetlifyHex,
-    label: "Netlify",
+    label: 'Netlify',
   },
   {
     icon: SiRender,
     hexColor: SiRenrenHex,
-    label: "Render",
+    label: 'Render',
   },
   {
     icon: SiRailway,
     hexColor: SiRailwayHex,
-    label: "Railway",
+    label: 'Railway',
   },
   {
     icon: SiGithubpages,
     hexColor: SiGithubpagesHex,
-    label: "Github Pages",
+    label: 'Github Pages',
   },
   {
     icon: SiPython,
     hexColor: SiPythonHex,
-    label: "Python",
+    label: 'Python',
   },
   {
     icon: SiTensorflow,
     hexColor: SiTensorflowHex,
-    label: "Tensorflow",
+    label: 'Tensorflow',
   },
   {
     icon: SiUnity,
     hexColor: SiUnityHex,
-    label: "Unity",
+    label: 'Unity',
   },
   {
     icon: SiAndroidstudio,
     hexColor: SiAndroidstudioHex,
-    label: "Android Studio",
+    label: 'Android Studio',
   },
 ];
 
@@ -313,51 +313,51 @@ export const TOOLS = [
   {
     icon: SiDocker,
     hexColor: SiDockerHex,
-    label: "Docker",
+    label: 'Docker',
   },
   {
     icon: SiGooglecolab,
     hexColor: SiGooglecolabHex,
-    label: "Google Colab",
+    label: 'Google Colab',
   },
   {
     icon: SiJupyter,
     hexColor: SiJupyterHex,
-    label: "Jupyter",
+    label: 'Jupyter',
   },
   {
     icon: SiFigma,
     hexColor: SiFigmaHex,
-    label: "Figma",
+    label: 'Figma',
   },
   {
     icon: SiRive,
     hexColor: SiRiveHex,
-    label: "Rive",
+    label: 'Rive',
   },
   {
     icon: SiAdobephotoshop,
-    hexColor: "#31A8FF",
-    label: "Adobo Photoshop",
+    hexColor: '#31A8FF',
+    label: 'Adobo Photoshop',
   },
   {
     icon: SiTrello,
     hexColor: SiTrelloHex,
-    label: "Trello",
+    label: 'Trello',
   },
   {
     icon: SiNotion,
     hexColor: SiNotionHex,
-    label: "Notion",
+    label: 'Notion',
   },
   {
     icon: SiPostman,
     hexColor: SiPostmanHex,
-    label: "Postman",
+    label: 'Postman',
   },
   {
     icon: SiSentry,
     hexColor: SiSentryHex,
-    label: "Sentry",
+    label: 'Sentry',
   },
 ];

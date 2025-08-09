@@ -1,36 +1,36 @@
-import { MoveLeft } from "lucide-react";
-import { Link } from "react-router-dom";
+import { MoveLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-import { SkillIcon } from "@/components/common/skill-icon";
-import { BACKEND, FRONTEND, OTHERS, TOOLS } from "@/constants/skills";
-import { AppRoutes } from "@/routes/app-routes";
+import { SkillIcon } from '@/components/common/skill-icon';
+import { BACKEND, FRONTEND, OTHERS, TOOLS } from '@/constants/skills';
+import { AppRoutes } from '@/routes/app-routes';
 
 const SkillsPage = () => {
   return (
-    <section className="min-h-[calc(100dvh_-_56px)] space-y-2 lg:space-y-12 p-6 lg:py-6 lg:px-4 xl:px-0 mt-14">
+    <section className='min-h-[calc(100dvh_-_56px)] space-y-2 lg:space-y-12 p-6 lg:py-6 lg:px-4 xl:px-0 mt-14'>
       <Link
         to={AppRoutes.root}
-        className="flex items-center gap-x-2 hover:text-accent text-sm"
+        className='flex items-center gap-x-2 hover:text-accent text-sm'
       >
-        <MoveLeft className="size-4" /> Go home
+        <MoveLeft className='size-4' /> Go home
       </Link>
 
-      <div className="h-full w-full lg:pb-8">
-        <h1 className="text-xs lg:text-sm font-bold text-center tracking-widest pt-6 lg:pb-2">
+      <div className='h-full w-full lg:pb-8'>
+        <h1 className='text-xs lg:text-sm font-bold text-center tracking-widest pt-6 lg:pb-2'>
           SKILLS
         </h1>
-        <p className="text-xl lg:text-5xl text-center">
-          Innovate, Implement, <span className="text-primary">Repeat.</span>
+        <p className='text-xl lg:text-5xl text-center'>
+          Innovate, Implement, <span className='text-primary'>Repeat.</span>
         </p>
-        <p className="text-xs lg:text-sm text-muted-foreground text-center lg:mt-2 w-3/4 lg:w-full mx-auto">
+        <p className='text-xs lg:text-sm text-muted-foreground text-center lg:mt-2 w-3/4 lg:w-full mx-auto'>
           Showcasing the skills I've developed and refined over the past 3
           years.
         </p>
 
-        <h4 className="text-xs lg:text-sm font-bold text-center tracking-widest mt-12">
+        <h4 className='text-xs lg:text-sm font-bold text-center tracking-widest mt-12'>
           FRONTEND
         </h4>
-        <ul className="flex-center flex-wrap gap-4 mt-4">
+        <ul className='flex-center flex-wrap gap-4 mt-4'>
           {FRONTEND.map((f, i) => (
             <SkillIcon
               key={`frontend-${f.label}-${i}`}
@@ -40,10 +40,10 @@ const SkillsPage = () => {
           ))}
         </ul>
 
-        <h4 className="text-xs lg:text-sm font-bold text-center tracking-widest mt-12">
+        <h4 className='text-xs lg:text-sm font-bold text-center tracking-widest mt-12'>
           BACKEND
         </h4>
-        <ul className="flex-center flex-wrap gap-4 mt-4">
+        <ul className='flex-center flex-wrap gap-4 mt-4'>
           {BACKEND.map((b, i) => (
             <SkillIcon
               key={`backend-${b.label}-${i}`}
@@ -53,10 +53,10 @@ const SkillsPage = () => {
           ))}
         </ul>
 
-        <h4 className="text-xs lg:text-sm font-bold text-center tracking-widest mt-12">
+        <h4 className='text-xs lg:text-sm font-bold text-center tracking-widest mt-12'>
           OTHERS
         </h4>
-        <ul className="flex-center flex-wrap gap-4 mt-4">
+        <ul className='flex-center flex-wrap gap-4 mt-4'>
           {OTHERS.map((o, i) => (
             <SkillIcon
               key={`others-${o.label}-${i}`}
@@ -66,10 +66,10 @@ const SkillsPage = () => {
           ))}
         </ul>
 
-        <h4 className="text-xs lg:text-sm font-bold text-center tracking-widest mt-12">
+        <h4 className='text-xs lg:text-sm font-bold text-center tracking-widest mt-12'>
           TOOLS
         </h4>
-        <ul className="flex-center flex-wrap gap-4 mt-4">
+        <ul className='flex-center flex-wrap gap-4 mt-4'>
           {TOOLS.map((t, i) => (
             <SkillIcon
               key={`tools-${t.label}-${i}`}

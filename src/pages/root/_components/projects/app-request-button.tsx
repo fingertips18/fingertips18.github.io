@@ -1,6 +1,6 @@
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
 
-import { Button } from "@/components/shadcn/button";
+import { Button } from '@/components/shadcn/button';
 import {
   Dialog,
   DialogContent,
@@ -9,16 +9,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/shadcn/dialog";
-import { FORMLINK } from "@/constants/projects";
+} from '@/components/shadcn/dialog';
+import { FORMLINK } from '@/constants/projects';
 
 const AppRequestButton = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
         <Button
-          variant={"link"}
-          className="h-auto w-auto px-2.5 py-0.5 text-sm font-bold"
+          variant={'link'}
+          className='h-auto w-auto px-2.5 py-0.5 text-sm font-bold'
         >
           Request App
         </Button>
@@ -33,8 +33,8 @@ const AppRequestButton = () => {
           I’ll get back to you with the download details shortly!
         </DialogDescription>
         <DialogFooter>
-          <Button asChild variant={"link"}>
-            <Link to={FORMLINK} target="_blank">
+          <Button asChild variant={'link'}>
+            <Link to={FORMLINK} target='_blank'>
               Fill out form
             </Link>
           </Button>

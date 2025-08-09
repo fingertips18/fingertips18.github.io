@@ -1,4 +1,4 @@
-import { RefObject, useEffect, useState } from "react";
+import { RefObject, useEffect, useState } from 'react';
 
 interface useObserverProps {
   elementRef: RefObject<HTMLElement | null>;
@@ -11,7 +11,7 @@ const useObserver = ({
   elementRef,
   threshold = 0.1,
   root = null,
-  rootMargin = "0px",
+  rootMargin = '0px',
 }: useObserverProps) => {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -23,7 +23,7 @@ const useObserver = ({
           observer.disconnect(); // Stop observing after it becomes visible
         }
       },
-      { threshold: threshold, root: root, rootMargin: rootMargin }
+      { threshold: threshold, root: root, rootMargin: rootMargin },
     );
 
     const currentRef = elementRef.current;

@@ -1,8 +1,8 @@
-import { useLenis } from "lenis/react";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useLenis } from 'lenis/react';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
-import { LocalImageLoader } from "@/components/common/local-image-loader";
+import { LocalImageLoader } from '@/components/common/local-image-loader';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,16 +13,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/shadcn/alert-dialog";
-import { Badge } from "@/components/shadcn/badge";
-import { Button } from "@/components/shadcn/button";
-import { Skeleton } from "@/components/shadcn/skeleton";
-import { PROJECTTYPE } from "@/constants/enums";
-import { FORMLINK } from "@/constants/projects";
-import { cn } from "@/lib/utils";
+} from '@/components/shadcn/alert-dialog';
+import { Badge } from '@/components/shadcn/badge';
+import { Button } from '@/components/shadcn/button';
+import { Skeleton } from '@/components/shadcn/skeleton';
+import { PROJECTTYPE } from '@/constants/enums';
+import { FORMLINK } from '@/constants/projects';
+import { cn } from '@/lib/utils';
 
-import { AppRequestButton } from "./app-request-button";
-import { ProjectPreview } from "./project-preview";
+import { AppRequestButton } from './app-request-button';
+import { ProjectPreview } from './project-preview';
 
 interface ProjectItemProps {
   preview: string;
@@ -49,30 +49,30 @@ const ProjectItem = (props: ProjectItemProps) => {
         `w-full rounded-lg overflow-hidden bg-primary/5 drop-shadow-2xl 
         flex justify-between flex-col hover:drop-shadow-purple-glow cursor-pointer 
         transition-all duration-500 ease-in-out hover:-translate-y-2`,
-        loaded && "border"
+        loaded && 'border',
       )}
       onLoad={() => setLoaded(true)}
     >
       <AlertDialog>
         <AlertDialogTrigger
           onClick={onDialogOpen}
-          className="h-full w-full flex-between flex-col"
+          className='h-full w-full flex-between flex-col'
         >
           <ProjectPreview {...props} />
         </AlertDialogTrigger>
         <AlertDialogContent
           data-lenis-prevent
-          className="overflow-y-auto no-scrollbar h-4/5 lg:h-fit"
+          className='overflow-y-auto no-scrollbar h-4/5 lg:h-fit'
         >
           <AlertDialogHeader>
-            <div className="aspect-video relative">
+            <div className='aspect-video relative'>
               {props.type === PROJECTTYPE.web ? (
                 <iframe
-                  className="w-full h-full rounded-md"
+                  className='w-full h-full rounded-md'
                   src={props.preview}
                   title={`${props.name} Preview`}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  referrerPolicy="strict-origin-when-cross-origin"
+                  allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
+                  referrerPolicy='strict-origin-when-cross-origin'
                   allowFullScreen
                 />
               ) : (
@@ -80,32 +80,32 @@ const ProjectItem = (props: ProjectItemProps) => {
                   hash={props.blurHash!}
                   src={props.preview}
                   alt={props.name}
-                  className="aspect-video object-cover object-center rounded-md"
+                  className='aspect-video object-cover object-center rounded-md'
                 />
               )}
             </div>
 
-            <AlertDialogTitle className="flex items-center flex-wrap gap-x-2 gap-y-1">
-              {props.name}{" "}
-              <span className="text-sm text-muted-foreground leading-none">
+            <AlertDialogTitle className='flex items-center flex-wrap gap-x-2 gap-y-1'>
+              {props.name}{' '}
+              <span className='text-sm text-muted-foreground leading-none'>
                 {props.subtitle}
               </span>
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-start">
+            <AlertDialogDescription className='text-start'>
               {props.desc}
             </AlertDialogDescription>
           </AlertDialogHeader>
 
-          <div className="space-y-2.5">
-            <h6 className="font-semibold text-sm text-primary-foreground/80">
+          <div className='space-y-2.5'>
+            <h6 className='font-semibold text-sm text-primary-foreground/80'>
               Tech Stack
             </h6>
 
-            <div className="flex item-start flex-wrap gap-1.5 no-scrollbar">
+            <div className='flex item-start flex-wrap gap-1.5 no-scrollbar'>
               {props.stack.map((s) => (
                 <Badge
                   key={`${props.name}-alert-${s}`}
-                  className="bg-primary/30 whitespace-nowrap"
+                  className='bg-primary/30 whitespace-nowrap'
                 >
                   {s}
                 </Badge>
@@ -117,11 +117,11 @@ const ProjectItem = (props: ProjectItemProps) => {
             <AlertDialogCancel onClick={onDialogClose}>Close</AlertDialogCancel>
             <AlertDialogAction asChild>
               {props.type === PROJECTTYPE.web ? (
-                <Link to={props.live!} target="_blank" onClick={onDialogClose}>
+                <Link to={props.live!} target='_blank' onClick={onDialogClose}>
                   View Live
                 </Link>
               ) : (
-                <Link to={FORMLINK} target="_blank" onClick={onDialogClose}>
+                <Link to={FORMLINK} target='_blank' onClick={onDialogClose}>
                   Fill out form
                 </Link>
               )}
@@ -130,14 +130,14 @@ const ProjectItem = (props: ProjectItemProps) => {
         </AlertDialogContent>
       </AlertDialog>
 
-      <div className="bg-primary/20 px-2 py-2.5 flex-center">
+      <div className='bg-primary/20 px-2 py-2.5 flex-center'>
         {props.type === PROJECTTYPE.web ? (
           <Button
             asChild
-            variant={"link"}
-            className="h-auto w-auto px-2.5 py-0.5 text-sm font-bold"
+            variant={'link'}
+            className='h-auto w-auto px-2.5 py-0.5 text-sm font-bold'
           >
-            <Link to={props.live!} target="_blank">
+            <Link to={props.live!} target='_blank'>
               View Live
             </Link>
           </Button>
@@ -163,35 +163,35 @@ const ProjectItemSkeleton = () => {
     <div
       className={cn(
         `w-full rounded-lg overflow-hidden bg-primary/5 drop-shadow-2xl flex justify-between flex-col`,
-        loaded && "border"
+        loaded && 'border',
       )}
       onLoad={() => setLoaded(true)}
     >
-      <Skeleton className="aspect-video" />
-      <div className="h-4/5 lg:h-fit space-y-2.5 p-2">
-        <Skeleton className="w-4/5 h-6" />
-        <div className="space-y-1">
-          <Skeleton className="w-full h-2" />
-          <Skeleton className="w-4/5 h-2" />
-          <Skeleton className="w-11/12 h-2" />
-          <Skeleton className="w-3/4 h-2" />
-          <Skeleton className="w-full h-2" />
+      <Skeleton className='aspect-video' />
+      <div className='h-4/5 lg:h-fit space-y-2.5 p-2'>
+        <Skeleton className='w-4/5 h-6' />
+        <div className='space-y-1'>
+          <Skeleton className='w-full h-2' />
+          <Skeleton className='w-4/5 h-2' />
+          <Skeleton className='w-11/12 h-2' />
+          <Skeleton className='w-3/4 h-2' />
+          <Skeleton className='w-full h-2' />
         </div>
-        <Skeleton className="w-[112px] h-4" />
-        <div className="flex item-start flex-wrap gap-1.5">
+        <Skeleton className='w-[112px] h-4' />
+        <div className='flex item-start flex-wrap gap-1.5'>
           {[...Array(12)].map((_, i) => (
             <Skeleton
               key={`badge-skeleton-${i}`}
               style={{
                 width: getRandomWidth(),
               }}
-              className="rounded-full h-4"
+              className='rounded-full h-4'
             />
           ))}
         </div>
       </div>
-      <div className="bg-primary/10 px-2 py-2.5 flex-center mt-4">
-        <Skeleton className="w-24 h-5" />
+      <div className='bg-primary/10 px-2 py-2.5 flex-center mt-4'>
+        <Skeleton className='w-24 h-5' />
       </div>
     </div>
   );

@@ -3,14 +3,14 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/shadcn/tooltip";
+} from '@/components/shadcn/tooltip';
 
 interface HintProps {
   children: React.ReactNode;
   label: string;
   asChild?: boolean;
-  side?: "top" | "right" | "bottom" | "left" | undefined;
-  align?: "center" | "end" | "start" | undefined;
+  side?: 'top' | 'right' | 'bottom' | 'left' | undefined;
+  align?: 'center' | 'end' | 'start' | undefined;
 }
 
 const Hint = ({ children, label, asChild, side, align }: HintProps) => {

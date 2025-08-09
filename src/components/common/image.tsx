@@ -1,4 +1,4 @@
-import React, { ImgHTMLAttributes, SyntheticEvent, useState } from "react";
+import React, { ImgHTMLAttributes, SyntheticEvent, useState } from 'react';
 
 interface ImageProps extends ImgHTMLAttributes<HTMLImageElement> {
   className?: string;
@@ -21,7 +21,7 @@ const Image = React.forwardRef<HTMLImageElement, ImageProps>(
         }}
       />
     );
-  }
+  },
 );
 
 export { Image };

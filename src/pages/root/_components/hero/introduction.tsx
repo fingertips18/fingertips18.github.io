@@ -1,4 +1,4 @@
-import { useResize } from "@/lib/hooks/useResize";
+import { useResize } from '@/lib/hooks/useResize';
 
 const Introduction = () => {
   const { width } = useResize();
@@ -7,73 +7,73 @@ const Introduction = () => {
 
   return lg ? (
     <>
-      <p className="text-muted-foreground text-sm mt-2">
-        I am a dedicated{" "}
-        <span className="text-foreground/80">software developer</span> with a
-        strong foundation in both{" "}
-        <span className="text-foreground/80">web</span> and{" "}
-        <span className="text-foreground/80">mobile technologies.</span>{" "}
-        Leveraging a{" "}
-        <span className="text-foreground/80">
+      <p className='text-muted-foreground text-sm mt-2'>
+        I am a dedicated{' '}
+        <span className='text-foreground/80'>software developer</span> with a
+        strong foundation in both{' '}
+        <span className='text-foreground/80'>web</span> and{' '}
+        <span className='text-foreground/80'>mobile technologies.</span>{' '}
+        Leveraging a{' '}
+        <span className='text-foreground/80'>
           Bachelor's degree in Computer Science
-        </span>{" "}
-        and <span className="text-foreground/80">at least 2</span>{" "}
-        <span className="text-foreground/80">years</span> of{" "}
-        <span className="text-foreground/80">experience</span>.
+        </span>{' '}
+        and <span className='text-foreground/80'>at least 2</span>{' '}
+        <span className='text-foreground/80'>years</span> of{' '}
+        <span className='text-foreground/80'>experience</span>.
       </p>
-      <p className="text-muted-foreground text-sm">
-        I specialize in creating robust, scalable solutions using{" "}
-        <span className="text-foreground/80">React.js</span>,{" "}
-        <span className="text-foreground/80">NextJS</span> and{" "}
-        <span className="text-foreground/80">Flutter</span> for front-end
-        development, coupled with{" "}
-        <span className="text-foreground/80">Express.js</span> for backend
+      <p className='text-muted-foreground text-sm'>
+        I specialize in creating robust, scalable solutions using{' '}
+        <span className='text-foreground/80'>React.js</span>,{' '}
+        <span className='text-foreground/80'>NextJS</span> and{' '}
+        <span className='text-foreground/80'>Flutter</span> for front-end
+        development, coupled with{' '}
+        <span className='text-foreground/80'>Express.js</span> for backend
         services. My expertise extends to working with databases and cloud
-        platforms, including <span className="text-foreground/80">MongoDB</span>
-        , <span className="text-foreground/80">Supabase</span>,{" "}
-        <span className="text-foreground/80">Firebase</span>,{" "}
-        <span className="text-foreground/80">AWS</span> and{" "}
-        <span className="text-foreground/80">Azure</span> as well as utilizing{" "}
-        <span className="text-foreground/80">Prisma</span> for ORM and{" "}
-        <span className="text-foreground/80">TensorFlow</span> for machine
+        platforms, including <span className='text-foreground/80'>MongoDB</span>
+        , <span className='text-foreground/80'>Supabase</span>,{' '}
+        <span className='text-foreground/80'>Firebase</span>,{' '}
+        <span className='text-foreground/80'>AWS</span> and{' '}
+        <span className='text-foreground/80'>Azure</span> as well as utilizing{' '}
+        <span className='text-foreground/80'>Prisma</span> for ORM and{' '}
+        <span className='text-foreground/80'>TensorFlow</span> for machine
         learning applications.
       </p>
-      <p className="text-muted-foreground text-sm">
+      <p className='text-muted-foreground text-sm'>
         In addition to my primary focus on building user-centric web and mobile
-        applications, I am also passionate about{" "}
-        <span className="text-foreground/80">game development</span>. I create
-        games using <span className="text-foreground/80">Unity</span>,{" "}
-        <span className="text-foreground/80">Flutter</span> and{" "}
-        <span className="text-foreground/80">Vanilla JavaScript</span> as a
+        applications, I am also passionate about{' '}
+        <span className='text-foreground/80'>game development</span>. I create
+        games using <span className='text-foreground/80'>Unity</span>,{' '}
+        <span className='text-foreground/80'>Flutter</span> and{' '}
+        <span className='text-foreground/80'>Vanilla JavaScript</span> as a
         hobby, which enhances my problem-solving skills and creativity in
         software design.
       </p>
     </>
   ) : (
-    <p className="text-center text-muted-foreground text-xs sm:text-sm mt-2 max-w-screen-sm">
-      I am a <span className="text-foreground/80">full-stack developer</span>{" "}
-      with a{" "}
-      <span className="text-foreground/80">
+    <p className='text-center text-muted-foreground text-xs sm:text-sm mt-2 max-w-screen-sm'>
+      I am a <span className='text-foreground/80'>full-stack developer</span>{' '}
+      with a{' '}
+      <span className='text-foreground/80'>
         Bachelor's degree in Computer Science
-      </span>{" "}
-      and <span className="text-foreground/80">at least 2</span>{" "}
-      <span className="text-foreground/80">years</span> of{" "}
-      <span className="text-foreground/80">experience</span>. I excel in
-      creating scalable solutions using{" "}
-      <span className="text-foreground/80">React.js</span>,{" "}
-      <span className="text-foreground/80">NextJS</span>,{" "}
-      <span className="text-foreground/80">Flutter</span>, and{" "}
-      <span className="text-foreground/80">Express.js</span>. My skills include
-      working with <span className="text-foreground/80">MongoDB</span>,{" "}
-      <span className="text-foreground/80">Supabase</span>,{" "}
-      <span className="text-foreground/80">MongoDB</span>,{" "}
-      <span className="text-foreground/80">Firebase</span>,{" "}
-      <span className="text-foreground/80">AWS</span> and{" "}
-      <span className="text-foreground/80">Azure</span>. Additionally, I am
-      passionate about game development, creating games with{" "}
-      <span className="text-foreground/80">Unity</span>,{" "}
-      <span className="text-foreground/80">Flutter</span>, and{" "}
-      <span className="text-foreground/80">Vanilla JavaScript</span> to enhance
+      </span>{' '}
+      and <span className='text-foreground/80'>at least 2</span>{' '}
+      <span className='text-foreground/80'>years</span> of{' '}
+      <span className='text-foreground/80'>experience</span>. I excel in
+      creating scalable solutions using{' '}
+      <span className='text-foreground/80'>React.js</span>,{' '}
+      <span className='text-foreground/80'>NextJS</span>,{' '}
+      <span className='text-foreground/80'>Flutter</span>, and{' '}
+      <span className='text-foreground/80'>Express.js</span>. My skills include
+      working with <span className='text-foreground/80'>MongoDB</span>,{' '}
+      <span className='text-foreground/80'>Supabase</span>,{' '}
+      <span className='text-foreground/80'>MongoDB</span>,{' '}
+      <span className='text-foreground/80'>Firebase</span>,{' '}
+      <span className='text-foreground/80'>AWS</span> and{' '}
+      <span className='text-foreground/80'>Azure</span>. Additionally, I am
+      passionate about game development, creating games with{' '}
+      <span className='text-foreground/80'>Unity</span>,{' '}
+      <span className='text-foreground/80'>Flutter</span>, and{' '}
+      <span className='text-foreground/80'>Vanilla JavaScript</span> to enhance
       my problem-solving and design skills.
     </p>
   );

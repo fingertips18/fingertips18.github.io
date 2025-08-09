@@ -1,10 +1,10 @@
-import emailjs from "@emailjs/browser";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
+import emailjs from '@emailjs/browser';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { z } from 'zod';
 
 import {
   Form,
@@ -13,20 +13,20 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/shadcn/form";
-import { Input } from "@/components/shadcn/input";
-import { Textarea } from "@/components/shadcn/textarea";
+} from '@/components/shadcn/form';
+import { Input } from '@/components/shadcn/input';
+import { Textarea } from '@/components/shadcn/textarea';
 
 const formSchema = z.object({
   email: z
     .string()
-    .min(1, { message: "Email address is required" })
-    .email({ message: "Invalid email address" }),
-  name: z.string().min(1, { message: "Name is required" }),
-  subject: z.string().min(1, { message: "Subject is required" }),
+    .min(1, { message: 'Email address is required' })
+    .email({ message: 'Invalid email address' }),
+  name: z.string().min(1, { message: 'Name is required' }),
+  subject: z.string().min(1, { message: 'Subject is required' }),
   message: z
     .string()
-    .max(500, { message: "Message must be 500 characters long" })
+    .max(500, { message: 'Message must be 500 characters long' })
     .optional(),
 });
 
@@ -34,10 +34,10 @@ const ContactForm = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
-      name: "",
-      subject: "",
-      message: "",
+      email: '',
+      name: '',
+      subject: '',
+      message: '',
     },
   });
   const [pending, setPending] = useState(false);
@@ -52,14 +52,14 @@ const ContactForm = () => {
         values,
         {
           publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
-        }
+        },
       )
       .then(() => {
         form.reset();
-        toast.success("Message sent. Thanks for reaching out!");
+        toast.success('Message sent. Thanks for reaching out!');
       })
       .catch(() =>
-        toast.error("Something went wrong. Please try again later.")
+        toast.error('Something went wrong. Please try again later.'),
       );
 
     setPending(false);
@@ -69,20 +69,20 @@ const ContactForm = () => {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="border border-primary/50 rounded-md w-full lg:w-3/5 bg-primary/10 p-4 lg:p-6 transition-all duration-500 ease-in-out hover:shadow-2xl hover:shadow-primary/50 space-y-4"
+        className='border border-primary/50 rounded-md w-full lg:w-3/5 bg-primary/10 p-4 lg:p-6 transition-all duration-500 ease-in-out hover:shadow-2xl hover:shadow-primary/50 space-y-4'
       >
         <FormField
           control={form.control}
-          name="email"
+          name='email'
           render={({ field }) => (
             <FormItem>
-              <FormLabel htmlFor="email">Email Address</FormLabel>
+              <FormLabel htmlFor='email'>Email Address</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="example@domain.com"
+                  placeholder='example@domain.com'
                   {...field}
-                  id="email"
-                  autoComplete="email"
+                  id='email'
+                  autoComplete='email'
                 />
               </FormControl>
               <FormMessage />
@@ -92,16 +92,16 @@ const ContactForm = () => {
 
         <FormField
           control={form.control}
-          name="name"
+          name='name'
           render={({ field }) => (
             <FormItem>
-              <FormLabel htmlFor="name">Name</FormLabel>
+              <FormLabel htmlFor='name'>Name</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="John Doe"
+                  placeholder='John Doe'
                   {...field}
-                  id="name"
-                  autoComplete="name"
+                  id='name'
+                  autoComplete='name'
                 />
               </FormControl>
               <FormMessage />
@@ -111,16 +111,16 @@ const ContactForm = () => {
 
         <FormField
           control={form.control}
-          name="subject"
+          name='subject'
           render={({ field }) => (
             <FormItem>
-              <FormLabel htmlFor="subject">Subject</FormLabel>
+              <FormLabel htmlFor='subject'>Subject</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Subject of Your Inquiry"
+                  placeholder='Subject of Your Inquiry'
                   {...field}
-                  id="subject"
-                  name="subject"
+                  id='subject'
+                  name='subject'
                 />
               </FormControl>
               <FormMessage />
@@ -130,17 +130,17 @@ const ContactForm = () => {
 
         <FormField
           control={form.control}
-          name="message"
+          name='message'
           render={({ field }) => (
             <FormItem>
-              <FormLabel htmlFor="message">Message</FormLabel>
+              <FormLabel htmlFor='message'>Message</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="What's on your mind?"
                   {...field}
-                  id="message"
-                  name="message"
-                  className="resize-none"
+                  id='message'
+                  name='message'
+                  className='resize-none'
                   rows={6}
                 />
               </FormControl>
@@ -149,13 +149,13 @@ const ContactForm = () => {
           )}
         />
         <button
-          type="submit"
+          type='submit'
           disabled={pending}
-          className="py-2 w-full bg-gradient-to-r from-[#310055] to-[#DC97FF]
+          className='py-2 w-full bg-gradient-to-r from-[#310055] to-[#DC97FF]
           hover:brightness-125 transition-all rounded-md active:scale-95 flex-center
-          hover:drop-shadow-purple-glow font-semibold text-white disabled:brightness-90"
+          hover:drop-shadow-purple-glow font-semibold text-white disabled:brightness-90'
         >
-          {pending ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit"}
+          {pending ? <Loader2 className='w-5 h-5 animate-spin' /> : 'Submit'}
         </button>
       </form>
     </Form>
