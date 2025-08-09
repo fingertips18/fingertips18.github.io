@@ -1,10 +1,10 @@
-import { useLenis } from "lenis/react";
-import { LucideMenu, MoveLeft } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLenis } from 'lenis/react';
+import { LucideMenu, MoveLeft } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
-import { Hint } from "@/components/common/hint";
-import { Button } from "@/components/shadcn/button";
+import { Hint } from '@/components/common/hint';
+import { Button } from '@/components/shadcn/button';
 import {
   Sheet,
   SheetContent,
@@ -13,13 +13,13 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/shadcn/sheet";
-import { ROOTMENU } from "@/constants/collections";
-import { useResize } from "@/lib/hooks/useResize";
-import { cn } from "@/lib/utils";
-import { AppRoutes } from "@/routes/app-routes";
+} from '@/components/shadcn/sheet';
+import { ROOTMENU } from '@/constants/collections';
+import { useResize } from '@/lib/hooks/useResize';
+import { cn } from '@/lib/utils';
+import { AppRoutes } from '@/routes/app-routes';
 
-import { ModeToggle } from "./mode-toggle";
+import { ModeToggle } from './mode-toggle';
 
 interface SheetMenuProps {
   active: string;
@@ -51,9 +51,9 @@ const SheetMenu = ({ active }: SheetMenuProps) => {
     const section = document.getElementById(id);
     if (section) {
       section.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-        inline: "nearest",
+        behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest',
       });
     }
   };
@@ -66,35 +66,35 @@ const SheetMenu = ({ active }: SheetMenuProps) => {
         setOpen(open);
       }}
     >
-      <Hint asChild label="Menu">
+      <Hint asChild label='Menu'>
         <SheetTrigger asChild>
           <Button
-            variant={"ghost"}
-            size={"icon"}
-            aria-label="menu-toggle"
-            className="lg:hidden hover:drop-shadow-primary-glow"
+            variant={'ghost'}
+            size={'icon'}
+            aria-label='menu-toggle'
+            className='lg:hidden hover:drop-shadow-primary-glow'
           >
-            <LucideMenu className="w-5 h-5" />
+            <LucideMenu className='w-5 h-5' />
           </Button>
         </SheetTrigger>
       </Hint>
-      <SheetContent data-lenis-prevent className="overflow-y-auto no-scrollbar">
-        <SheetHeader className="mt-4 !items-start">
-          <SheetTitle className="text-sm">Menu</SheetTitle>
-          <SheetDescription className="text-xs text-start">
+      <SheetContent data-lenis-prevent className='overflow-y-auto no-scrollbar'>
+        <SheetHeader className='mt-4 !items-start'>
+          <SheetTitle className='text-sm'>Menu</SheetTitle>
+          <SheetDescription className='text-xs text-start'>
             Discover my portfolio, skills, projects, and how to connect.
           </SheetDescription>
         </SheetHeader>
 
-        <nav className="w-full flex justify-end mt-10 flex-1">
-          {location.pathname === "/" ? (
-            <ul className="space-y-6 text-end">
+        <nav className='w-full flex justify-end mt-10 flex-1'>
+          {location.pathname === '/' ? (
+            <ul className='space-y-6 text-end'>
               {ROOTMENU.map((m, i) => (
                 <li
                   key={`${m.label}-${i}`}
                   className={cn(
-                    "capitalize font-semibold leading-none hover:scale-95 transition-all cursor-pointer hover:drop-shadow-primary-glow lg:hover:text-accent",
-                    active === m.label && "text-accent"
+                    'capitalize font-semibold leading-none hover:scale-95 transition-all cursor-pointer hover:drop-shadow-primary-glow lg:hover:text-accent',
+                    active === m.label && 'text-accent',
                   )}
                   onClick={() => onClick(m.label)}
                 >
@@ -105,14 +105,14 @@ const SheetMenu = ({ active }: SheetMenuProps) => {
           ) : (
             <Link
               to={AppRoutes.root}
-              className="flex items-center gap-x-2 hover:text-accent"
+              className='flex items-center gap-x-2 hover:text-accent'
             >
-              <MoveLeft className="size-4" /> Go home
+              <MoveLeft className='size-4' /> Go home
             </Link>
           )}
         </nav>
 
-        <SheetFooter className="fixed bottom-4 right-4">
+        <SheetFooter className='fixed bottom-4 right-4'>
           <ModeToggle />
         </SheetFooter>
       </SheetContent>

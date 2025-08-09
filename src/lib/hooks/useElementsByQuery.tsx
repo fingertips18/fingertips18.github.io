@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 const useElementsByQuery = (query: string) => {
   const [elements, setElements] = useState<NodeListOf<HTMLElement>>();

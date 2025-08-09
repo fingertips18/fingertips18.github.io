@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 interface TypingTextsProps {
   texts: string[];
@@ -15,7 +15,7 @@ const TypingTexts = ({
   delayForward = 2500,
   delayBackward = 800,
 }: TypingTextsProps) => {
-  const [displayText, setDisplayText] = useState("");
+  const [displayText, setDisplayText] = useState('');
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [index, setIndex] = useState(0);
   const [typingForward, setTypingForward] = useState(true);
@@ -35,7 +35,7 @@ const TypingTexts = ({
         // Delay before starting to type backwards
         const delayTimer = setTimeout(
           () => setTypingForward(false),
-          delayForward
+          delayForward,
         );
         return () => clearTimeout(delayTimer);
       }
@@ -68,11 +68,11 @@ const TypingTexts = ({
   ]);
 
   return (
-    <div className="flex items-start justify-center font-semibold text-lg lg:text-2xl">
+    <div className='flex items-start justify-center font-semibold text-lg lg:text-2xl'>
       I create
-      <div className="text-[#8B2FC9] ml-1.5">
+      <div className='text-[#8B2FC9] ml-1.5'>
         {displayText}
-        <span className="inline-block w-0.5 h-[1em] animate-blink ease-in-out">
+        <span className='inline-block w-0.5 h-[1em] animate-blink ease-in-out'>
           |
         </span>
       </div>

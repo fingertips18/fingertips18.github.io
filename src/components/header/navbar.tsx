@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from 'react';
 
-import { QUERYELEMENT } from "@/constants/enums";
-import { useElementsByQuery } from "@/lib/hooks/useElementsByQuery";
-import { useMounted } from "@/lib/hooks/useMounted";
-import { useRootSectionStore } from "@/lib/stores/useRootSectionStore";
+import { QUERYELEMENT } from '@/constants/enums';
+import { useElementsByQuery } from '@/lib/hooks/useElementsByQuery';
+import { useMounted } from '@/lib/hooks/useMounted';
+import { useRootSectionStore } from '@/lib/stores/useRootSectionStore';
 
-import { SheetMenu } from "./sheet-menu";
-import { SpreadMenu } from "./spread-menu";
+import { SheetMenu } from './sheet-menu';
+import { SpreadMenu } from './spread-menu';
 
 const Navbar = () => {
   const { active, onActive } = useRootSectionStore((state) => state);
@@ -39,9 +39,9 @@ const Navbar = () => {
   }, [sectionOffsets, onActive]);
 
   useEffect(() => {
-    window.addEventListener("scroll", handleActiveSection);
+    window.addEventListener('scroll', handleActiveSection);
 
-    return () => window.removeEventListener("scroll", handleActiveSection);
+    return () => window.removeEventListener('scroll', handleActiveSection);
   }, [handleActiveSection]);
 
   return (

@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.npm
+package-lock.json
+.log
+.env*
+README.md

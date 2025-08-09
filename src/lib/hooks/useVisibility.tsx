@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 const useVisibility = () => {
   const [isVisible, setIsVisible] = useState(true);
 
   const handleVisibilityChange = () => {
-    if (document.visibilityState === "hidden") {
+    if (document.visibilityState === 'hidden') {
       setIsVisible(false);
     } else {
       setIsVisible(true);
@@ -12,10 +12,10 @@ const useVisibility = () => {
   };
 
   useEffect(() => {
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 

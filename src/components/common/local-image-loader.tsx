@@ -1,7 +1,7 @@
-import { SyntheticEvent, useState } from "react";
-import { Blurhash } from "react-blurhash";
+import { SyntheticEvent, useState } from 'react';
+import { Blurhash } from 'react-blurhash';
 
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 interface LocalImageLoaderProps {
   hash: string;
@@ -22,24 +22,24 @@ const LocalImageLoader = ({
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   return (
-    <div className="relative w-full h-full">
+    <div className='relative w-full h-full'>
       <div
         className={cn(
-          "transition-opacity duration-500 ease-in-out overflow-hidden absolute inset-0 w-full h-full",
-          loaded ? "opacity-0" : "opacity-100"
+          'transition-opacity duration-500 ease-in-out overflow-hidden absolute inset-0 w-full h-full',
+          loaded ? 'opacity-0' : 'opacity-100',
         )}
       >
         <Blurhash
           hash={hash}
-          width="100%"
-          height="100%"
-          className="object-cover"
+          width='100%'
+          height='100%'
+          className='object-cover'
         />
       </div>
       <img
         src={src}
         alt={alt}
-        loading={loadLazy ? "lazy" : "eager"}
+        loading={loadLazy ? 'lazy' : 'eager'}
         width={dimensions.width}
         height={dimensions.height}
         onLoad={(e: SyntheticEvent<HTMLImageElement>) => {
@@ -48,9 +48,9 @@ const LocalImageLoader = ({
           setDimensions({ width: naturalWidth, height: naturalHeight });
         }}
         className={cn(
-          "transition-opacity duration-500 ease-in-out",
-          loaded ? "opacity-100" : "opacity-0",
-          className
+          'transition-opacity duration-500 ease-in-out',
+          loaded ? 'opacity-100' : 'opacity-0',
+          className,
         )}
       />
     </div>

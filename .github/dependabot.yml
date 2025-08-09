@@ -1,21 +1,21 @@
 version: 2
 updates:
   # Update npm dependencies in the client directory
-  - package-ecosystem: "npm"
+  - package-ecosystem: 'npm'
     directory: /
     schedule:
-      interval: "daily"
+      interval: 'daily'
     commit-message:
-      prefix: "chore"
-      include: "scope"
+      prefix: 'chore'
+      include: 'scope'
     open-pull-requests-limit: 10
 
   # Update GitHub Actions dependencies in the root directory
-  - package-ecosystem: "github-actions"
+  - package-ecosystem: 'github-actions'
     directory: /
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     commit-message:
-      prefix: "chore"
-      include: "scope"
+      prefix: 'chore'
+      include: 'scope'
     open-pull-requests-limit: 10

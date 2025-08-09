@@ -1,17 +1,17 @@
-import { SkillIcon } from "@/components/common/skill-icon";
-import { BACKEND } from "@/constants/skills";
-import { useVisibility } from "@/lib/hooks/useVisibility";
-import { cn } from "@/lib/utils";
+import { SkillIcon } from '@/components/common/skill-icon';
+import { BACKEND } from '@/constants/skills';
+import { useVisibility } from '@/lib/hooks/useVisibility';
+import { cn } from '@/lib/utils';
 
 const Backend = () => {
   const { isVisible } = useVisibility();
 
   return (
-    <div className="max-w-screen-lg overflow-hidden group">
+    <div className='max-w-screen-lg overflow-hidden group'>
       <ul
         className={cn(
-          "flex gap-x-4 animate-loop-scroll direction-reverse group-hover:paused w-max",
-          !isVisible && "paused"
+          'flex gap-x-4 animate-loop-scroll direction-reverse group-hover:paused w-max',
+          !isVisible && 'paused',
         )}
       >
         {BACKEND.map((b, i) => (
@@ -26,7 +26,7 @@ const Backend = () => {
             key={`backend-${b.label}-${i}`}
             Icon={b.icon}
             hexColor={b.hexColor}
-            ariaHidden="true"
+            ariaHidden='true'
           />
         ))}
       </ul>
