@@ -38,10 +38,12 @@ const SheetMenu = ({ active }: SheetMenuProps) => {
   }, [width]);
 
   const onOpenChange = (open: boolean) => {
+    if (!lenis) return;
+
     if (open) {
-      lenis?.stop();
+      lenis.stop();
     } else {
-      lenis?.start();
+      lenis.start();
     }
   };
 
