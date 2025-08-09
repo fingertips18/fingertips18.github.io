@@ -79,6 +79,15 @@ jobs:
           VITE_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_TEMPLATE_ID }}
         run: npm run build
 
+      - name: Check `dist` folder
+        run: ls -alh dist
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-artifact
+          path: dist
+
   security-scan:
     name: Security scan
     runs-on: ubuntu-latest
