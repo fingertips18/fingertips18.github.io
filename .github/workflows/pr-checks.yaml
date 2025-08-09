@@ -5,7 +5,7 @@ on:
     branches:
       - develop
     paths:
-      - 'github/**'
+      - '.github/**'
       - 'src/**'
       - 'public/**'
       - '.env.**'
