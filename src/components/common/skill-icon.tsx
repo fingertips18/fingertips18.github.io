@@ -1,10 +1,11 @@
-import { IconType } from "@icons-pack/react-simple-icons";
+import { IconType as IconsPackType } from "@icons-pack/react-simple-icons";
+import { IconType as ReactIconsType } from "react-icons/lib";
 import { useState } from "react";
 
 import { cn } from "@/lib/utils";
 
 interface SkillIconProps {
-  Icon: IconType;
+  Icon: IconsPackType | ReactIconsType;
   hexColor: string;
   ariaHidden?: React.AriaAttributes["aria-hidden"];
 }

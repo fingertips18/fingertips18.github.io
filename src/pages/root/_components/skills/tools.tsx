@@ -2,7 +2,7 @@ import { useVisibility } from "@/lib/hooks/useVisibility";
 import { TOOLS } from "@/constants/skills";
 import { cn } from "@/lib/utils";
 
-import { SkillIcon } from "../../../../components/common/skill-icon";
+import { SkillIcon } from "@/components/common/skill-icon";
 
 const Tools = () => {
   const { isVisible } = useVisibility();
