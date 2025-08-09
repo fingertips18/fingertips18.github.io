@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 
-import { useMounted } from "@/lib/hooks/useMounted";
 import { Hint } from "@/components/common/hint";
 import { CONTACTS } from "@/constants/contact";
+import { useMounted } from "@/lib/hooks/useMounted";
 import { cn } from "@/lib/utils";
 
 const OtherContacts = () => {

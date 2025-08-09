@@ -1,10 +1,10 @@
+import { FLIXSAGEPREVIEW, LEAFONICPREVIEW, TRITOKPREVIEW } from "./assets";
+import { PROJECTTYPE } from "./enums";
 import {
   FLIXSAGEPREVIEW_HASH,
   LEAFONICPREVIEW_HASH,
   TRIKTOOKPREVIEW_HASH,
 } from "./hashes";
-import { FLIXSAGEPREVIEW, LEAFONICPREVIEW, TRITOKPREVIEW } from "./assets";
-import { PROJECTTYPE } from "./enums";
 
 export const FORMLINK = "https://forms.gle/PFHoohMazvKMeKCh7";
 

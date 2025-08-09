@@ -1,10 +1,10 @@
-import { VerticalTimeline } from "react-vertical-timeline-component";
 import { GraduationCap } from "lucide-react";
 import { useRef } from "react";
+import { VerticalTimeline } from "react-vertical-timeline-component";
 
+import { EDUCATIONS } from "@/constants/education";
 import { QUERYELEMENT, ROOTSECTION } from "@/constants/enums";
 import { useObserver } from "@/lib/hooks/useObserver";
-import { EDUCATIONS } from "@/constants/education";
 import { cn } from "@/lib/utils";
 
 import EducationItem from "./education-item";

@@ -4,11 +4,11 @@ import {
   Route,
 } from "react-router-dom";
 
-import NotFoundPage from "@/pages/not-found/page";
-import { SkillsPage } from "@/pages/skills/page";
-import RootLayout from "@/pages/root/layout";
 import ErrorPage from "@/pages/error/page";
+import NotFoundPage from "@/pages/not-found/page";
+import RootLayout from "@/pages/root/layout";
 import RootPage from "@/pages/root/page";
+import { SkillsPage } from "@/pages/skills/page";
 
 import { AppRoutes } from "./app-routes";
 

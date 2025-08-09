@@ -1,8 +1,8 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import emailjs from "@emailjs/browser";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -14,8 +14,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/shadcn/form";
-import { Textarea } from "@/components/shadcn/textarea";
 import { Input } from "@/components/shadcn/input";
+import { Textarea } from "@/components/shadcn/textarea";
 
 const formSchema = z.object({
   email: z

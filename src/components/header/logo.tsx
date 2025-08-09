@@ -1,11 +1,11 @@
-import { Link } from "react-router-dom";
 import { useLenis } from "lenis/react";
+import { Link } from "react-router-dom";
 
-import { DARKLOGO, LIGHTLOGO } from "@/constants/assets";
 import { Skeleton } from "@/components/shadcn/skeleton";
-import { Theme, useTheme } from "@/lib/hooks/useTheme";
+import { DARKLOGO, LIGHTLOGO } from "@/constants/assets";
 import { useMounted } from "@/lib/hooks/useMounted";
 import { useResize } from "@/lib/hooks/useResize";
+import { Theme, useTheme } from "@/lib/hooks/useTheme";
 import { AppRoutes } from "@/routes/app-routes";
 
 const Logo = () => {

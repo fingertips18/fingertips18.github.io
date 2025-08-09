@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
-import { SOCIALS } from "@/constants/collections";
 import { Hint } from "@/components/common/hint";
+import { SOCIALS } from "@/constants/collections";
 import { cn } from "@/lib/utils";
 
 interface SocialButtonsProps {

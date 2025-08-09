@@ -1,5 +1,4 @@
-import { SiGmail, SiCalendly } from "@icons-pack/react-simple-icons";
-
+import { SiCalendly, SiGmail } from "@icons-pack/react-simple-icons";
 import { SiLinkedin } from "react-icons/si";
 
 export const CONTACTS = [

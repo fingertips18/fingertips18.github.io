@@ -1,12 +1,12 @@
 import { useRef } from "react";
 
-import { QUERYELEMENT, ROOTSECTION } from "@/constants/enums";
 import { Separator } from "@/components/shadcn/separator";
+import { QUERYELEMENT, ROOTSECTION } from "@/constants/enums";
 import { useObserver } from "@/lib/hooks/useObserver";
 import { cn } from "@/lib/utils";
 
-import { OtherContacts } from "./other-contacts";
 import { ContactForm } from "./contact-form";
+import { OtherContacts } from "./other-contacts";
 
 const Contact = () => {
   const sectionRef = useRef<HTMLElement | null>(null);
