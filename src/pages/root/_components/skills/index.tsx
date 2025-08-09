@@ -11,10 +11,18 @@ import { Frontend } from "./frontend";
 import { Backend } from "./backend";
 import { Others } from "./others";
 import { Tools } from "./tools";
+import { useLenis } from "lenis/react";
 
 const Skills = () => {
   const sectionRef = useRef<HTMLElement | null>(null);
   const { isVisible } = useObserver({ elementRef: sectionRef });
+  const lenis = useLenis();
+
+  const handleScroll = () => {
+    if (!lenis) return;
+
+    lenis.scrollTo(0);
+  };
 
   return (
     <section
@@ -38,6 +46,7 @@ const Skills = () => {
         </p>
         <Link
           to={AppRoutes.skills}
+          onClick={handleScroll}
           className="mt-2 text-sm hover:text-accent hover:drop-shadow-purple-glow underline-offset-4 hover:underline"
         >
           View All
