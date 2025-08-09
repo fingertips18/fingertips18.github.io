@@ -1,6 +1,4 @@
 import {
-  SiAdobephotoshop,
-  SiAdobephotoshopHex,
   SiAndroidstudio,
   SiAndroidstudioHex,
   SiBitbucket,
@@ -9,8 +7,8 @@ import {
   SiBootstrapHex,
   SiClerk,
   SiClerkHex,
-  SiCss3,
-  SiCss3Hex,
+  SiCss,
+  SiCssHex,
   SiDart,
   SiDartHex,
   SiDocker,
@@ -101,6 +99,8 @@ import {
   SiZodHex,
 } from "@icons-pack/react-simple-icons";
 
+import { SiAdobephotoshop } from "react-icons/si";
+
 export const FRONTEND = [
   {
     icon: SiHtml5,
@@ -108,8 +108,8 @@ export const FRONTEND = [
     label: "HTML",
   },
   {
-    icon: SiCss3,
-    hexColor: SiCss3Hex,
+    icon: SiCss,
+    hexColor: SiCssHex,
     label: "CSS",
   },
   {
@@ -338,7 +338,7 @@ export const TOOLS = [
   },
   {
     icon: SiAdobephotoshop,
-    hexColor: SiAdobephotoshopHex,
+    hexColor: "#31A8FF",
     label: "Adobo Photoshop",
   },
   {
