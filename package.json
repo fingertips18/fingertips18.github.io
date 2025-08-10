@@ -5,7 +5,7 @@
   "version": "1.1.1",
   "type": "module",
   "scripts": {
-    "deploy": "gh-pages -d dist --repo https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Fingertips18/fingertips18.github.io.git",
+    "deploy": "gh-pages -d dist",
     "dev": "vite",
     "build": "tsc && vite build",
     "lint": "eslint .",
