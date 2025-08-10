@@ -48,4 +48,4 @@ jobs:
           git config user.email "actions@github.com"
 
       - name: Deploy to GitHub Pages
-        run: npm run deploy --repo https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Fingertips18/fingertips18.github.io.git
+        run: npx gh-pages -d dist --repo https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Fingertips18/fingertips18.github.io.git
