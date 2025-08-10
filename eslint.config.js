@@ -6,7 +6,14 @@ import js from '@eslint/js';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 
 export default tseslint.config(
-  { ignores: ['dist', './src/components/shadcn/*.{ts,tsx}'] },
+  {
+    ignores: [
+      'node_modules',
+      'dist',
+      './src/components/shadcn/*.{ts,tsx}',
+      'backend',
+    ],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
