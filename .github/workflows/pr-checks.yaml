@@ -3,7 +3,7 @@ name: PR Quality Checks
 on:
   pull_request:
     branches:
-      - develop
+      - main
     paths:
       - '.github/**'
       - 'src/**'
