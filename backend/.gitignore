@@ -1,0 +1,27 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of `go build`
+/bin/
+/build/
+/dist/
+
+# Dependency directories (vendor for vendoring)
+vendor/
+
+# Environment variables file (secrets!)
+.env
+
+# Logs
+*.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db
