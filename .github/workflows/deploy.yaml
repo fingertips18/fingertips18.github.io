@@ -1,12 +1,20 @@
-name: Portfolio - Deploy
+name: Deploy Portfolio To GitHub Pages
 
 on:
   workflow_dispatch:
 
+permissions:
+  pages: write # Needed to deploy to Pages
+  id-token: write # Needed for OIDC auth
+  contents: read # Needed to read artifacts
+
 jobs:
   deploy:
-    name: Deploy Application
+    name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: Checkout Code
@@ -22,18 +30,11 @@ jobs:
           workflow_conclusion: success
           path: dist/
 
-      - name: Setup Git Identity
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          node-version: latest
-
-      - name: Install Dependencies
-        run: npm install gh-pages --save-dev
+          path: dist
 
       - name: Deploy to GitHub Pages
-        run: npx gh-pages -d dist --repo https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Fingertips18/fingertips18.github.io.git
+        id: deployment
+        uses: actions/deploy-pages@v4
