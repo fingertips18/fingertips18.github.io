@@ -2,10 +2,10 @@
   "homepage": "https://fingertips18.github.io",
   "name": "portfolio",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.1.1",
   "type": "module",
   "scripts": {
-    "deploy": "gh-pages -d dist",
+    "deploy": "gh-pages -d dist --repo https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Fingertips18/fingertips18.github.io.git",
     "dev": "vite",
     "build": "tsc && vite build",
     "lint": "eslint .",
