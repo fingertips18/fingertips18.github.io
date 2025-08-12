@@ -8,6 +8,7 @@ import (
 	"time"
 
 	handlers "github.com/Fingertips18/fingertips18.github.io/backend/internal/handlers/email"
+	"github.com/Fingertips18/fingertips18.github.io/backend/pkg/middleware"
 )
 
 type Server struct {
@@ -18,6 +19,7 @@ type Server struct {
 type Config struct {
 	Environment         string
 	Port                string
+	AuthToken           string
 	EmailJSServiceID    string
 	EmailJSTemplateID   string
 	EmailJSPublicKey    string
@@ -36,13 +38,19 @@ type handlerConfig struct {
 func New(cfg Config) *Server {
 	log.Printf("Starting server with environment: %s", cfg.Environment)
 
+	authInterceptor := middleware.NewAuthInterceptor(cfg.AuthToken)
+
 	handlers := createHandlers(cfg)
 	mux := setupHandlers(handlers...)
+
+	muxWithAuth := http.NewServeMux()
+
+	muxWithAuth.Handle("/", authInterceptor.MiddlewareFunc(mux))
 
 	return &Server{
 		httpServer: &http.Server{
 			Addr:              ":" + cfg.Port,
-			Handler:           mux,
+			Handler:           muxWithAuth,
 			ReadHeaderTimeout: 30 * time.Second,
 		},
 		port: cfg.Port,

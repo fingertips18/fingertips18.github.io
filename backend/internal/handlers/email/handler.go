@@ -42,13 +42,14 @@ type SendRequest struct {
 func NewEmailServiceHandler(cfg EmailServiceConfig) EmailService {
 	emailRepo := cfg.emailRepo
 	if emailRepo == nil {
-		emailRepo = repo.NewEmailRepository(repo.EmailRepositoryConfig{
-			ServiceID:      cfg.ServiceID,
-			TemplateID:     cfg.TemplateID,
-			UserID:         cfg.UserID,
-			AccessToken:    cfg.AccessToken,
-			TemplateParams: cfg.TemplateParams,
-		},
+		emailRepo = repo.NewEmailRepository(
+			repo.EmailRepositoryConfig{
+				ServiceID:      cfg.ServiceID,
+				TemplateID:     cfg.TemplateID,
+				UserID:         cfg.UserID,
+				AccessToken:    cfg.AccessToken,
+				TemplateParams: cfg.TemplateParams,
+			},
 		)
 	}
 
