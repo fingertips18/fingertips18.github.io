@@ -20,6 +20,7 @@ import (
 const (
 	FlagEnv                 = "env"
 	FlagPort                = "port"
+	FlagAuthToken           = "auth-token"
 	FlagEmailJSServiceID    = "emailjs-service-id"
 	FlagEmailJSTemplateID   = "emailjs-template-id"
 	FlagEmailJSPublicKey    = "emailjs-public-key"
@@ -31,6 +32,7 @@ func main() {
 	var (
 		flagEnvironment         = flag.String(FlagEnv, "local", "Environment")
 		flagPort                = flag.String(FlagPort, "8080", "Port server")
+		flagAuthToken           = flag.String(FlagAuthToken, "", "Basic token auth")
 		flagEmailJSServiceID    = flag.String(FlagEmailJSServiceID, "", "EmailJS Service ID")
 		flagEmailJSTemplateID   = flag.String(FlagEmailJSTemplateID, "", "EmailJS Template ID")
 		flagEmailJSPublicKey    = flag.String(FlagEmailJSPublicKey, "", "EmailJS Public Key")
@@ -41,6 +43,7 @@ func main() {
 	flag.Parse()
 
 	flagUtils.Require(
+		FlagAuthToken,
 		FlagEmailJSServiceID,
 		FlagEmailJSTemplateID,
 		FlagEmailJSPublicKey,
@@ -54,6 +57,7 @@ func main() {
 
 	// Get secret token values
 	port := *flagPort
+	authToken := *flagAuthToken
 	emailJSServiceID := *flagEmailJSServiceID
 	emailJSTemplateID := *flagEmailJSTemplateID
 	emailJSPublicKey := *flagEmailJSPublicKey
@@ -65,6 +69,13 @@ func main() {
 			log.Printf("Failed to read port from file, using flag value: %v", *flagPort)
 		} else {
 			port = string(data)
+		}
+
+		data, err = os.ReadFile(*flagAuthToken)
+		if err != nil {
+			log.Printf("Failed to read auth token from file, using flag value: %v", *flagAuthToken)
+		} else {
+			authToken = string(data)
 		}
 
 		data, err = os.ReadFile(*flagEmailJSServiceID)
@@ -106,6 +117,10 @@ func main() {
 			port = os.Getenv("PORT")
 		}
 
+		if authToken == "" {
+			authToken = os.Getenv("AUTH_TOKEN")
+		}
+
 		if emailJSServiceID == "" {
 			emailJSServiceID = os.Getenv("EMAILJS_SERVICE_ID")
 		}
@@ -131,6 +146,7 @@ func main() {
 	s := server.New(server.Config{
 		Environment:         *flagEnvironment,
 		Port:                port,
+		AuthToken:           authToken,
 		EmailJSServiceID:    emailJSServiceID,
 		EmailJSTemplateID:   emailJSTemplateID,
 		EmailJSPublicKey:    emailJSPublicKey,
