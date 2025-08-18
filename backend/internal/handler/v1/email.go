@@ -1,11 +1,11 @@
-package handlers
+package v1
 
 import (
 	"encoding/json"
 	"net/http"
 	"strings"
 
-	repo "github.com/Fingertips18/fingertips18.github.io/backend/internal/repositories/email"
+	v1 "github.com/Fingertips18/fingertips18.github.io/backend/internal/repository/v1"
 )
 
 type EmailService interface {
@@ -20,11 +20,11 @@ type EmailServiceConfig struct {
 	AccessToken    string
 	TemplateParams map[string]string
 
-	emailRepo repo.EmailRepository
+	emailRepo v1.EmailRepository
 }
 
 type emailServiceHandler struct {
-	emailRepo repo.EmailRepository
+	emailRepo v1.EmailRepository
 }
 
 type SendRequest struct {
@@ -42,8 +42,8 @@ type SendRequest struct {
 func NewEmailServiceHandler(cfg EmailServiceConfig) EmailService {
 	emailRepo := cfg.emailRepo
 	if emailRepo == nil {
-		emailRepo = repo.NewEmailRepository(
-			repo.EmailRepositoryConfig{
+		emailRepo = v1.NewEmailRepository(
+			v1.EmailRepositoryConfig{
 				ServiceID:      cfg.ServiceID,
 				TemplateID:     cfg.TemplateID,
 				UserID:         cfg.UserID,

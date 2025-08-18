@@ -1,4 +1,4 @@
-package repositories
+package v1
 
 import (
 	"bytes"

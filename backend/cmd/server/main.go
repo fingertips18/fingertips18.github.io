@@ -26,6 +26,7 @@ const (
 	FlagEmailJSPublicKey    = "emailjs-public-key"
 	FlagEmailJSPrivateKey   = "emailjs-private-key"
 	FlagGoogleMeasurementID = "google-measurement-id"
+	FlagGooleAPISecret      = "google-api-secret"
 )
 
 func main() {
@@ -38,6 +39,7 @@ func main() {
 		flagEmailJSPublicKey    = flag.String(FlagEmailJSPublicKey, "", "EmailJS Public Key")
 		flagEmailJSPrivateKey   = flag.String(FlagEmailJSPrivateKey, "", "EmailJS Private Key")
 		flagGoogleMeasurementID = flag.String(FlagGoogleMeasurementID, "", "Google Measurement ID")
+		flagGoogleAPISecret     = flag.String(FlagGooleAPISecret, "", "Google API Secret")
 	)
 
 	flag.Parse()
@@ -48,6 +50,7 @@ func main() {
 		FlagEmailJSTemplateID,
 		FlagEmailJSPublicKey,
 		FlagGoogleMeasurementID,
+		*flagGoogleAPISecret,
 	)
 
 	err := godotenv.Load()
@@ -63,6 +66,7 @@ func main() {
 	emailJSPublicKey := *flagEmailJSPublicKey
 	emailJSPrivateKey := *flagEmailJSPrivateKey
 	googleMeasurementID := *flagGoogleMeasurementID
+	googleAPISecret := *flagGoogleAPISecret
 	if *flagEnvironment != "local" {
 		data, err := os.ReadFile(*flagPort)
 		if err != nil {
@@ -112,6 +116,13 @@ func main() {
 		} else {
 			googleMeasurementID = string(data)
 		}
+
+		data, err = os.ReadFile(*flagGoogleAPISecret)
+		if err != nil {
+			log.Printf("Failed to read google API key from file, using flag value: %v", *flagGoogleAPISecret)
+		} else {
+			googleAPISecret = string(data)
+		}
 	} else {
 		if port == "" {
 			port = os.Getenv("PORT")
@@ -140,19 +151,25 @@ func main() {
 		if googleMeasurementID == "" {
 			googleMeasurementID = os.Getenv("GOOGLE_MEASUREMENT_ID")
 		}
+
+		if googleAPISecret == "" {
+			googleAPISecret = os.Getenv("GOOGLE_API_SECRET")
+		}
 	}
 
 	// Setup server
-	s := server.New(server.Config{
-		Environment:         *flagEnvironment,
-		Port:                port,
-		AuthToken:           authToken,
-		EmailJSServiceID:    emailJSServiceID,
-		EmailJSTemplateID:   emailJSTemplateID,
-		EmailJSPublicKey:    emailJSPublicKey,
-		EmailJSPrivateKey:   emailJSPrivateKey,
-		GoogleMeasurementID: googleMeasurementID,
-	},
+	s := server.New(
+		server.Config{
+			Environment:         *flagEnvironment,
+			Port:                port,
+			AuthToken:           authToken,
+			EmailJSServiceID:    emailJSServiceID,
+			EmailJSTemplateID:   emailJSTemplateID,
+			EmailJSPublicKey:    emailJSPublicKey,
+			EmailJSPrivateKey:   emailJSPrivateKey,
+			GoogleMeasurementID: googleMeasurementID,
+			GoogleAPISecret:     googleAPISecret,
+		},
 	)
 
 	// Initialize the server in a goroutine so that it won't block the graceful shutdown handling
