@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	handlers "github.com/Fingertips18/fingertips18.github.io/backend/internal/handlers/email"
+	v1 "github.com/Fingertips18/fingertips18.github.io/backend/internal/handler/v1"
 	"github.com/Fingertips18/fingertips18.github.io/backend/pkg/middleware"
 )
 
@@ -25,6 +25,7 @@ type Config struct {
 	EmailJSPublicKey    string
 	EmailJSPrivateKey   string
 	GoogleMeasurementID string
+	GoogleAPISecret     string
 }
 
 type handlerConfig struct {
@@ -62,18 +63,30 @@ func New(cfg Config) *Server {
 // using the provided Config, such as setting up the email service handler with
 // the necessary credentials and service IDs.
 func createHandlers(cfg Config) []handlerConfig {
-	emailHandler := handlers.NewEmailServiceHandler(handlers.EmailServiceConfig{
-		ServiceID:   cfg.EmailJSServiceID,
-		TemplateID:  cfg.EmailJSTemplateID,
-		UserID:      cfg.EmailJSPublicKey,
-		AccessToken: cfg.EmailJSPrivateKey,
-	},
+	emailHandler := v1.NewEmailServiceHandler(
+		v1.EmailServiceConfig{
+			ServiceID:   cfg.EmailJSServiceID,
+			TemplateID:  cfg.EmailJSTemplateID,
+			UserID:      cfg.EmailJSPublicKey,
+			AccessToken: cfg.EmailJSPrivateKey,
+		},
+	)
+
+	analyticsHandler := v1.NewAnalyticsServiceHandler(
+		v1.AnalyticsServiceConfig{
+			GoogleMeasurementID: cfg.GoogleMeasurementID,
+			GoogleAPISecret:     cfg.GoogleAPISecret,
+		},
 	)
 
 	handlers := []handlerConfig{
 		{
 			path:    "/email/",
 			handler: emailHandler,
+		},
+		{
+			path:    "/analytics/",
+			handler: analyticsHandler,
 		},
 	}
 
