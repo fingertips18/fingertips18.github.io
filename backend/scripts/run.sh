@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -eo pipefail
-
 cd "$(dirname "$0")/.."
 
 if [ ! -f ".env" ]; then
@@ -8,9 +7,12 @@ if [ ! -f ".env" ]; then
   exit 1
 fi
 
-export $(grep -v '^#' .env | xargs)
+set -a
+source .env
+set +a
 
-go run cmd/server/main.go \
+./cmd/tmp/main \
+  --auth-token="${AUTH_TOKEN}" \
   --emailjs-service-id="${EMAILJS_SERVICE_ID}" \
   --emailjs-template-id="${EMAILJS_TEMPLATE_ID}" \
   --emailjs-public-key="${EMAILJS_PUBLIC_KEY}" \
