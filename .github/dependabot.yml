@@ -1,16 +1,30 @@
 version: 2
 updates:
-  # Update npm dependencies in the client directory
+  # Update npm dependencies in the root directory
   - package-ecosystem: 'npm'
     directory: /
+    schedule:
+      interval: 'daily' # Check for updates every day
+    commit-message:
+      prefix: 'chore' # Use 'chore' prefix for the commit message
+      include: 'scope' # Include the scope (dependency name) in the commit message
+    open-pull-requests-limit: 10
+    reviewers:
+      - Fingertips18
+
+  # Update go dependencies in the backend directory
+  - package-ecosystem: 'gomod'
+    directory: /backend
     schedule:
       interval: 'daily'
     commit-message:
       prefix: 'chore'
       include: 'scope'
     open-pull-requests-limit: 10
+    reviewers:
+      - Fingertips18
 
-  # Update GitHub Actions dependencies in the root directory
+  # Update github actions dependencies in the root directory
   - package-ecosystem: 'github-actions'
     directory: /
     schedule:
@@ -19,3 +33,5 @@ updates:
       prefix: 'chore'
       include: 'scope'
     open-pull-requests-limit: 10
+    reviewers:
+      - Fingertips18
