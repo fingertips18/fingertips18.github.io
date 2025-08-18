@@ -25,3 +25,6 @@ vendor/
 # OS-specific files
 .DS_Store
 Thumbs.db
+
+# Air (live reload) build artifacts
+tmp/

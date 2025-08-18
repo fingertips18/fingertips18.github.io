@@ -26,7 +26,7 @@ const (
 	FlagEmailJSPublicKey    = "emailjs-public-key"
 	FlagEmailJSPrivateKey   = "emailjs-private-key"
 	FlagGoogleMeasurementID = "google-measurement-id"
-	FlagGooleAPISecret      = "google-api-secret"
+	FlagGoogleAPISecret     = "google-api-secret"
 )
 
 func main() {
@@ -39,7 +39,7 @@ func main() {
 		flagEmailJSPublicKey    = flag.String(FlagEmailJSPublicKey, "", "EmailJS Public Key")
 		flagEmailJSPrivateKey   = flag.String(FlagEmailJSPrivateKey, "", "EmailJS Private Key")
 		flagGoogleMeasurementID = flag.String(FlagGoogleMeasurementID, "", "Google Measurement ID")
-		flagGoogleAPISecret     = flag.String(FlagGooleAPISecret, "", "Google API Secret")
+		flagGoogleAPISecret     = flag.String(FlagGoogleAPISecret, "", "Google API Secret")
 	)
 
 	flag.Parse()
@@ -50,7 +50,7 @@ func main() {
 		FlagEmailJSTemplateID,
 		FlagEmailJSPublicKey,
 		FlagGoogleMeasurementID,
-		*flagGoogleAPISecret,
+		FlagGoogleAPISecret,
 	)
 
 	err := godotenv.Load()
