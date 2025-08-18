@@ -1,4 +1,3 @@
-import emailjs from '@emailjs/browser';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
@@ -16,6 +15,7 @@ import {
 } from '@/components/shadcn/form';
 import { Input } from '@/components/shadcn/input';
 import { Textarea } from '@/components/shadcn/textarea';
+import { EmailService } from '@/lib/services/email';
 
 const formSchema = z.object({
   email: z
@@ -45,22 +45,14 @@ const ContactForm = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setPending(true);
 
-    await emailjs
-      .send(
-        import.meta.env.VITE_EMAILJS_SERVICE_ID,
-        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-        values,
-        {
-          publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
-        },
-      )
-      .then(() => {
-        form.reset();
-        toast.success('Message sent. Thanks for reaching out!');
-      })
-      .catch(() =>
-        toast.error('Something went wrong. Please try again later.'),
-      );
+    const { hasError, message } = await EmailService.send(values);
+
+    if (hasError) {
+      toast.error(message);
+    } else {
+      form.reset();
+      toast.success(message);
+    }
 
     setPending(false);
   };

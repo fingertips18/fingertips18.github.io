@@ -1,19 +1,17 @@
 import { useEffect } from 'react';
-import ReactGA from 'react-ga4';
 import { Outlet } from 'react-router-dom';
 
 import { Footer } from '@/components/footer';
 import { Header } from '@/components/header';
+import { AnalyticsService } from '@/lib/services/analytics';
 import ToasterProvider from '@/providers/toaster-provider';
 import { AppRoutes } from '@/routes/app-routes';
 
 const RootLayout = () => {
   useEffect(() => {
-    ReactGA.initialize(import.meta.env.VITE_GOOGLE_MEASUREMENT_ID);
-
-    ReactGA.send({
-      hitType: 'pageview',
-      page: AppRoutes.root,
+    // Intentionally ignore the returned promise.
+    void AnalyticsService.pageView({
+      location: AppRoutes.root,
       title: 'Root View',
     });
   }, []);

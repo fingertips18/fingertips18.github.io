@@ -1,11 +1,21 @@
 import { MoveLeft } from 'lucide-react';
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 import { SkillIcon } from '@/components/common/skill-icon';
 import { BACKEND, FRONTEND, OTHERS, TOOLS } from '@/constants/skills';
+import { AnalyticsService } from '@/lib/services/analytics';
 import { AppRoutes } from '@/routes/app-routes';
 
 const SkillsPage = () => {
+  useEffect(() => {
+    // Intentionally ignore the returned promise.
+    void AnalyticsService.pageView({
+      location: AppRoutes.skills,
+      title: 'Skills View',
+    });
+  }, []);
+
   return (
     <section className='min-h-[calc(100dvh_-_56px)] space-y-2 lg:space-y-12 p-6 lg:py-6 lg:px-4 xl:px-0 mt-14'>
       <Link
