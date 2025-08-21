@@ -11,8 +11,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/fingertips18/backend/internal/server"
-	flagUtils "github.com/fingertips18/backend/pkg/utils"
+	"github.com/fingertips18/fingertips18.github.io/backend/internal/server"
+	flagUtils "github.com/fingertips18/fingertips18.github.io/backend/pkg/utils"
 	"github.com/joho/godotenv"
 )
 
@@ -26,7 +26,7 @@ const (
 	FlagEmailJSPublicKey    = "emailjs-public-key"
 	FlagEmailJSPrivateKey   = "emailjs-private-key"
 	FlagGoogleMeasurementID = "google-measurement-id"
-	FlagGoogleAPISecret     = "google-api-secret"
+	FlagGoogleAPISecret     = "google-api-secret" // #nosec
 )
 
 func main() {

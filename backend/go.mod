@@ -1,4 +1,4 @@
-module github.com/fingertips18/backend
+module github.com/fingertips18/fingertips18.github.io/backend
 
 go 1.24.3
 
