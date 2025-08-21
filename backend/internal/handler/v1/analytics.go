@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	v1 "github.com/Fingertips18/fingertips18.github.io/backend/internal/repository/v1"
+	v1 "github.com/fingertips18/fingertips18.github.io/backend/internal/repository/v1"
 )
 
 type AnalyticsHandler interface {

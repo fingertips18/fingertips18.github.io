@@ -10,7 +10,7 @@ updates:
       include: 'scope' # Include the scope (dependency name) in the commit message
     open-pull-requests-limit: 10
     reviewers:
-      - Fingertips18
+      - fingertips18
 
   # Update go dependencies in the backend directory
   - package-ecosystem: 'gomod'
@@ -22,7 +22,7 @@ updates:
       include: 'scope'
     open-pull-requests-limit: 10
     reviewers:
-      - Fingertips18
+      - fingertips18
 
   # Update github actions dependencies in the root directory
   - package-ecosystem: 'github-actions'
@@ -34,4 +34,4 @@ updates:
       include: 'scope'
     open-pull-requests-limit: 10
     reviewers:
-      - Fingertips18
+      - fingertips18

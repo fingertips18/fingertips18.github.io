@@ -40,7 +40,7 @@ export const SOCIALS = [
   {
     icon: SiGithub,
     label: 'GitHub',
-    href: 'https://github.com/Fingertips18',
+    href: 'https://github.com/fingertips18',
   },
   {
     icon: SiLinkedin,

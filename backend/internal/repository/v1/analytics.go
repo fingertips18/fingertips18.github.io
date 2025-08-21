@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Fingertips18/fingertips18.github.io/backend/internal/client"
-	"github.com/Fingertips18/fingertips18.github.io/backend/internal/utils"
 	"github.com/blackmagiqq/ga4"
+	"github.com/fingertips18/fingertips18.github.io/backend/internal/client"
+	"github.com/fingertips18/fingertips18.github.io/backend/internal/utils"
 )
 
 type AnalyticsRepository interface {

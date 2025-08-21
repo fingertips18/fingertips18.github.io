@@ -50,13 +50,13 @@ Here are some of the key projects featured in my portfolio:
 
 - **Portfolio** - [fingertips.github.io](https://fingertips18.github.io)
 
-- **Github** - [Github](https://github.com/Fingertips18)
+- **Github** - [Github](https://github.com/fingertips18)
 
 - **LinkedIn** - [LinkedIn](https://www.linkedin.com/in/ghiantan)
 
 - **StackOverflow** - [Stack Overflow](https://stackoverflow.com/users/18320841/fingertips)
 
-- **Codewars** - [Codewars](https://www.codewars.com/users/Fingertips)
+- **Codewars** - [Codewars](https://www.codewars.com/users/fingertips)
 
 # ✉️ Contact
 
@@ -70,11 +70,11 @@ Feel free to fork this repository and contribute by submitting a pull request. A
 
 #### 🧑‍💻 Contributors
 
-<a href="https://github.com/Fingertips18/fingertips18.github.io/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Fingertips18/fingertips18.github.io" />
+<a href="https://github.com/fingertips18/fingertips18.github.io/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=fingertips18/fingertips18.github.io" />
 </a>
 
-_Ghian Tan_ @ _Fingertips_ ([Github](https://github.com/Fingertips18))
+_Ghian Tan_ @ _fingertips_ ([Github](https://github.com/fingertips18))
 
 ## 📜 License
 
