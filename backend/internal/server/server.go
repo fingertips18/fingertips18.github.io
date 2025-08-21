@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	v1 "github.com/Fingertips18/fingertips18.github.io/backend/internal/handler/v1"
-	"github.com/Fingertips18/fingertips18.github.io/backend/pkg/middleware"
+	v1 "github.com/fingertips18/fingertips18.github.io/backend/internal/handler/v1"
+	"github.com/fingertips18/fingertips18.github.io/backend/pkg/middleware"
 )
 
 type Server struct {

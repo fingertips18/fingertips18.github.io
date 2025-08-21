@@ -1,20 +1,47 @@
 name: Build & Deploy to GitHub Pages
 
 on:
+  release:
+    types: [published]
+
   workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy (defaults to main)'
+        required: false
+        default: 'main'
+      deployment_reason:
+        description: 'Reason for deployment'
+        required: false
+        default: 'Manual deployment triggered by workflow_dispatch'
 
 permissions:
-  contents: write
-  pages: write
+  contents: read
+  pages: read
   id-token: write
 
 jobs:
   build-and-deploy:
+    name: Build and Deploy to GitHub Pages
     runs-on: ubuntu-latest
+    environment: gh-pages
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v5
+
+      - name: Get Release Version
+        if: github.event_name == 'release'
+        id: version
+        run: |
+          # Strip leading "v" if release tags are like v1.2.3
+          VERSION=${GITHUB_REF_NAME#v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Update package.json version
+        if: github.event_name == 'release'
+        run: |
+          npm version ${{ steps.version.outputs.version }} --no-git-tag-version
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -36,10 +63,8 @@ jobs:
 
       - name: Build Project
         env:
-          VITE_GOOGLE_MEASUREMENT_ID: ${{ secrets.VITE_GOOGLE_MEASUREMENT_ID }}
-          VITE_EMAILJS_SERVICE_ID: ${{ secrets.VITE_EMAILJS_SERVICE_ID }}
-          VITE_EMAILJS_PUBLIC_KEY: ${{ secrets.VITE_EMAILJS_PUBLIC_KEY }}
-          VITE_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_TEMPLATE_ID }}
+          HOST: ${{ vars.HOST }}
+          AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
         run: npm run build
 
       - name: Setup Git Identity
@@ -48,4 +73,4 @@ jobs:
           git config user.email "actions@github.com"
 
       - name: Deploy to GitHub Pages
-        run: npx gh-pages -d dist --repo https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Fingertips18/fingertips18.github.io.git
+        run: npx gh-pages -d dist --repo https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/fingertips18/fingertips18.github.io.git
