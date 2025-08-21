@@ -101,8 +101,10 @@ jobs:
         with:
           go-version: '1.24.x'
 
-      - name: Download dependencies
-        run: go mod download
+      - name: Tidy and Download dependencies
+        run: |
+          go mod tidy
+          go mod download
 
       - name: Run gosec Security Scanner
         uses: securego/gosec@master
