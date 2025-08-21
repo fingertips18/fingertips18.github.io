@@ -1,11 +1,11 @@
-name: PR Quality Checks
+name: Frontend PR Quality Checks
 
 on:
   pull_request:
     branches:
       - main
     paths:
-      - '.github/**'
+      - '.github/workflows/frontend-pr-checks.yaml'
       - 'src/**'
       - 'public/**'
       - '.env.**'
@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   quality-checks:
-    name: Quality Checks
+    name: Frontend Quality Checks
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -73,10 +73,8 @@ jobs:
 
       - name: Build Check
         env:
-          VITE_GOOGLE_MEASUREMENT_ID: ${{ secrets.VITE_GOOGLE_MEASUREMENT_ID }}
-          VITE_EMAILJS_SERVICE_ID: ${{ secrets.VITE_EMAILJS_SERVICE_ID }}
-          VITE_EMAILJS_PUBLIC_KEY: ${{ secrets.VITE_EMAILJS_PUBLIC_KEY }}
-          VITE_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_TEMPLATE_ID }}
+          HOST: ${{ vars.HOST }}
+          AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
         run: npm run build
 
       - name: Check `dist` folder
