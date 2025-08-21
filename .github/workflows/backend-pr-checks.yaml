@@ -1,0 +1,144 @@
+name: Backend PR Quality Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/backend-pr-checks.yaml'
+      - 'cmd/**'
+      - 'go.mod'
+      - 'go.sum'
+      - 'internal/**'
+      - 'pkg/**'
+      - 'scripts/**'
+      - '.env.**'
+      - '**.md'
+      - '.gitignore'
+
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  quality-checks:
+    name: Backend Quality Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.x'
+          cache-dependency-path: go.sum
+
+      - name: Check Go version
+        run: go version
+
+      - name: Cache Go modules and build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}-
+            ${{ runner.os }}-go-
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Verify dependencies
+        run: go mod verify
+
+      - name: Check Go formatting
+        run: |
+          echo "🎨 Checking Go code formatting..."
+          FILES_TO_CHECK=$(find . -name "*.go")
+          if [ -n "$FILES_TO_CHECK" ]; then
+            UNFORMATTED=$(gofmt -s -l $FILES_TO_CHECK)
+            if [ -n "$UNFORMATTED" ]; then
+              echo "❌ Go code is not properly formatted!"
+              echo "$UNFORMATTED"
+              exit 1
+            fi
+          fi
+          echo "✅ Go code formatting is correct"
+
+      - name: Run go vet
+        run: |
+          echo "🔍 Running go vet..."
+          go vet ./...
+          echo "✅ go vet passed"
+
+      - name: Build check
+        run: |
+          echo "🔨 Building Server..."
+          go build -v ./cmd/server/...
+          echo "✅ Build successful"
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.x'
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Run gosec Security Scanner
+        uses: securego/gosec@master
+        with:
+          args: '-fmt text -exclude=G104,G103 ./...'
+        working-directory: backend
+        timeout-minutes: 3
+
+      - name: Run Go vulnerability check
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
+
+  compatibility:
+    name: Go Version Compatibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    strategy:
+      matrix:
+        go-version: ['1.24.x', '1.25.x']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
+
+      - name: Download dependencies
+        run: go mod download

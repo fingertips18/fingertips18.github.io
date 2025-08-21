@@ -26,7 +26,7 @@ const (
 	FlagEmailJSPublicKey    = "emailjs-public-key"
 	FlagEmailJSPrivateKey   = "emailjs-private-key"
 	FlagGoogleMeasurementID = "google-measurement-id"
-	FlagGoogleAPISecret     = "google-api-secret"
+	FlagGoogleAPISecret     = "google-api-secret" // #nosec
 )
 
 func main() {
