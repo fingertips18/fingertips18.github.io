@@ -10,27 +10,27 @@ import { ROOTSECTION } from './enums';
 export const ROOTMENU = [
   {
     label: ROOTSECTION.about,
-    id: `#${ROOTSECTION.about}`,
+    hash: `#${ROOTSECTION.about}`,
   },
   {
     label: ROOTSECTION.skills,
-    id: `#${ROOTSECTION.skills}`,
+    hash: `#${ROOTSECTION.skills}`,
   },
   {
     label: ROOTSECTION.experience,
-    id: `#${ROOTSECTION.experience}`,
+    hash: `#${ROOTSECTION.experience}`,
   },
   {
     label: ROOTSECTION.projects,
-    id: `#${ROOTSECTION.projects}`,
+    hash: `#${ROOTSECTION.projects}`,
   },
   {
     label: ROOTSECTION.education,
-    id: `#${ROOTSECTION.education}`,
+    hash: `#${ROOTSECTION.education}`,
   },
   {
     label: ROOTSECTION.contact,
-    id: `#${ROOTSECTION.contact}`,
+    hash: `#${ROOTSECTION.contact}`,
   },
 ];
 
