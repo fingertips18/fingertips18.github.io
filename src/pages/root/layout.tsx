@@ -4,6 +4,7 @@ import { Outlet } from 'react-router-dom';
 import { Footer } from '@/components/footer';
 import { Header } from '@/components/header';
 import { AnalyticsService } from '@/lib/services/analytics';
+import HashProvider from '@/providers/hash-provider';
 import ToasterProvider from '@/providers/toaster-provider';
 import { AppRoutes } from '@/routes/app-routes';
 
@@ -18,11 +19,13 @@ const RootLayout = () => {
 
   return (
     <ToasterProvider>
-      <Header />
-      <main className='h-full max-w-screen-lg mx-auto max-xl:overflow-x-hidden'>
-        <Outlet />
-      </main>
-      <Footer />
+      <HashProvider>
+        <Header />
+        <main className='h-full max-w-screen-lg mx-auto max-xl:overflow-x-hidden'>
+          <Outlet />
+        </main>
+        <Footer />
+      </HashProvider>
     </ToasterProvider>
   );
 };
