@@ -2,7 +2,6 @@ import { useLenis } from 'lenis/react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { LocalImageLoader } from '@/components/common/local-image-loader';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,15 +15,23 @@ import {
 } from '@/components/shadcn/alert-dialog';
 import { Badge } from '@/components/shadcn/badge';
 import { Button } from '@/components/shadcn/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/shadcn/dialog';
 import { Skeleton } from '@/components/shadcn/skeleton';
 import { PROJECTTYPE } from '@/constants/enums';
 import { FORMLINK } from '@/constants/projects';
-import { cn } from '@/lib/utils';
+import { cn, getRandomWidth } from '@/lib/utils';
 
-import { AppRequestButton } from './app-request-button';
-import { ProjectPreview } from './project-preview';
+import { LocalImageLoader } from './local-image-loader';
 
-interface ProjectItemProps {
+interface ProjectCardProps {
   preview: string;
   blurHash?: string;
   name: string;
@@ -35,7 +42,7 @@ interface ProjectItemProps {
   live?: string;
 }
 
-const ProjectItem = (props: ProjectItemProps) => {
+const ProjectCard = (props: ProjectCardProps) => {
   const lenis = useLenis();
   const [loaded, setLoaded] = useState(false);
 
@@ -86,7 +93,7 @@ const ProjectItem = (props: ProjectItemProps) => {
             </div>
 
             <AlertDialogTitle className='flex items-center flex-wrap gap-x-2 gap-y-1'>
-              {props.name}{' '}
+              {props.name}
               <span className='text-sm text-muted-foreground leading-none'>
                 {props.subtitle}
               </span>
@@ -142,21 +149,14 @@ const ProjectItem = (props: ProjectItemProps) => {
             </Link>
           </Button>
         ) : (
-          <AppRequestButton />
+          <RequestButton />
         )}
       </div>
     </div>
   );
 };
 
-const getRandomWidth = () => {
-  // Change the min and max values as needed
-  const minWidth = 32; // Minimum width in pixels
-  const maxWidth = 128; // Maximum width in pixels
-  return Math.floor(Math.random() * (maxWidth - minWidth + 1)) + minWidth;
-};
-
-const ProjectItemSkeleton = () => {
+const ProjectCardSkeleton = () => {
   const [loaded, setLoaded] = useState(false);
 
   return (
@@ -197,4 +197,100 @@ const ProjectItemSkeleton = () => {
   );
 };
 
-export { ProjectItem, ProjectItemSkeleton };
+const ProjectPreview = ({
+  preview,
+  blurHash,
+  name,
+  subtitle,
+  desc,
+  stack,
+  type,
+}: ProjectCardProps) => {
+  return (
+    <>
+      <div className='aspect-video relative w-full'>
+        {type === PROJECTTYPE.web ? (
+          <iframe
+            className='w-full h-full'
+            src={preview}
+            title={`${name} Preview`}
+            allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
+            referrerPolicy='strict-origin-when-cross-origin'
+            allowFullScreen
+          />
+        ) : (
+          <LocalImageLoader
+            hash={blurHash!}
+            src={preview}
+            alt={name}
+            className='aspect-video object-cover object-center'
+          />
+        )}
+      </div>
+
+      <div className='space-y-2 p-4 mt-2 flex-1 text-start'>
+        <h3 className='text-lg font-bold leading-none flex items-center flex-wrap gap-x-2 gap-y-1'>
+          {name}
+          {subtitle && (
+            <span className='font-semibold text-sm text-accent'>
+              {subtitle}
+            </span>
+          )}
+        </h3>
+
+        <p className='text-xs text-primary-foreground/50 line-clamp-4'>
+          {desc}
+        </p>
+
+        <h6 className='font-semibold text-xs text-primary-foreground/80'>
+          Tech Stack
+        </h6>
+
+        <div className='flex item-start flex-wrap gap-1.5 no-scrollbar'>
+          {stack.map((s) => (
+            <Badge
+              key={`${name}-${s}`}
+              className='bg-primary/30 whitespace-nowrap'
+            >
+              {s}
+            </Badge>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+};
+
+const RequestButton = () => {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button
+          variant={'link'}
+          className='h-auto w-auto px-2.5 py-0.5 text-sm font-bold'
+        >
+          Request App
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Request Access for Apps</DialogTitle>
+        </DialogHeader>
+        <DialogDescription>
+          Request access to my mobile apps by filling out this form. Please
+          provide your name, email, and select the app/s you’re interested in.
+          I’ll get back to you with the download details shortly!
+        </DialogDescription>
+        <DialogFooter>
+          <Button asChild variant={'link'}>
+            <Link to={FORMLINK} target='_blank'>
+              Fill out form
+            </Link>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export { ProjectCard, ProjectCardSkeleton };

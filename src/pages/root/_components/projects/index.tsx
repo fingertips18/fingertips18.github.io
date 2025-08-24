@@ -3,14 +3,16 @@ import { Terminal } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
+import {
+  ProjectCard,
+  ProjectCardSkeleton,
+} from '@/components/common/project-card';
 import { QUERYELEMENT, ROOTSECTION } from '@/constants/enums';
 import { PROJECTS } from '@/constants/projects';
 import { useObserver } from '@/lib/hooks/useObserver';
 import { useRootSectionStore } from '@/lib/stores/useRootSectionStore';
 import { cn, shuffleArray } from '@/lib/utils';
 import { AppRoutes } from '@/routes/app-routes';
-
-import { ProjectItem, ProjectItemSkeleton } from './project-item';
 
 const Projects = () => {
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -78,13 +80,13 @@ const Projects = () => {
         {isVisible && projectsRef.current ? (
           <>
             {projectsRef.current.slice(0, 6).map((p) => (
-              <ProjectItem key={p.name} {...p} />
+              <ProjectCard key={p.name} {...p} />
             ))}
           </>
         ) : (
           <>
             {[...Array(6)].map((_, i) => (
-              <ProjectItemSkeleton key={`project-item-skeleton-${i}`} />
+              <ProjectCardSkeleton key={`project-item-skeleton-${i}`} />
             ))}
           </>
         )}

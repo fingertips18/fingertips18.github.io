@@ -35,3 +35,14 @@ export function shuffleArray<T>(array: T[]): T[] {
 
   return arr;
 }
+
+/**
+ * Generates a random integer width between the specified minimum and maximum values, inclusive.
+ *
+ * @param min - The minimum width value (default is 32).
+ * @param max - The maximum width value (default is 128).
+ * @returns A random integer between `min` and `max`, inclusive.
+ */
+export function getRandomWidth(min = 32, max = 128): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
