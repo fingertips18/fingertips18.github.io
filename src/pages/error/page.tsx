@@ -7,6 +7,8 @@ import { AppRoutes } from '@/routes/app-routes';
 
 const ErrorPage = () => {
   useEffect(() => {
+    if (import.meta.env.DEV) return;
+
     // Intentionally ignore the returned promise.
     void AnalyticsService.pageView({
       location: AppRoutes.github404,

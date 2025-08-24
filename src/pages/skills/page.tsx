@@ -13,6 +13,8 @@ const SkillsPage = () => {
   const { onActive } = useRootSectionStore();
 
   useEffect(() => {
+    if (import.meta.env.DEV) return;
+
     // Intentionally ignore the returned promise.
     void AnalyticsService.pageView({
       location: AppRoutes.skills,
