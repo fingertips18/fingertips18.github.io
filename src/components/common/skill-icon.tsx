@@ -25,7 +25,7 @@ const SkillIcon = ({ Icon, hexColor, ariaHidden }: SkillIconProps) => {
     >
       <Icon
         color={hovered ? hexColor : undefined}
-        className={cn('w-6 lg:w-12 h-6 lg:h-12', !hovered && 'opacity-50')}
+        className={cn('size-6 md:size-12', !hovered && 'opacity-50')}
       />
     </li>
   );

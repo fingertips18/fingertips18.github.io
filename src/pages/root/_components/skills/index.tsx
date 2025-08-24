@@ -37,13 +37,13 @@ const Skills = () => {
       )}
     >
       <div className='leading-none flex-center flex-col'>
-        <h4 className='text-xs lg:text-sm font-bold text-center tracking-widest pt-6 lg:pb-2'>
+        <h4 className='text-xs sm:text-sm font-bold text-center tracking-widest pt-6 sm:pb-2'>
           SKILLS
         </h4>
-        <p className='text-xl lg:text-5xl text-center'>
+        <p className='text-xl sm:text-5xl text-center'>
           Innovate, Implement, <span className='text-primary'>Repeat.</span>
         </p>
-        <p className='text-xs lg:text-sm text-muted-foreground text-center lg:mt-2 w-3/4 lg:w-full'>
+        <p className='text-xs sm:text-sm text-muted-foreground text-center sm:mt-2 w-3/4 sm:w-full'>
           Showcasing the skills I've developed and refined over the past 3
           years.
         </p>
