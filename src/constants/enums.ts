@@ -1,4 +1,5 @@
 export const enum ROOTSECTION {
+  default = '',
   about = 'about',
   skills = 'skills',
   experience = 'experience',

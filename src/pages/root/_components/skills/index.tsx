@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 
 import { QUERYELEMENT, ROOTSECTION } from '@/constants/enums';
 import { useObserver } from '@/lib/hooks/useObserver';
+import { useRootSectionStore } from '@/lib/stores/useRootSectionStore';
 import { cn } from '@/lib/utils';
 import { AppRoutes } from '@/routes/app-routes';
 
@@ -17,10 +18,12 @@ const Skills = () => {
   const sectionRef = useRef<HTMLElement | null>(null);
   const { isVisible } = useObserver({ elementRef: sectionRef });
   const lenis = useLenis();
+  const { onActive } = useRootSectionStore();
 
   const handleScroll = () => {
     if (!lenis) return;
 
+    onActive(ROOTSECTION.skills);
     lenis.scrollTo(0);
   };
 

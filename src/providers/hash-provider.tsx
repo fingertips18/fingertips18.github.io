@@ -13,14 +13,14 @@ function HashProvider({ children }: HashProviderProps) {
   useEffect(() => {
     if (!hash || !lenis) return;
 
-    // remove "#" from the hash
+    // Remove "#" from the hash
     const id = hash.substring(1);
     const section = document.getElementById(id);
 
     if (!section) return;
 
     // When changing a route, the DOM tree changes height,
-    // but its not aware of the change, so we need to resize it before scrolling
+    // But its not aware of the change, so we need to resize it before scrolling
     lenis.resize();
 
     lenis.scrollTo(section);
