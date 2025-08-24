@@ -3,11 +3,15 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 import { SkillIcon } from '@/components/common/skill-icon';
+import { ROOTSECTION } from '@/constants/enums';
 import { BACKEND, FRONTEND, OTHERS, TOOLS } from '@/constants/skills';
 import { AnalyticsService } from '@/lib/services/analytics';
+import { useRootSectionStore } from '@/lib/stores/useRootSectionStore';
 import { AppRoutes } from '@/routes/app-routes';
 
 const SkillsPage = () => {
+  const { onActive } = useRootSectionStore();
+
   useEffect(() => {
     // Intentionally ignore the returned promise.
     void AnalyticsService.pageView({
@@ -16,13 +20,18 @@ const SkillsPage = () => {
     });
   }, []);
 
+  const handleBack = () => {
+    onActive(ROOTSECTION.about);
+  };
+
   return (
     <section className='min-h-[calc(100dvh_-_56px)] space-y-2 lg:space-y-12 p-6 lg:py-6 lg:px-4 xl:px-0 mt-14'>
       <Link
         to={AppRoutes.root}
+        onClick={handleBack}
         className='flex items-center gap-x-2 hover:text-accent text-sm'
       >
-        <MoveLeft className='size-4' /> Go home
+        <MoveLeft className='size-4' /> Back
       </Link>
 
       <div className='h-full w-full lg:pb-8'>

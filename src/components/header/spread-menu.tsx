@@ -2,11 +2,12 @@ import { useLenis } from 'lenis/react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { ROOTMENU } from '@/constants/collections';
+import { ROOTSECTION } from '@/constants/enums';
 import { cn } from '@/lib/utils';
 import { AppRoutes } from '@/routes/app-routes';
 
 interface SpreadMenuProps {
-  active: string;
+  active: ROOTSECTION;
   isMounted: boolean;
 }
 

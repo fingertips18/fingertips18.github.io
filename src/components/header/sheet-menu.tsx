@@ -15,6 +15,7 @@ import {
   SheetTrigger,
 } from '@/components/shadcn/sheet';
 import { ROOTMENU } from '@/constants/collections';
+import { ROOTSECTION } from '@/constants/enums';
 import { useResize } from '@/lib/hooks/useResize';
 import { cn } from '@/lib/utils';
 import { AppRoutes } from '@/routes/app-routes';
@@ -22,7 +23,7 @@ import { AppRoutes } from '@/routes/app-routes';
 import { ModeToggle } from './mode-toggle';
 
 interface SheetMenuProps {
-  active: string;
+  active: ROOTSECTION;
 }
 
 const SheetMenu = ({ active }: SheetMenuProps) => {
