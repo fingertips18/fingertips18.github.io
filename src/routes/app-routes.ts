@@ -3,4 +3,5 @@ export const enum AppRoutes {
   notFound = '*',
   github404 = '/404',
   skills = '/skills',
+  projects = '/projects',
 }

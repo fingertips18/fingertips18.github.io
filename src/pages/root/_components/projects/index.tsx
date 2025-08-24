@@ -1,16 +1,39 @@
+import { useLenis } from 'lenis/react';
 import { Terminal } from 'lucide-react';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 
 import { QUERYELEMENT, ROOTSECTION } from '@/constants/enums';
 import { PROJECTS } from '@/constants/projects';
 import { useObserver } from '@/lib/hooks/useObserver';
-import { cn } from '@/lib/utils';
+import { useRootSectionStore } from '@/lib/stores/useRootSectionStore';
+import { cn, shuffleArray } from '@/lib/utils';
+import { AppRoutes } from '@/routes/app-routes';
 
 import { ProjectItem, ProjectItemSkeleton } from './project-item';
 
 const Projects = () => {
   const sectionRef = useRef<HTMLElement | null>(null);
   const { isVisible } = useObserver({ elementRef: sectionRef });
+  const lenis = useLenis();
+  const { onActive } = useRootSectionStore();
+  const projectsRef = useRef<typeof PROJECTS>(null);
+
+  useEffect(() => {
+    const projects = projectsRef.current;
+
+    if (projects !== null) return;
+
+    const shuffledProjects = shuffleArray(PROJECTS);
+    projectsRef.current = shuffledProjects;
+  }, []);
+
+  const handleScroll = () => {
+    if (!lenis) return;
+
+    onActive(ROOTSECTION.projects);
+    lenis.scrollTo(0);
+  };
 
   return (
     <section
@@ -27,10 +50,20 @@ const Projects = () => {
         <span className='w-[32px] lg:w-[128px] h-1 rounded-full bg-muted-foreground tracking-widest' />
       </div>
 
-      <p className='text-xs lg:text-sm text-muted-foreground text-center lg:mt-2 w-3/4 lg:w-full'>
-        I’ve developed various projects, ranging from web applications to
-        Android apps. Here are a few highlights.
-      </p>
+      <div className='flex-center flex-col gap-y-1'>
+        <p className='text-xs lg:text-sm text-muted-foreground text-center lg:mt-2 w-3/4 lg:w-full'>
+          I’ve developed various projects, ranging from web applications to
+          Android apps. Here are a few highlights.
+        </p>
+
+        <Link
+          to={AppRoutes.projects}
+          onClick={handleScroll}
+          className='mt-2 text-sm hover:text-accent hover:drop-shadow-purple-glow underline-offset-4 hover:underline'
+        >
+          View All
+        </Link>
+      </div>
 
       <div
         style={{
@@ -42,15 +75,15 @@ const Projects = () => {
           isVisible ? 'opacity-100' : 'opacity-0',
         )}
       >
-        {isVisible ? (
+        {isVisible && projectsRef.current ? (
           <>
-            {PROJECTS.map((p) => (
+            {projectsRef.current.slice(0, 6).map((p) => (
               <ProjectItem key={p.name} {...p} />
             ))}
           </>
         ) : (
           <>
-            {[...Array(8)].map((_, i) => (
+            {[...Array(6)].map((_, i) => (
               <ProjectItemSkeleton key={`project-item-skeleton-${i}`} />
             ))}
           </>

@@ -6,6 +6,7 @@ import {
 
 import ErrorPage from '@/pages/error/page';
 import NotFoundPage from '@/pages/not-found/page';
+import { ProjectsPage } from '@/pages/projects/page';
 import RootLayout from '@/pages/root/layout';
 import RootPage from '@/pages/root/page';
 import { SkillsPage } from '@/pages/skills/page';
@@ -24,6 +25,9 @@ export const router = createBrowserRouter(
 
       {/* Skills */}
       <Route path={AppRoutes.skills} element={<SkillsPage />} />
+
+      {/* Projects */}
+      <Route path={AppRoutes.projects} element={<ProjectsPage />} />
 
       {/* Github 404 */}
       <Route path={AppRoutes.github404} element={<NotFoundPage />} />
