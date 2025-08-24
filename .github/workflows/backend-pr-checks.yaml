@@ -107,8 +107,7 @@ jobs:
       - name: Run gosec Security Scanner
         uses: securego/gosec@master
         with:
-          args: '-fmt text -exclude=G104,G103 ./...'
-        working-directory: backend
+          args: '-fmt text -exclude=G104,G103 ./backend/...'
         timeout-minutes: 3
 
       - name: Run Go vulnerability check
