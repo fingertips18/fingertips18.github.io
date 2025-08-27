@@ -53,8 +53,8 @@ const ProjectCard = (props: ProjectCardProps) => {
   return (
     <div
       className={cn(
-        `w-full rounded-lg overflow-hidden bg-primary/5 drop-shadow-2xl 
-        flex justify-between flex-col hover:drop-shadow-purple-glow cursor-pointer 
+        `rounded-lg overflow-hidden bg-primary/5 drop-shadow-2xl cursor-pointer
+        flex justify-between flex-col hover:drop-shadow-purple-glow
         transition-all duration-500 ease-in-out hover:-translate-y-2`,
         loaded && 'border',
       )}
@@ -63,7 +63,7 @@ const ProjectCard = (props: ProjectCardProps) => {
       <AlertDialog>
         <AlertDialogTrigger
           onClick={onDialogOpen}
-          className='h-full w-full flex-between flex-col'
+          className='size-full flex-between flex-col cursor-pointer'
         >
           <ProjectPreview {...props} />
         </AlertDialogTrigger>
@@ -121,7 +121,12 @@ const ProjectCard = (props: ProjectCardProps) => {
           </div>
 
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={onDialogClose}>Close</AlertDialogCancel>
+            <AlertDialogCancel
+              onClick={onDialogClose}
+              className='cursor-pointer'
+            >
+              Close
+            </AlertDialogCancel>
             <AlertDialogAction asChild>
               {props.type === PROJECTTYPE.web ? (
                 <Link to={props.live!} target='_blank' onClick={onDialogClose}>

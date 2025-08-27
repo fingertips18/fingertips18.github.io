@@ -77,7 +77,7 @@ const ContactForm = () => {
                   autoComplete='email'
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className='leading-none' />
             </FormItem>
           )}
         />
@@ -96,7 +96,7 @@ const ContactForm = () => {
                   autoComplete='name'
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className='leading-none' />
             </FormItem>
           )}
         />
@@ -115,7 +115,7 @@ const ContactForm = () => {
                   name='subject'
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className='leading-none' />
             </FormItem>
           )}
         />
@@ -136,7 +136,7 @@ const ContactForm = () => {
                   rows={6}
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className='leading-none' />
             </FormItem>
           )}
         />
