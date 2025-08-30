@@ -9,9 +9,19 @@ on:
       - 'src/**'
       - 'public/**'
       - '.env.**'
-      - '**.md'
       - '.gitignore'
-    types: [opened, edited, synchronize, reopened]
+      - '**.md'
+      - '.prettier**'
+      - 'components.json'
+      - 'eslint.config.js'
+      - 'index.html'
+      - 'package**.json'
+      - 'tailwind.config.js'
+      - 'tsconfig.**'
+      - 'vite.config.ts'
+    paths-ignore:
+      - 'backend/**'
+      - 'admin/**'
 
 permissions:
   contents: read

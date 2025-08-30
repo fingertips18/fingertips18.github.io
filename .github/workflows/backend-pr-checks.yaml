@@ -6,15 +6,7 @@ on:
       - main
     paths:
       - '.github/workflows/backend-pr-checks.yaml'
-      - 'cmd/**'
-      - 'go.mod'
-      - 'go.sum'
-      - 'internal/**'
-      - 'pkg/**'
-      - 'scripts/**'
-      - '.env.**'
-      - '**.md'
-      - '.gitignore'
+      - 'backend/**'
 
 permissions:
   contents: read
