@@ -12,6 +12,7 @@ export default tseslint.config(
       'dist',
       './src/components/shadcn/*.{ts,tsx}',
       'backend',
+      'admin',
     ],
   },
   {
