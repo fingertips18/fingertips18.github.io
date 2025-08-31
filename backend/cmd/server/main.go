@@ -18,28 +18,30 @@ import (
 
 // Define constants for flags to improve manageability
 const (
-	FlagEnv                 = "env"
-	FlagPort                = "port"
-	FlagAuthToken           = "auth-token"
-	FlagEmailJSServiceID    = "emailjs-service-id"
-	FlagEmailJSTemplateID   = "emailjs-template-id"
-	FlagEmailJSPublicKey    = "emailjs-public-key"
-	FlagEmailJSPrivateKey   = "emailjs-private-key"
-	FlagGoogleMeasurementID = "google-measurement-id"
-	FlagGoogleAPISecret     = "google-api-secret" // #nosec
+	FlagEnv                      = "env"
+	FlagPort                     = "port"
+	FlagAuthToken                = "auth-token"
+	FlagEmailJSServiceID         = "emailjs-service-id"
+	FlagEmailJSTemplateID        = "emailjs-template-id"
+	FlagEmailJSPublicKey         = "emailjs-public-key"
+	FlagEmailJSPrivateKey        = "emailjs-private-key"
+	FlagGoogleMeasurementID      = "google-measurement-id"
+	FlagGoogleAPISecret          = "google-api-secret" // #nosec
+	FlagPostgresConnectionString = "postgres-connection-string"
 )
 
 func main() {
 	var (
-		flagEnvironment         = flag.String(FlagEnv, "local", "Environment")
-		flagPort                = flag.String(FlagPort, "8080", "Port server")
-		flagAuthToken           = flag.String(FlagAuthToken, "", "Basic token auth")
-		flagEmailJSServiceID    = flag.String(FlagEmailJSServiceID, "", "EmailJS Service ID")
-		flagEmailJSTemplateID   = flag.String(FlagEmailJSTemplateID, "", "EmailJS Template ID")
-		flagEmailJSPublicKey    = flag.String(FlagEmailJSPublicKey, "", "EmailJS Public Key")
-		flagEmailJSPrivateKey   = flag.String(FlagEmailJSPrivateKey, "", "EmailJS Private Key")
-		flagGoogleMeasurementID = flag.String(FlagGoogleMeasurementID, "", "Google Measurement ID")
-		flagGoogleAPISecret     = flag.String(FlagGoogleAPISecret, "", "Google API Secret")
+		flagEnvironment              = flag.String(FlagEnv, "local", "Environment")
+		flagPort                     = flag.String(FlagPort, "8080", "Port server")
+		flagAuthToken                = flag.String(FlagAuthToken, "", "Basic token auth")
+		flagEmailJSServiceID         = flag.String(FlagEmailJSServiceID, "", "EmailJS Service ID")
+		flagEmailJSTemplateID        = flag.String(FlagEmailJSTemplateID, "", "EmailJS Template ID")
+		flagEmailJSPublicKey         = flag.String(FlagEmailJSPublicKey, "", "EmailJS Public Key")
+		flagEmailJSPrivateKey        = flag.String(FlagEmailJSPrivateKey, "", "EmailJS Private Key")
+		flagGoogleMeasurementID      = flag.String(FlagGoogleMeasurementID, "", "Google Measurement ID")
+		flagGoogleAPISecret          = flag.String(FlagGoogleAPISecret, "", "Google API Secret")
+		flagPostgresConnectionString = flag.String(FlagPostgresConnectionString, "", "Postgres Connection String")
 	)
 
 	flag.Parse()
@@ -51,6 +53,7 @@ func main() {
 		FlagEmailJSPublicKey,
 		FlagGoogleMeasurementID,
 		FlagGoogleAPISecret,
+		FlagPostgresConnectionString,
 	)
 
 	err := godotenv.Load()
@@ -67,6 +70,7 @@ func main() {
 	emailJSPrivateKey := *flagEmailJSPrivateKey
 	googleMeasurementID := *flagGoogleMeasurementID
 	googleAPISecret := *flagGoogleAPISecret
+	postgresConnectionString := *flagPostgresConnectionString
 	if *flagEnvironment != "local" {
 		data, err := os.ReadFile(*flagPort)
 		if err != nil {
@@ -119,9 +123,16 @@ func main() {
 
 		data, err = os.ReadFile(*flagGoogleAPISecret)
 		if err != nil {
-			log.Printf("Failed to read google API key from file, using flag value: %v", *flagGoogleAPISecret)
+			log.Printf("Failed to read google API secret from file, using flag value: %v", *flagGoogleAPISecret)
 		} else {
 			googleAPISecret = string(data)
+		}
+
+		data, err = os.ReadFile(*flagPostgresConnectionString)
+		if err != nil {
+			log.Printf("Failed to read postgres connection string from file, using flag value: %v", *flagPostgresConnectionString)
+		} else {
+			postgresConnectionString = string(data)
 		}
 	} else {
 		if port == "" {
@@ -155,6 +166,10 @@ func main() {
 		if googleAPISecret == "" {
 			googleAPISecret = os.Getenv("GOOGLE_API_SECRET")
 		}
+
+		if postgresConnectionString == "" {
+			postgresConnectionString = os.Getenv("POSTGRES_CONNECTION_STRING")
+		}
 	}
 
 	// Setup server
@@ -169,6 +184,7 @@ func main() {
 			EmailJSPrivateKey:   emailJSPrivateKey,
 			GoogleMeasurementID: googleMeasurementID,
 			GoogleAPISecret:     googleAPISecret,
+			ConnectionString:    postgresConnectionString,
 		},
 	)
 

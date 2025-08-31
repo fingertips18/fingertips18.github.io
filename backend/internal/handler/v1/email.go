@@ -1,10 +1,12 @@
 package v1
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"strings"
 
+	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
 	v1 "github.com/fingertips18/fingertips18.github.io/backend/internal/repository/v1"
 )
 
@@ -25,13 +27,6 @@ type EmailServiceConfig struct {
 
 type emailServiceHandler struct {
 	emailRepo v1.EmailRepository
-}
-
-type SendRequest struct {
-	Name    string `json:"name"`
-	Email   string `json:"email"`
-	Subject string `json:"subject"`
-	Message string `json:"message"`
 }
 
 // NewEmailServiceHandler creates and returns a new instance of EmailService.
@@ -86,7 +81,7 @@ func (h *emailServiceHandler) Send(w http.ResponseWriter, r *http.Request) {
 
 	defer r.Body.Close()
 
-	var req SendRequest
+	var req domain.SendEmail
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid JSON in request body", http.StatusBadRequest)
 		return
@@ -97,11 +92,15 @@ func (h *emailServiceHandler) Send(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
 	resp := map[string]string{"status": "ok"}
-	if err := json.NewEncoder(w).Encode(resp); err != nil {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(resp); err != nil {
+		http.Error(w, "Failed to write response: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(buf.Bytes())
 }

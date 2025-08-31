@@ -26,6 +26,7 @@ type Config struct {
 	EmailJSPrivateKey   string
 	GoogleMeasurementID string
 	GoogleAPISecret     string
+	ConnectionString    string
 }
 
 type handlerConfig struct {
@@ -79,6 +80,12 @@ func createHandlers(cfg Config) []handlerConfig {
 		},
 	)
 
+	projectHandler := v1.NewProjectServiceHandler(
+		v1.ProjectServiceConfig{
+			ConnectionString: cfg.ConnectionString,
+		},
+	)
+
 	handlers := []handlerConfig{
 		{
 			path:    "/email/",
@@ -87,6 +94,10 @@ func createHandlers(cfg Config) []handlerConfig {
 		{
 			path:    "/analytics/",
 			handler: analyticsHandler,
+		},
+		{
+			path:    "/project/",
+			handler: projectHandler,
 		},
 	}
 
