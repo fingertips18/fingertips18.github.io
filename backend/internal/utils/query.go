@@ -16,7 +16,7 @@ func GetQueryInt32(q url.Values, key string, def int32) int32 {
 	if v == "" {
 		return def
 	}
-	n, err := strconv.Atoi(v)
+	n, err := strconv.ParseInt(v, 10, 32)
 	if err != nil {
 		return def
 	}
