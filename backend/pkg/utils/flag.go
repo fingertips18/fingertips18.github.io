@@ -3,6 +3,7 @@ package flag
 import (
 	"flag"
 	"log"
+	"strings"
 )
 
 // Require checks that all specified command-line flags are set and not empty.
@@ -26,6 +27,6 @@ func Require(flags ...string) {
 	}
 
 	if len(missingFlags) > 0 {
-		log.Fatalf("Missing required flags: %v", missingFlags)
+		log.Fatalf("Missing required flags: %v", strings.Join(missingFlags, ", "))
 	}
 }

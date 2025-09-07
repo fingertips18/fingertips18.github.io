@@ -1,5 +1,7 @@
 package domain
 
+import "time"
+
 type ProjectType string
 
 const (
@@ -18,16 +20,20 @@ type Project struct {
 	Stack       []string    `json:"stack"`
 	Type        ProjectType `json:"type"`
 	Link        string      `json:"link"`
-	CreatedAt   string      `json:"created_at"`
-	UpdatedAt   string      `json:"updated_at"`
+	CreatedAt   time.Time   `json:"created_at"`
+	UpdatedAt   time.Time   `json:"updated_at"`
 }
 
-type SortBy string
-
-const (
-	CreatedAt SortBy = "created_at"
-	UpdatedAt SortBy = "updated_at"
-)
+type CreateProject struct {
+	Preview     string      `json:"preview"`
+	BlurHash    string      `json:"blur_hash"`
+	Title       string      `json:"title"`
+	SubTitle    string      `json:"sub_title"`
+	Description string      `json:"description"`
+	Stack       []string    `json:"stack"`
+	Type        ProjectType `json:"type"`
+	Link        string      `json:"link"`
+}
 
 type ProjectFilter struct {
 	Page          int32
@@ -35,4 +41,8 @@ type ProjectFilter struct {
 	SortBy        *SortBy
 	SortAscending bool
 	Type          *ProjectType
+}
+
+type ProjectIDResponse struct {
+	ID string `json:"id"`
 }

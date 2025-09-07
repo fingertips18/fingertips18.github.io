@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/fingertips18/fingertips18.github.io/backend/internal/database"
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/server"
 	flagUtils "github.com/fingertips18/fingertips18.github.io/backend/pkg/utils"
 	"github.com/joho/godotenv"
@@ -18,30 +19,46 @@ import (
 
 // Define constants for flags to improve manageability
 const (
-	FlagEnv                      = "env"
-	FlagPort                     = "port"
-	FlagAuthToken                = "auth-token"
-	FlagEmailJSServiceID         = "emailjs-service-id"
-	FlagEmailJSTemplateID        = "emailjs-template-id"
-	FlagEmailJSPublicKey         = "emailjs-public-key"
-	FlagEmailJSPrivateKey        = "emailjs-private-key"
-	FlagGoogleMeasurementID      = "google-measurement-id"
-	FlagGoogleAPISecret          = "google-api-secret" // #nosec
-	FlagPostgresConnectionString = "postgres-connection-string"
+	FlagEnv                 = "env"
+	FlagClientURL           = "client-url"
+	FlagPort                = "port"
+	FlagAuthToken           = "auth-token"
+	FlagEmailJSServiceID    = "emailjs-service-id"
+	FlagEmailJSTemplateID   = "emailjs-template-id"
+	FlagEmailJSPublicKey    = "emailjs-public-key"
+	FlagEmailJSPrivateKey   = "emailjs-private-key"
+	FlagGoogleMeasurementID = "google-measurement-id"
+	FlagGoogleAPISecret     = "google-api-secret" // #nosec
+	FlagDatabaseURL         = "database-url"
+	FlagUsername            = "username"
+	FlagPassword            = "password"
 )
 
+// @title Portfolio Backend API
+// @version 1.0
+// @description This API powers the portfolio platform, offering endpoints to manage projects, users, and supporting data for both public and admin use.
+//
+// @license.name MIT
+// @license.url https://opensource.org/license/mit
+//
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
 func main() {
 	var (
-		flagEnvironment              = flag.String(FlagEnv, "local", "Environment")
-		flagPort                     = flag.String(FlagPort, "8080", "Port server")
-		flagAuthToken                = flag.String(FlagAuthToken, "", "Basic token auth")
-		flagEmailJSServiceID         = flag.String(FlagEmailJSServiceID, "", "EmailJS Service ID")
-		flagEmailJSTemplateID        = flag.String(FlagEmailJSTemplateID, "", "EmailJS Template ID")
-		flagEmailJSPublicKey         = flag.String(FlagEmailJSPublicKey, "", "EmailJS Public Key")
-		flagEmailJSPrivateKey        = flag.String(FlagEmailJSPrivateKey, "", "EmailJS Private Key")
-		flagGoogleMeasurementID      = flag.String(FlagGoogleMeasurementID, "", "Google Measurement ID")
-		flagGoogleAPISecret          = flag.String(FlagGoogleAPISecret, "", "Google API Secret")
-		flagPostgresConnectionString = flag.String(FlagPostgresConnectionString, "", "Postgres Connection String")
+		flagEnvironment         = flag.String(FlagEnv, "local", "Environment")
+		flagClientURL           = flag.String(FlagClientURL, "http://localhost:5378", "Client URL")
+		flagPort                = flag.String(FlagPort, "8080", "Port server")
+		flagAuthToken           = flag.String(FlagAuthToken, "", "Basic token auth")
+		flagEmailJSServiceID    = flag.String(FlagEmailJSServiceID, "", "EmailJS Service ID")
+		flagEmailJSTemplateID   = flag.String(FlagEmailJSTemplateID, "", "EmailJS Template ID")
+		flagEmailJSPublicKey    = flag.String(FlagEmailJSPublicKey, "", "EmailJS Public Key")
+		flagEmailJSPrivateKey   = flag.String(FlagEmailJSPrivateKey, "", "EmailJS Private Key")
+		flagGoogleMeasurementID = flag.String(FlagGoogleMeasurementID, "", "Google Measurement ID")
+		flagGoogleAPISecret     = flag.String(FlagGoogleAPISecret, "", "Google API Secret")
+		flagDatabaseURL         = flag.String(FlagDatabaseURL, "", "Postgres Database URL")
+		flagUsername            = flag.String(FlagUsername, "", "Backend Username Access")
+		flagPassword            = flag.String(FlagPassword, "", "Backend Password Access")
 	)
 
 	flag.Parse()
@@ -53,7 +70,9 @@ func main() {
 		FlagEmailJSPublicKey,
 		FlagGoogleMeasurementID,
 		FlagGoogleAPISecret,
-		FlagPostgresConnectionString,
+		FlagDatabaseURL,
+		FlagUsername,
+		FlagPassword,
 	)
 
 	err := godotenv.Load()
@@ -63,6 +82,7 @@ func main() {
 
 	// Get secret token values
 	port := *flagPort
+	clientURL := *flagClientURL
 	authToken := *flagAuthToken
 	emailJSServiceID := *flagEmailJSServiceID
 	emailJSTemplateID := *flagEmailJSTemplateID
@@ -70,13 +90,22 @@ func main() {
 	emailJSPrivateKey := *flagEmailJSPrivateKey
 	googleMeasurementID := *flagGoogleMeasurementID
 	googleAPISecret := *flagGoogleAPISecret
-	postgresConnectionString := *flagPostgresConnectionString
+	databaseURL := *flagDatabaseURL
+	username := *flagUsername
+	password := *flagPassword
 	if *flagEnvironment != "local" {
 		data, err := os.ReadFile(*flagPort)
 		if err != nil {
 			log.Printf("Failed to read port from file, using flag value: %v", *flagPort)
 		} else {
 			port = string(data)
+		}
+
+		data, err = os.ReadFile(*flagClientURL)
+		if err != nil {
+			log.Printf("Failed to read client url from file, using flag value: %v", *flagClientURL)
+		} else {
+			clientURL = string(data)
 		}
 
 		data, err = os.ReadFile(*flagAuthToken)
@@ -128,15 +157,33 @@ func main() {
 			googleAPISecret = string(data)
 		}
 
-		data, err = os.ReadFile(*flagPostgresConnectionString)
+		data, err = os.ReadFile(*flagDatabaseURL)
 		if err != nil {
-			log.Printf("Failed to read postgres connection string from file, using flag value: %v", *flagPostgresConnectionString)
+			log.Printf("Failed to read database url string from file, using flag value: %v", *flagDatabaseURL)
 		} else {
-			postgresConnectionString = string(data)
+			databaseURL = string(data)
+		}
+
+		data, err = os.ReadFile(*flagUsername)
+		if err != nil {
+			log.Printf("Failed to read username from file, using flag value: %v", *flagUsername)
+		} else {
+			username = string(data)
+		}
+
+		data, err = os.ReadFile(*flagPassword)
+		if err != nil {
+			log.Printf("Failed to read password from file, using flag value: %v", *flagPassword)
+		} else {
+			password = string(data)
 		}
 	} else {
 		if port == "" {
 			port = os.Getenv("PORT")
+		}
+
+		if clientURL == "" {
+			clientURL = os.Getenv("CLIENT_URL")
 		}
 
 		if authToken == "" {
@@ -167,15 +214,27 @@ func main() {
 			googleAPISecret = os.Getenv("GOOGLE_API_SECRET")
 		}
 
-		if postgresConnectionString == "" {
-			postgresConnectionString = os.Getenv("POSTGRES_CONNECTION_STRING")
+		if databaseURL == "" {
+			databaseURL = os.Getenv("DATABASE_URL")
+		}
+
+		if username == "" {
+			username = os.Getenv("USERNAME")
+		}
+
+		if password == "" {
+			password = os.Getenv("PASSWORD")
 		}
 	}
+
+	// Setup database
+	database := database.NewDatabase(databaseURL)
 
 	// Setup server
 	s := server.New(
 		server.Config{
 			Environment:         *flagEnvironment,
+			ClientURL:           clientURL,
 			Port:                port,
 			AuthToken:           authToken,
 			EmailJSServiceID:    emailJSServiceID,
@@ -184,7 +243,9 @@ func main() {
 			EmailJSPrivateKey:   emailJSPrivateKey,
 			GoogleMeasurementID: googleMeasurementID,
 			GoogleAPISecret:     googleAPISecret,
-			ConnectionString:    postgresConnectionString,
+			Username:            username,
+			Password:            password,
+			Database:            *database,
 		},
 	)
 
@@ -203,6 +264,9 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+
+	// Close database pool after graceful shutdown
+	defer database.Pool.Close()
 
 	if err := s.Shutdown(ctx); err != nil {
 		log.Fatalf("Server forced to shutdown: %v", err)

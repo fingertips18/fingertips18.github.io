@@ -67,6 +67,18 @@ func (h *analyticsServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 // is invalid or missing required fields, it responds with an appropriate HTTP error.
 // On success, it records the page view using the analytics repository and responds
 // with a JSON status message.
+//
+// @Security ApiKeyAuth
+// @Summary Record a page view
+// @Description Logs a page view with the provided location and title. Returns a confirmation message.
+// @Tags analytics
+// @Accept json
+// @Produce json
+// @Param pageView body domain.PageView true "Page view payload"
+// @Success 202 {object} map[string]string "Confirmation message"
+// @Failure 400 {object} domain.ErrorResponse
+// @Failure 500 {object} domain.ErrorResponse
+// @Router /analytics/page-view [post]
 func (h *analyticsServiceHandler) PageView(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed: only POST is supported", http.StatusMethodNotAllowed)
@@ -91,7 +103,11 @@ func (h *analyticsServiceHandler) PageView(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	resp := map[string]string{"status": "ok"}
+	resp := map[string]string{
+		"message":      "Page view recorded successfully",
+		"pageLocation": req.PageLocation,
+		"pageTitle":    req.PageTitle,
+	}
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(resp); err != nil {

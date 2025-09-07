@@ -1,0 +1,356 @@
+definitions:
+  domain.CreateProject:
+    properties:
+      blur_hash:
+        type: string
+      description:
+        type: string
+      link:
+        type: string
+      preview:
+        type: string
+      stack:
+        items:
+          type: string
+        type: array
+      sub_title:
+        type: string
+      title:
+        type: string
+      type:
+        $ref: '#/definitions/domain.ProjectType'
+    type: object
+  domain.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  domain.PageView:
+    properties:
+      location:
+        type: string
+      title:
+        type: string
+    type: object
+  domain.Project:
+    properties:
+      blur_hash:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      link:
+        type: string
+      preview:
+        type: string
+      stack:
+        items:
+          type: string
+        type: array
+      sub_title:
+        type: string
+      title:
+        type: string
+      type:
+        $ref: '#/definitions/domain.ProjectType'
+      updated_at:
+        type: string
+    type: object
+  domain.ProjectType:
+    enum:
+    - web
+    - mobile
+    - game
+    type: string
+    x-enum-varnames:
+    - Web
+    - Mobile
+    - Game
+  domain.SendEmail:
+    properties:
+      email:
+        type: string
+      message:
+        type: string
+      name:
+        type: string
+      subject:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: This API powers the portfolio platform, offering endpoints to manage
+    projects, users, and supporting data for both public and admin use.
+  license:
+    name: MIT
+    url: https://opensource.org/license/mit
+  title: Portfolio Backend API
+  version: "1.0"
+paths:
+  /analytics/page-view:
+    post:
+      consumes:
+      - application/json
+      description: Logs a page view with the provided location and title. Returns
+        a confirmation message.
+      parameters:
+      - description: Page view payload
+        in: body
+        name: pageView
+        required: true
+        schema:
+          $ref: '#/definitions/domain.PageView'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Confirmation message
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Record a page view
+      tags:
+      - analytics
+  /email/send:
+    post:
+      consumes:
+      - application/json
+      description: Sends an email with the provided details and returns a confirmation
+        message.
+      parameters:
+      - description: Email payload
+        in: body
+        name: email
+        required: true
+        schema:
+          $ref: '#/definitions/domain.SendEmail'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Confirmation message
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Send an email
+      tags:
+      - email
+  /project:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new project from the provided JSON payload. Returns the
+        created project with an assigned ID.
+      parameters:
+      - description: Project payload
+        in: body
+        name: project
+        required: true
+        schema:
+          $ref: '#/definitions/domain.CreateProject'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Project ID
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a project
+      tags:
+      - project
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing project using the ID provided in the request
+        body. Returns the updated project.
+      parameters:
+      - description: Project payload with ID
+        in: body
+        name: project
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Project'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Project'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update a project
+      tags:
+      - project
+  /project/{id}:
+    delete:
+      description: Deletes an existing project by its unique ID provided in the path.
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a project
+      tags:
+      - project
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the details of a specific project using its unique ID.
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Project'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a project by ID
+      tags:
+      - project
+  /projects:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a paginated list of projects with optional filtering
+        and sorting.
+      parameters:
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Number of items per page (default 10)
+        in: query
+        name: page_size
+        type: integer
+      - description: Field to sort by
+        enum:
+        - created_at
+        - updated_at
+        in: query
+        name: sort_by
+        type: string
+      - description: Sort ascending order
+        in: query
+        name: sort_ascending
+        type: boolean
+      - description: Filter by project type
+        enum:
+        - web
+        - mobile
+        - game
+        in: query
+        name: type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Project'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: List projects
+      tags:
+      - project
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
