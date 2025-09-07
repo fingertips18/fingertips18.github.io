@@ -13,6 +13,7 @@ type PGXAPI interface {
 	QueryRow(ctx context.Context, query string, args ...any) pgx.Row
 	Exec(ctx context.Context, query string, args ...any) (pgconn.CommandTag, error)
 	Query(ctx context.Context, query string, args ...any) (pgx.Rows, error)
+	Close()
 }
 
 type pgxClient struct {
@@ -36,8 +37,6 @@ func NewPGXAPI(connectionString string) PGXAPI {
 	if err != nil {
 		log.Fatalf("Unable to connect database: %v\n", err)
 	}
-
-	defer pool.Close()
 
 	return &pgxClient{
 		pool: pool,
@@ -73,4 +72,9 @@ func (p *pgxClient) Exec(ctx context.Context, query string, args ...any) (pgconn
 // The method delegates the query execution to the underlying connection pool.
 func (p *pgxClient) Query(ctx context.Context, query string, args ...any) (pgx.Rows, error) {
 	return p.pool.Query(ctx, query, args...)
+}
+
+// Close releases all resources used by the pgxClient by closing its underlying connection pool.
+func (p *pgxClient) Close() {
+	p.pool.Close()
 }

@@ -3,13 +3,15 @@ package v1
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/fingertips18/fingertips18.github.io/backend/internal/client"
+	"github.com/fingertips18/fingertips18.github.io/backend/internal/database"
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/utils"
+	"github.com/jackc/pgx/v5"
 )
 
 type ProjectRepository interface {
@@ -21,16 +23,15 @@ type ProjectRepository interface {
 }
 
 type ProjectRepositoryConfig struct {
-	ConnectionString string
-	ProjectTable     string
+	Database     database.Database
+	ProjectTable string
 
-	pgxAPI       client.PGXAPI
 	timeProvider domain.TimeProvider
 }
 
 type projectRepository struct {
 	projectTable string
-	pgxAPI       client.PGXAPI
+	database     database.Database
 	timeProvider domain.TimeProvider
 }
 
@@ -41,11 +42,6 @@ type projectRepository struct {
 //
 // Returns a ProjectRepository implementation.
 func NewProjectRepository(cfg ProjectRepositoryConfig) ProjectRepository {
-	pgxAPI := cfg.pgxAPI
-	if pgxAPI == nil {
-		pgxAPI = client.NewPGXAPI(cfg.ConnectionString)
-	}
-
 	timeProvider := cfg.timeProvider
 	if timeProvider == nil {
 		timeProvider = time.Now
@@ -53,7 +49,7 @@ func NewProjectRepository(cfg ProjectRepositoryConfig) ProjectRepository {
 
 	return &projectRepository{
 		projectTable: cfg.ProjectTable,
-		pgxAPI:       pgxAPI,
+		database:     cfg.Database,
 		timeProvider: timeProvider,
 	}
 }
@@ -71,14 +67,21 @@ func (r *projectRepository) Create(ctx context.Context, project domain.Project) 
 
 	now := r.timeProvider()
 
-	project.CreatedAt = now.Format(time.RFC3339)
-	project.UpdatedAt = now.Format(time.RFC3339)
+	project.CreatedAt = now
+	project.UpdatedAt = now
 
-	err = r.pgxAPI.QueryRow(
+	query := fmt.Sprintf(
+		`INSERT INTO %s
+		(id, preview, blur_hash, title, sub_title, description, stack, type, link, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+		RETURNING id`,
+		r.projectTable,
+	)
+
+	var returnedID string
+	err = r.database.Pool.QueryRow(
 		ctx,
-		"INSERT INTO "+r.projectTable+` (id, preview, blur_hash, title, sub_title, description, stack, type, link, created_at, updated_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-        RETURNING id`,
+		query,
 		id,
 		project.Preview,
 		project.BlurHash,
@@ -90,13 +93,13 @@ func (r *projectRepository) Create(ctx context.Context, project domain.Project) 
 		project.Link,
 		project.CreatedAt,
 		project.UpdatedAt,
-	).Scan(new(string))
+	).Scan(&returnedID)
 
 	if err != nil {
 		return "", fmt.Errorf("failed to create project: %w", err)
 	}
 
-	return id, nil
+	return returnedID, nil
 }
 
 // Get retrieves a project by its ID from the database.
@@ -113,9 +116,16 @@ func (r *projectRepository) Get(ctx context.Context, id string) (*domain.Project
 	var project domain.Project
 	stackJSON := []byte{}
 
-	err := r.pgxAPI.QueryRow(
+	query := fmt.Sprintf(
+		`SELECT id, preview, blur_hash, title, sub_title, description, stack, type, link, created_at, updated_at
+		FROM %s
+		WHERE id = $1`,
+		r.projectTable,
+	)
+
+	err := r.database.Pool.QueryRow(
 		ctx,
-		"SELECT id, preview, blur_hash, title, sub_title, description, stack, type, link FROM "+r.projectTable+"WHERE id=$1",
+		query,
 		id,
 	).Scan(
 		&project.Id,
@@ -132,6 +142,9 @@ func (r *projectRepository) Get(ctx context.Context, id string) (*domain.Project
 	)
 
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil // not found
+		}
 		return nil, fmt.Errorf("failed to get project: %w", err)
 	}
 
@@ -163,16 +176,31 @@ func (r *projectRepository) Update(ctx context.Context, project domain.Project) 
 
 	now := r.timeProvider()
 
-	project.UpdatedAt = now.Format(time.RFC3339)
+	project.UpdatedAt = now
 
 	var updatedProject domain.Project
 	updatedStackJSON := []byte{}
 
-	err = r.pgxAPI.QueryRow(
+	query := fmt.Sprintf(
+		`UPDATE %s
+		SET preview=$2,
+			blur_hash=$3,
+			title=$4,
+			sub_title=$5,
+			description=$6,
+			stack=$7,
+			type=$8,
+			link=$9,
+			created_at=$10,
+			updated_at=$11
+		WHERE id=$1
+		RETURNING id, preview, blur_hash, title, sub_title, description, stack, type, link, created_at, updated_at`,
+		r.projectTable,
+	)
+
+	err = r.database.Pool.QueryRow(
 		ctx,
-		"UPDATE "+r.projectTable+` SET preview=$2, blur_hash=$3, title=$4, sub_title=$5, description=$6, stack=$7, type=$8, link=$9, created_at=$10, updated_at=$11
-        WHERE id=$1
-        RETURNING id, preview, blur_hash, title, sub_title, description, stack, type, link, created_at, updated_at`,
+		query,
 		project.Id,
 		project.Preview,
 		project.BlurHash,
@@ -199,6 +227,9 @@ func (r *projectRepository) Update(ctx context.Context, project domain.Project) 
 	)
 
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil // not found
+		}
 		return nil, fmt.Errorf("failed to update project: %w", err)
 	}
 
@@ -220,9 +251,12 @@ func (r *projectRepository) Update(ctx context.Context, project domain.Project) 
 // Returns:
 //   - error: An error if the operation fails or if no project is found with the specified ID.
 func (r *projectRepository) Delete(ctx context.Context, id string) error {
-	cmdTag, err := r.pgxAPI.Exec(
+
+	query := fmt.Sprintf("DELETE FROM %s WHERE id=$1", r.projectTable)
+
+	cmdTag, err := r.database.Pool.Exec(
 		ctx,
-		"DELETE FROM "+r.projectTable+" WHERE id=$1",
+		query,
 		id,
 	)
 	if err != nil {
@@ -230,7 +264,7 @@ func (r *projectRepository) Delete(ctx context.Context, id string) error {
 	}
 
 	if cmdTag.RowsAffected() == 0 {
-		return fmt.Errorf("no project found with id %s", id)
+		return pgx.ErrNoRows
 	}
 
 	return nil
@@ -257,10 +291,14 @@ func (r *projectRepository) List(ctx context.Context, filter domain.ProjectFilte
 		filter.PageSize = 20
 	}
 	if filter.SortBy == nil {
-		*filter.SortBy = domain.CreatedAt
+		defaultSort := domain.CreatedAt
+		filter.SortBy = &defaultSort
 	}
 
-	baseQuery := "SELECT id, preview, blur_hash, title, sub_title, description, stack, type, link, created_at, updated_at FROM" + r.projectTable
+	baseQuery := fmt.Sprintf(
+		`SELECT id, preview, blur_hash, title, sub_title, description, stack, type, link, created_at, updated_at FROM %s`,
+		r.projectTable,
+	)
 	var conditions []string
 	var args []any
 	argIdx := 1
@@ -289,7 +327,7 @@ func (r *projectRepository) List(ctx context.Context, filter domain.ProjectFilte
 	baseQuery += fmt.Sprintf(" LIMIT %d OFFSET %d", filter.PageSize, offset)
 
 	// Execute query
-	rows, err := r.pgxAPI.Query(ctx, baseQuery, args...)
+	rows, err := r.database.Pool.Query(ctx, baseQuery, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list projects: %w", err)
 	}

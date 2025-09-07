@@ -73,6 +73,18 @@ func (h *emailServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 // If the request method is not POST, it responds with "Method not allowed".
 // On successful email sending, it responds with a JSON object {"status": "ok"} and HTTP 200 status.
 // If there is an error decoding the request or sending the email, it responds with an appropriate HTTP error.
+//
+// @Security ApiKeyAuth
+// @Summary Send an email
+// @Description Sends an email with the provided details and returns a confirmation message.
+// @Tags email
+// @Accept json
+// @Produce json
+// @Param email body domain.SendEmail true "Email payload"
+// @Success 202 {object} map[string]string "Confirmation message"
+// @Failure 400 {object} domain.ErrorResponse
+// @Failure 500 {object} domain.ErrorResponse
+// @Router /email/send [post]
 func (h *emailServiceHandler) Send(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed: only POST is supported", http.StatusMethodNotAllowed)
@@ -92,7 +104,10 @@ func (h *emailServiceHandler) Send(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := map[string]string{"status": "ok"}
+	resp := map[string]string{
+		"message": "Email sent successfully",
+		"email":   req.Email,
+	}
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(resp); err != nil {
@@ -101,6 +116,6 @@ func (h *emailServiceHandler) Send(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusAccepted)
 	w.Write(buf.Bytes())
 }

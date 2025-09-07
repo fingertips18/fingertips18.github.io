@@ -18,4 +18,7 @@ set +a
   --emailjs-public-key="${EMAILJS_PUBLIC_KEY}" \
   --emailjs-private-key="${EMAILJS_PRIVATE_KEY}" \
   --google-measurement-id="${GOOGLE_MEASUREMENT_ID}" \
-  --google-api-secret="${GOOGLE_API_SECRET}"
+  --google-api-secret="${GOOGLE_API_SECRET}" \
+  --database-url="${DATABASE_URL}" \
+  --username="${USERNAME}" \
+  --password="${PASSWORD}"

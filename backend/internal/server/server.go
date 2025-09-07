@@ -7,8 +7,11 @@ import (
 	"net/http"
 	"time"
 
+	_ "github.com/fingertips18/fingertips18.github.io/backend/docs"
+	"github.com/fingertips18/fingertips18.github.io/backend/internal/database"
 	v1 "github.com/fingertips18/fingertips18.github.io/backend/internal/handler/v1"
 	"github.com/fingertips18/fingertips18.github.io/backend/pkg/middleware"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type Server struct {
@@ -17,6 +20,7 @@ type Server struct {
 }
 
 type Config struct {
+	ClientURL           string
 	Environment         string
 	Port                string
 	AuthToken           string
@@ -26,11 +30,13 @@ type Config struct {
 	EmailJSPrivateKey   string
 	GoogleMeasurementID string
 	GoogleAPISecret     string
-	ConnectionString    string
+	Username            string
+	Password            string
+	Database            database.Database
 }
 
 type handlerConfig struct {
-	path    string
+	paths   []string
 	handler http.Handler
 }
 
@@ -41,18 +47,44 @@ func New(cfg Config) *Server {
 	log.Printf("Starting server with environment: %s", cfg.Environment)
 
 	authInterceptor := middleware.NewAuthInterceptor(cfg.AuthToken)
+	corsInterceptor := middleware.NewCorsInterceptor(
+		middleware.CorsInterceptor{
+			ClientURL: cfg.ClientURL,
+			Local:     cfg.Environment == "local",
+		},
+	)
 
 	handlers := createHandlers(cfg)
 	mux := setupHandlers(handlers...)
 
-	muxWithAuth := http.NewServeMux()
+	// Chain: CORS → Auth → Mux
+	appChain := corsInterceptor.CorsMiddleware(
+		authInterceptor.MiddlewareFunc(mux),
+	)
 
-	muxWithAuth.Handle("/", authInterceptor.MiddlewareFunc(mux))
+	// Swagger UI (BasicAuth protected)
+	swaggerHandler := basicAuth(cfg.Username, cfg.Password, httpSwagger.WrapHandler)
+
+	// Top-level mux
+	rootMux := http.NewServeMux()
+
+	// Swagger path stays open (only BasicAuth)
+	rootMux.Handle("/swagger/", swaggerHandler)
+
+	// Root redirect
+	rootMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/" {
+			http.Redirect(w, r, "/swagger/", http.StatusFound)
+			return
+		}
+		// everything else goes through appChain
+		appChain.ServeHTTP(w, r)
+	})
 
 	return &Server{
 		httpServer: &http.Server{
 			Addr:              ":" + cfg.Port,
-			Handler:           muxWithAuth,
+			Handler:           rootMux,
 			ReadHeaderTimeout: 30 * time.Second,
 		},
 		port: cfg.Port,
@@ -82,21 +114,21 @@ func createHandlers(cfg Config) []handlerConfig {
 
 	projectHandler := v1.NewProjectServiceHandler(
 		v1.ProjectServiceConfig{
-			ConnectionString: cfg.ConnectionString,
+			Database: cfg.Database,
 		},
 	)
 
 	handlers := []handlerConfig{
 		{
-			path:    "/email/",
+			paths:   []string{"/email", "/email/"},
 			handler: emailHandler,
 		},
 		{
-			path:    "/analytics/",
+			paths:   []string{"/analytics", "/analytics/"},
 			handler: analyticsHandler,
 		},
 		{
-			path:    "/project/",
+			paths:   []string{"/project", "/project/", "/projects", "/projects/"},
 			handler: projectHandler,
 		},
 	}
@@ -104,32 +136,46 @@ func createHandlers(cfg Config) []handlerConfig {
 	return handlers
 }
 
-// setupHandlers creates and returns a new http.ServeMux with the provided handler configurations registered.
-// Each handlerConfig in the variadic parameter 'h' specifies a path and its corresponding handler to be registered
-// with the ServeMux. This function is useful for setting up multiple route handlers in a concise manner.
-//
-// Parameters:
-//
-//	h ...handlerConfig - A variadic list of handlerConfig structs, each containing a path and an http.Handler.
-//
-// Returns:
-//
-//	*http.ServeMux - A pointer to the configured http.ServeMux instance.
+// setupHandlers registers multiple HTTP handlers to their respective paths on a new http.ServeMux.
+// It accepts a variadic list of handlerConfig, where each handlerConfig contains one or more paths
+// and an associated http.Handler. Each path in the handlerConfig is mapped to the provided handler.
+// Returns the configured *http.ServeMux.
 func setupHandlers(h ...handlerConfig) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	for _, handleCfg := range h {
-		mux.Handle(handleCfg.path, handleCfg.handler)
+		for _, path := range handleCfg.paths {
+			mux.Handle(path, handleCfg.handler)
+		}
 	}
 
 	return mux
+}
+
+// basicAuth is a middleware that enforces HTTP Basic Authentication on incoming requests.
+// It checks the provided username and password against the server's configured credentials.
+// If authentication fails, it responds with a 401 Unauthorized status and a WWW-Authenticate header.
+// On successful authentication, it sets an Authorization header with a Bearer token and calls the next handler.
+func basicAuth(username, password string, next http.Handler) http.Handler {
+	return http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			u, p, ok := r.BasicAuth()
+			if !ok || u != username || p != password {
+				w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		},
+	)
 }
 
 // Run starts the HTTP server and listens for incoming requests on the configured port.
 // It logs the server startup and returns an error if the server fails to start,
 // except when the error is due to the server being closed gracefully.
 func (s *Server) Run() error {
-	log.Printf("Starting server on port %s", s.port)
+	log.Printf("Starting server on http://localhost:%s", s.port)
 	// Listen on port 8080
 	if err := s.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatalf("Could not listen on %s: %v", s.port, err)
