@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"crypto/subtle"
 	"net/http"
 	"strings"
 )
@@ -47,7 +48,7 @@ func (a *authInterceptor) MiddlewareFunc(next http.Handler) http.Handler {
 		}
 
 		token := authHeader[len(prefix):]
-		if token != a.validToken {
+		if subtle.ConstantTimeCompare([]byte(token), []byte(a.validToken)) != 1 {
 			a.abortWithStatus(w, http.StatusUnauthorized, "Invalid token")
 			return
 		}
