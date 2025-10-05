@@ -2,7 +2,6 @@ package v1
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -25,7 +24,6 @@ type fakeRow struct {
 	id      string
 	project domain.Project
 	scanErr error
-	stack   []byte // optional override
 }
 
 func (f *fakeRow) Scan(dest ...any) error {
@@ -35,7 +33,6 @@ func (f *fakeRow) Scan(dest ...any) error {
 
 	switch len(dest) {
 	case 1:
-		// Simple case: only scanning id
 		if v, ok := dest[0].(*string); ok {
 			*v = f.id
 			return nil
@@ -43,7 +40,6 @@ func (f *fakeRow) Scan(dest ...any) error {
 		return fmt.Errorf("expected *string for id, got %T", dest[0])
 
 	case 11:
-		// Full project scan
 		*dest[0].(*string) = f.project.Id
 		*dest[1].(*string) = f.project.Preview
 		*dest[2].(*string) = f.project.BlurHash
@@ -51,11 +47,10 @@ func (f *fakeRow) Scan(dest ...any) error {
 		*dest[4].(*string) = f.project.SubTitle
 		*dest[5].(*string) = f.project.Description
 
-		if f.stack != nil {
-			*dest[6].(*[]byte) = f.stack
+		if v, ok := dest[6].(*[]string); ok {
+			*v = f.project.Stack
 		} else {
-			stackJSON, _ := json.Marshal(f.project.Stack)
-			*dest[6].(*[]byte) = stackJSON
+			return fmt.Errorf("expected *[]string for stack, got %T", dest[6])
 		}
 
 		switch v := dest[7].(type) {
@@ -350,6 +345,24 @@ func TestProjectRepository_Create(t *testing.T) {
 				err: errors.New("failed to validate project: type missing"),
 			},
 		},
+		"Invalid type fails": {
+			given: Given{
+				project: domain.Project{
+					Preview:     validProject.Preview,
+					BlurHash:    validProject.BlurHash,
+					Title:       validProject.Title,
+					SubTitle:    validProject.SubTitle,
+					Description: validProject.Description,
+					Stack:       validProject.Stack,
+					Type:        "invalid",
+					Link:        validProject.Link,
+				},
+				mockQueryRow: nil,
+			},
+			expected: Expected{
+				err: errors.New("failed to validate project: type invalid = invalid"),
+			},
+		},
 		"Missing link fails": {
 			given: Given{
 				project: domain.Project{
@@ -366,24 +379,6 @@ func TestProjectRepository_Create(t *testing.T) {
 			},
 			expected: Expected{
 				err: errors.New("failed to validate project: link missing"),
-			},
-		},
-		"Invalid project type fails": {
-			given: Given{
-				project: domain.Project{
-					Preview:     validProject.Preview,
-					BlurHash:    validProject.BlurHash,
-					Title:       validProject.Title,
-					SubTitle:    validProject.SubTitle,
-					Description: validProject.Description,
-					Stack:       validProject.Stack,
-					Type:        "invalid",
-					Link:        validProject.Link,
-				},
-				mockQueryRow: nil,
-			},
-			expected: Expected{
-				err: errors.New("failed to validate project: type invalid = invalid"),
 			},
 		},
 	}
@@ -800,7 +795,6 @@ func TestProjectRepository_Get(t *testing.T) {
 func TestProjectRepository_Update(t *testing.T) {
 	fixedTime := time.Date(2025, 1, 1, 12, 0, 0, 0, time.UTC)
 	scanErr := errors.New("scan error")
-	unmarshalErr := errors.New("unexpected end of JSON input")
 
 	validProject := domain.Project{
 		Id:          "123-abc",
@@ -854,7 +848,8 @@ func TestProjectRepository_Update(t *testing.T) {
 			given: Given{
 				project: validProject,
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
-					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.Anything).
+					m.EXPECT().
+						QueryRow(mock.Anything, mock.Anything, mock.Anything).
 						Return(&fakeRow{scanErr: scanErr})
 				},
 			},
@@ -867,7 +862,8 @@ func TestProjectRepository_Update(t *testing.T) {
 			given: Given{
 				project: validProject,
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
-					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.Anything).
+					m.EXPECT().
+						QueryRow(mock.Anything, mock.Anything, mock.Anything).
 						Return(&fakeRow{scanErr: pgx.ErrNoRows})
 				},
 			},
@@ -876,20 +872,184 @@ func TestProjectRepository_Update(t *testing.T) {
 				err:            nil,
 			},
 		},
-		"Unmarshal stack fails": {
+		"Missing preview fails": {
 			given: Given{
-				project: validProject,
-				mockQueryRow: func(m *database.MockDatabaseAPI) {
-					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.Anything).
-						Return(&fakeRow{
-							project: validProject,
-							stack:   []byte(`{"invalid_json":`),
-						})
+				project: domain.Project{
+					Id:          validProject.Id,
+					Preview:     "",
+					BlurHash:    validProject.BlurHash,
+					Title:       validProject.Title,
+					SubTitle:    validProject.SubTitle,
+					Description: validProject.Description,
+					Stack:       validProject.Stack,
+					Type:        validProject.Type,
+					Link:        validProject.Link,
 				},
+				mockQueryRow: nil,
 			},
 			expected: Expected{
 				updatedProject: nil,
-				err:            fmt.Errorf("failed to unmarshal stack: %w", unmarshalErr),
+				err:            errors.New("failed to validate project: preview missing"),
+			},
+		},
+		"Missing blurHash fails": {
+			given: Given{
+				project: domain.Project{
+					Id:          validProject.Id,
+					Preview:     validProject.Preview,
+					BlurHash:    "",
+					Title:       validProject.Title,
+					SubTitle:    validProject.SubTitle,
+					Description: validProject.Description,
+					Stack:       validProject.Stack,
+					Type:        validProject.Type,
+					Link:        validProject.Link,
+				},
+				mockQueryRow: nil,
+			},
+			expected: Expected{
+				updatedProject: nil,
+				err:            errors.New("failed to validate project: blurHash missing"),
+			},
+		},
+		"Missing title fails": {
+			given: Given{
+				project: domain.Project{
+					Id:          validProject.Id,
+					Preview:     validProject.Preview,
+					BlurHash:    validProject.BlurHash,
+					Title:       "",
+					SubTitle:    validProject.SubTitle,
+					Description: validProject.Description,
+					Stack:       validProject.Stack,
+					Type:        validProject.Type,
+					Link:        validProject.Link,
+				},
+				mockQueryRow: nil,
+			},
+			expected: Expected{
+				updatedProject: nil,
+				err:            errors.New("failed to validate project: title missing"),
+			},
+		},
+		"Missing subTitle fails": {
+			given: Given{
+				project: domain.Project{
+					Id:          validProject.Id,
+					Preview:     validProject.Preview,
+					BlurHash:    validProject.BlurHash,
+					Title:       validProject.Title,
+					SubTitle:    "",
+					Description: validProject.Description,
+					Stack:       validProject.Stack,
+					Type:        validProject.Type,
+					Link:        validProject.Link,
+				},
+				mockQueryRow: nil,
+			},
+			expected: Expected{
+				updatedProject: nil,
+				err:            errors.New("failed to validate project: subTitle missing"),
+			},
+		},
+		"Missing description fails": {
+			given: Given{
+				project: domain.Project{
+					Id:          validProject.Id,
+					Preview:     validProject.Preview,
+					BlurHash:    validProject.BlurHash,
+					Title:       validProject.Title,
+					SubTitle:    validProject.SubTitle,
+					Description: "",
+					Stack:       validProject.Stack,
+					Type:        validProject.Type,
+					Link:        validProject.Link,
+				},
+				mockQueryRow: nil,
+			},
+			expected: Expected{
+				updatedProject: nil,
+				err:            errors.New("failed to validate project: description missing"),
+			},
+		},
+		"Missing stack fails": {
+			given: Given{
+				project: domain.Project{
+					Id:          validProject.Id,
+					Preview:     validProject.Preview,
+					BlurHash:    validProject.BlurHash,
+					Title:       validProject.Title,
+					SubTitle:    validProject.SubTitle,
+					Description: validProject.Description,
+					Stack:       []string{},
+					Type:        validProject.Type,
+					Link:        validProject.Link,
+				},
+				mockQueryRow: nil,
+			},
+			expected: Expected{
+				updatedProject: nil,
+				err:            errors.New("failed to validate project: stack missing"),
+			},
+		},
+		"Stack contains empty string fails": {
+			given: Given{
+				project: domain.Project{
+					Id:          validProject.Id,
+					Preview:     validProject.Preview,
+					BlurHash:    validProject.BlurHash,
+					Title:       validProject.Title,
+					SubTitle:    validProject.SubTitle,
+					Description: validProject.Description,
+					Stack:       []string{"stack1", "", "stack3"},
+					Type:        validProject.Type,
+					Link:        validProject.Link,
+				},
+				mockQueryRow: nil,
+			},
+			expected: Expected{
+				updatedProject: nil,
+				err:            errors.New("failed to validate project: stack[1] is empty"),
+			},
+		},
+		"Missing type fails": {
+			given: Given{
+				project: domain.Project{
+					Id:          validProject.Id,
+					Preview:     validProject.Preview,
+					BlurHash:    validProject.BlurHash,
+					Title:       validProject.Title,
+					SubTitle:    validProject.SubTitle,
+					Description: validProject.Description,
+					Stack:       validProject.Stack,
+					Type:        "",
+					Link:        validProject.Link,
+				},
+				mockQueryRow: nil,
+			},
+			expected: Expected{
+				updatedProject: nil,
+				err:            errors.New("failed to validate project: type missing"),
+			},
+		},
+		"Missing link fails": {
+			given: Given{
+				project: domain.Project{
+					Id:          validProject.Id,
+					Preview:     validProject.Preview,
+					BlurHash:    validProject.BlurHash,
+					Title:       validProject.Title,
+					SubTitle:    validProject.SubTitle,
+					Description: validProject.Description,
+					Stack:       validProject.Stack,
+					Type:        validProject.Type,
+					Link:        "",
+				},
+				mockQueryRow: nil,
+			},
+			expected: Expected{
+				updatedProject: nil,
+				err:            errors.New("failed to validate project: link missing"),
 			},
 		},
 	}
@@ -1010,7 +1170,6 @@ func TestProjectRepository_Delete(t *testing.T) {
 func TestProjectRepository_List(t *testing.T) {
 	fixedTime := time.Date(2025, 1, 1, 12, 0, 0, 0, time.UTC)
 	scanErr := errors.New("scan error")
-	unmarshalErr := errors.New("unexpected end of JSON input")
 	queryErr := errors.New("query error")
 	rowErr := errors.New("row iteration error")
 
@@ -1092,28 +1251,6 @@ func TestProjectRepository_List(t *testing.T) {
 			expected: Expected{
 				projects: nil,
 				err:      fmt.Errorf("failed to scan project: %w", scanErr),
-			},
-		},
-		"Unmarshal stack fails": {
-			given: Given{
-				filter: domain.ProjectFilter{},
-				mockQuery: func(m *database.MockDatabaseAPI) {
-					rows := &fakeRows{
-						rows: []*fakeRow{
-							{
-								project: validProject,
-								stack:   []byte(`{"invalid_json":`),
-							},
-						},
-					}
-					m.EXPECT().
-						Query(mock.Anything, mock.Anything, mock.Anything).
-						Return(rows, nil)
-				},
-			},
-			expected: Expected{
-				projects: nil,
-				err:      fmt.Errorf("failed to unmarshal project stack: %w", unmarshalErr),
 			},
 		},
 		"Row iteration error": {

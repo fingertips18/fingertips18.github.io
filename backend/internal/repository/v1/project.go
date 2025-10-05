@@ -2,7 +2,6 @@ package v1
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -54,21 +53,24 @@ func NewProjectRepository(cfg ProjectRepositoryConfig) ProjectRepository {
 	}
 }
 
-// Create inserts a new project record into the database and returns the generated project ID.
-// It marshals the project's stack to JSON, generates a unique ID, and sets the creation and update timestamps.
-// Returns the generated project ID on success, or an error if the operation fails.
+// Create validates and persists a new project, returning the newly generated project ID.
+//
+// The method performs the following steps:
+// 1. Validates the provided project payload.
+// 2. Generates a unique ID for the project (via utils.GenerateKey).
+// 3. Sets CreatedAt and UpdatedAt on the project copy using the repository's timeProvider.
+// 4. Inserts the project into the repository's configured project table using the provided context.
+// 5. Scans and returns the inserted project's ID.
+//
+// The provided context is used for the database operation and may cancel or time out the request.
+// Returns the new project ID on success. Returns an error if validation fails, the database query fails,
+// or the database returns an empty/missing ID.
 func (r *projectRepository) Create(ctx context.Context, project domain.Project) (string, error) {
 	if err := project.ValidatePayload(); err != nil {
 		return "", fmt.Errorf("failed to validate project: %w", err)
 	}
 
-	stackJSON, err := json.Marshal(project.Stack)
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal project stack: %w", err)
-	}
-
 	id := utils.GenerateKey()
-
 	now := r.timeProvider()
 
 	project.CreatedAt = now
@@ -83,7 +85,7 @@ func (r *projectRepository) Create(ctx context.Context, project domain.Project) 
 	)
 
 	var returnedID string
-	err = r.databaseAPI.QueryRow(
+	err := r.databaseAPI.QueryRow(
 		ctx,
 		query,
 		id,
@@ -92,7 +94,7 @@ func (r *projectRepository) Create(ctx context.Context, project domain.Project) 
 		project.Title,
 		project.SubTitle,
 		project.Description,
-		stackJSON,
+		project.Stack,
 		project.Type,
 		project.Link,
 		project.CreatedAt,
@@ -110,23 +112,18 @@ func (r *projectRepository) Create(ctx context.Context, project domain.Project) 
 	return returnedID, nil
 }
 
-// Get retrieves a project by its ID from the database.
-// It returns the corresponding domain.Project object if found, or an error otherwise.
-// The stack field is expected to be stored as JSON in the database and is unmarshaled into the Project struct.
-// Parameters:
-//   - ctx: context for controlling cancellation and deadlines.
-//   - id: the unique identifier of the project to retrieve.
-//
-// Returns:
-//   - *domain.Project: the project object if found.
-//   - error: an error if the project could not be retrieved or unmarshaled.
+// Get retrieves a project by its unique identifier from the repository's database.
+// The ctx is used for cancellation and deadlines. The id must be non-empty; if it is
+// empty, Get returns an error indicating a missing ID. On success, it returns a
+// pointer to a validated domain.Project populated from the matching database row.
+// If no row matches the provided id, the returned error will wrap pgx.ErrNoRows.
+// Any other query/scan or validation failures are returned wrapped to provide context.
 func (r *projectRepository) Get(ctx context.Context, id string) (*domain.Project, error) {
 	if id == "" {
 		return nil, fmt.Errorf("failed to get project: ID missing")
 	}
 
 	var project domain.Project
-	stackJSON := []byte{}
 
 	query := fmt.Sprintf(
 		`SELECT id, preview, blur_hash, title, sub_title, description, stack, type, link, created_at, updated_at
@@ -146,7 +143,7 @@ func (r *projectRepository) Get(ctx context.Context, id string) (*domain.Project
 		&project.Title,
 		&project.SubTitle,
 		&project.Description,
-		&stackJSON,
+		&project.Stack,
 		&project.Type,
 		&project.Link,
 		&project.CreatedAt,
@@ -160,11 +157,6 @@ func (r *projectRepository) Get(ctx context.Context, id string) (*domain.Project
 		return nil, fmt.Errorf("failed to scan project: %w", err)
 	}
 
-	// Decode stack JSON
-	if err = json.Unmarshal(stackJSON, &project.Stack); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal stack: %w", err)
-	}
-
 	if err := project.ValidateResponse(); err != nil {
 		return nil, fmt.Errorf("invalid project returned: %w", err)
 	}
@@ -172,33 +164,22 @@ func (r *projectRepository) Get(ctx context.Context, id string) (*domain.Project
 	return &project, nil
 }
 
-// Update updates an existing project in the database with the provided project data.
-// It marshals the project's stack to JSON, sets the updated timestamp, and executes
-// an UPDATE SQL statement. The updated project is returned with its fields populated
-// from the database. Returns an error if marshalling, database update, or unmarshalling fails.
-//
-// Parameters:
-//   - ctx: context.Context for controlling cancellation and deadlines.
-//   - project: domain.Project containing the updated project data.
-//
-// Returns:
-//   - *domain.Project: pointer to the updated project.
-//   - error: error if the update fails or data cannot be marshaled/unmarshaled.
+// Update updates the project identified by project.Id in the repository.
+// It validates the provided project payload, updates the UpdatedAt timestamp
+// from the repository's time provider, and persists the project's fields to
+// the database. The method returns the updated project as stored in the
+// database. If no row matches the provided id, it returns (nil, nil).
+// Validation errors or other database errors are returned (wrapped) to the
+// caller. The provided context is used for database cancellation and timeouts.
 func (r *projectRepository) Update(ctx context.Context, project domain.Project) (*domain.Project, error) {
 	if err := project.ValidatePayload(); err != nil {
 		return nil, fmt.Errorf("failed to validate project: %w", err)
 	}
-	stackJSON, err := json.Marshal(project.Stack)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal project stack: %w", err)
-	}
 
 	now := r.timeProvider()
-
 	project.UpdatedAt = now
 
 	var updatedProject domain.Project
-	updatedStackJSON := []byte{}
 
 	query := fmt.Sprintf(
 		`UPDATE %s
@@ -217,7 +198,7 @@ func (r *projectRepository) Update(ctx context.Context, project domain.Project) 
 		r.projectTable,
 	)
 
-	err = r.databaseAPI.QueryRow(
+	err := r.databaseAPI.QueryRow(
 		ctx,
 		query,
 		project.Id,
@@ -226,7 +207,7 @@ func (r *projectRepository) Update(ctx context.Context, project domain.Project) 
 		project.Title,
 		project.SubTitle,
 		project.Description,
-		stackJSON,
+		project.Stack,
 		project.Type,
 		project.Link,
 		project.CreatedAt,
@@ -238,7 +219,7 @@ func (r *projectRepository) Update(ctx context.Context, project domain.Project) 
 		&updatedProject.Title,
 		&updatedProject.SubTitle,
 		&updatedProject.Description,
-		&updatedStackJSON,
+		&updatedProject.Stack,
 		&updatedProject.Type,
 		&updatedProject.Link,
 		&updatedProject.CreatedAt,
@@ -247,14 +228,9 @@ func (r *projectRepository) Update(ctx context.Context, project domain.Project) 
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil // not found
+			return nil, nil
 		}
 		return nil, fmt.Errorf("failed to update project: %w", err)
-	}
-
-	// Decode stack JSON
-	if err = json.Unmarshal(updatedStackJSON, &updatedProject.Stack); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal stack: %w", err)
 	}
 
 	return &updatedProject, nil
@@ -292,18 +268,14 @@ func (r *projectRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-// List retrieves a list of projects from the database based on the provided filter criteria.
-// It supports filtering by project type, sorting by a specified field and order, and paginating results.
-// If filter values for page, page size, or sort field are not provided, sensible defaults are applied.
-// The function returns a slice of domain.Project and an error if the query or data processing fails.
-//
-// Parameters:
-//   - ctx: The context for controlling cancellation and deadlines.
-//   - filter: The ProjectFilter containing pagination, sorting, and optional type filter.
-//
-// Returns:
-//   - []domain.Project: A slice of projects matching the filter criteria.
-//   - error: An error if the query fails or data cannot be processed.
+// List retrieves a paginated, optionally filtered and sorted slice of domain.Project from the repository.
+// It takes a context for cancellation and a ProjectFilter that controls filtering, pagination and sorting.
+// Defaults are applied when values are not provided: Page defaults to 1, PageSize defaults to 20 (and is capped at 20),
+// and SortBy defaults to CreatedAt. If filter.Type is non-nil, results are restricted to that project type.
+// Sorting is applied by the specified field in ascending order by default; set SortAscending to false for descending.
+// Results are limited to PageSize with an offset of (Page-1)*PageSize.
+// The query is executed with parameterized arguments to avoid SQL injection and the returned slice contains
+// mapped domain.Project values. An error is returned if query execution, row scanning, or row iteration fails.
 func (r *projectRepository) List(ctx context.Context, filter domain.ProjectFilter) ([]domain.Project, error) {
 	// Set defaults if not provided
 	if filter.Page <= 0 {
@@ -358,7 +330,6 @@ func (r *projectRepository) List(ctx context.Context, filter domain.ProjectFilte
 	var projects []domain.Project
 	for rows.Next() {
 		var project domain.Project
-		var stackJSON []byte
 
 		err := rows.Scan(
 			&project.Id,
@@ -367,7 +338,7 @@ func (r *projectRepository) List(ctx context.Context, filter domain.ProjectFilte
 			&project.Title,
 			&project.SubTitle,
 			&project.Description,
-			&stackJSON,
+			&project.Stack,
 			&project.Type,
 			&project.Link,
 			&project.CreatedAt,
@@ -375,10 +346,6 @@ func (r *projectRepository) List(ctx context.Context, filter domain.ProjectFilte
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan project: %w", err)
-		}
-
-		if err = json.Unmarshal(stackJSON, &project.Stack); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal project stack: %w", err)
 		}
 
 		projects = append(projects, project)
