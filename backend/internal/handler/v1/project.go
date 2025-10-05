@@ -152,7 +152,7 @@ func (h *projectServiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	id, err := h.projectRepo.Create(
 		r.Context(),
-		domain.Project{
+		&domain.Project{
 			Preview:     project.Preview,
 			BlurHash:    project.BlurHash,
 			Title:       project.Title,
@@ -261,7 +261,7 @@ func (h *projectServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	updatedProject, err := h.projectRepo.Update(
 		r.Context(),
-		domain.Project{
+		&domain.Project{
 			Id:          project.Id,
 			Preview:     project.Preview,
 			BlurHash:    project.BlurHash,
