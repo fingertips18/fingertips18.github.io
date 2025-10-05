@@ -64,6 +64,9 @@ func (s SchoolPeriod) Validate() error {
 	if s.EndDate.IsZero() {
 		return errors.New("end date missing")
 	}
+	if !s.EndDate.After(s.StartDate) {
+		return errors.New("end date must be after start date")
+	}
 	return nil
 }
 

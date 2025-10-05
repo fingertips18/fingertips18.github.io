@@ -279,6 +279,29 @@ func TestEducationRepository_Create(t *testing.T) {
 				err: errors.New("failed to validate education: main school end date missing"),
 			},
 		},
+		"End date before start date fails": {
+			given: Given{
+				education: domain.Education{
+					MainSchool: domain.SchoolPeriod{
+						Name:        validEducation.MainSchool.Name,
+						Description: validEducation.MainSchool.Description,
+						Logo:        validEducation.MainSchool.Logo,
+						BlurHash:    validEducation.MainSchool.BlurHash,
+						StartDate:   time.Date(2025, 1, 1, 12, 0, 0, 0, time.UTC),
+						EndDate:     time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC),
+					},
+					SchoolPeriods: validEducation.SchoolPeriods,
+					Projects:      validEducation.Projects,
+					Level:         validEducation.Level,
+					CreatedAt:     validEducation.CreatedAt,
+					UpdatedAt:     validEducation.UpdatedAt,
+				},
+				mockQueryRow: nil,
+			},
+			expected: Expected{
+				err: errors.New("failed to validate education: main school end date must be after start date"),
+			},
+		},
 		"Missing school period fails": {
 			given: Given{
 				education: domain.Education{
