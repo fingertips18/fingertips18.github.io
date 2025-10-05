@@ -3,6 +3,7 @@ package domain
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -76,8 +77,11 @@ func (p Project) ValidatePayload() error {
 	if p.Description == "" {
 		return errors.New("description missing")
 	}
+	if len(p.Stack) == 0 {
+		return errors.New("stack missing")
+	}
 	for i, item := range p.Stack {
-		if item == "" {
+		if strings.TrimSpace(item) == "" {
 			return fmt.Errorf("stack[%d] is empty", i)
 		}
 	}

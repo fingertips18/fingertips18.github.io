@@ -312,6 +312,26 @@ func TestProjectRepository_Create(t *testing.T) {
 				err: errors.New("failed to validate project: stack missing"),
 			},
 		},
+		"Stack contains empty string fails": {
+			given: Given{
+				project: domain.Project{
+					Preview:     validProject.Preview,
+					BlurHash:    validProject.BlurHash,
+					Title:       validProject.Title,
+					SubTitle:    validProject.SubTitle,
+					Description: validProject.Description,
+					Stack:       []string{"stack1", "", "stack3"},
+					Type:        validProject.Type,
+					Link:        validProject.Link,
+					CreatedAt:   fixedTime,
+					UpdatedAt:   fixedTime,
+				},
+				mockQueryRow: nil,
+			},
+			expected: Expected{
+				err: errors.New("failed to validate project: stack[1] is empty"),
+			},
+		},
 		"Missing type fails": {
 			given: Given{
 				project: domain.Project{
@@ -771,6 +791,8 @@ func TestProjectRepository_Get(t *testing.T) {
 				assert.NotEmpty(t, project)
 				assert.Equal(t, test.expected.project.Id, project.Id)
 			}
+
+			f.databaseAPI.AssertExpectations(t)
 		})
 	}
 }
