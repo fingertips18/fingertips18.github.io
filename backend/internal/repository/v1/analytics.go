@@ -43,15 +43,9 @@ func NewAnalyticsRepository(cfg AnalyticsRepositoryConfig) AnalyticsRepository {
 	}
 }
 
-// PageView sends a "page_view" event to the analytics API with the specified page location and title.
-// It logs the page visit and returns an error if the event could not be sent.
-//
-// Parameters:
-//   - pageLocation: The URL or identifier of the page being viewed.
-//   - pageTitle: The title of the page being viewed.
-//
-// Returns:
-//   - error: An error if sending the analytics event fails, otherwise nil.
+// PageView validates the provided domain.PageView and sends a "page_view" event to the configured analytics API.
+// The event includes "page_location" and "page_title" parameters and is sent using a generated client ID.
+// It logs the attempt and the successful send. Returns an error if validation or sending the event fails.
 func (r *analyticsRepository) PageView(pageView domain.PageView) error {
 	if err := pageView.Validate(); err != nil {
 		return fmt.Errorf("failed to validate page view: %w", err)
