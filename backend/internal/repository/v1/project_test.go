@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 	"testing"
 	"time"
 
@@ -109,7 +110,7 @@ func (r *fakeRows) Close() {}
 type projectRepositoryTestFixture struct {
 	t                 *testing.T
 	databaseAPI       *database.MockDatabaseAPI
-	projectRepository projectRepository
+	projectRepository *projectRepository
 }
 
 func newProjectRepositoryTestFixture(t *testing.T, timeProvider func() time.Time) *projectRepositoryTestFixture {
@@ -123,7 +124,7 @@ func newProjectRepositoryTestFixture(t *testing.T, timeProvider func() time.Time
 	return &projectRepositoryTestFixture{
 		t:                 t,
 		databaseAPI:       mockDatabaseAPI,
-		projectRepository: *projectRepository,
+		projectRepository: projectRepository,
 	}
 }
 
@@ -160,8 +161,11 @@ func TestProjectRepository_Create(t *testing.T) {
 			given: Given{
 				project: validProject,
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
-					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.Anything).
-						Return(&fakeRow{id: fixedID})
+					m.EXPECT().QueryRow(
+						mock.Anything,
+						mock.MatchedBy(func(query string) bool { return strings.Contains(query, "INSERT INTO") }),
+						mock.AnythingOfType("[]interface {}"),
+					).Return(&fakeRow{id: fixedID})
 				},
 			},
 			expected: Expected{
@@ -172,8 +176,11 @@ func TestProjectRepository_Create(t *testing.T) {
 			given: Given{
 				project: validProject,
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
-					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.Anything).
-						Return(&fakeRow{scanErr: scanErr})
+					m.EXPECT().QueryRow(
+						mock.Anything,
+						mock.MatchedBy(func(query string) bool { return strings.Contains(query, "INSERT INTO") }),
+						mock.AnythingOfType("[]interface {}"),
+					).Return(&fakeRow{scanErr: scanErr})
 				},
 			},
 			expected: Expected{
@@ -184,9 +191,11 @@ func TestProjectRepository_Create(t *testing.T) {
 			given: Given{
 				project: validProject,
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
-					m.EXPECT().
-						QueryRow(mock.Anything, mock.Anything, mock.Anything).
-						Return(&fakeRow{id: ""})
+					m.EXPECT().QueryRow(
+						mock.Anything,
+						mock.MatchedBy(func(query string) bool { return strings.Contains(query, "INSERT INTO") }),
+						mock.AnythingOfType("[]interface {}"),
+					).Return(&fakeRow{id: ""})
 				},
 			},
 			expected: Expected{

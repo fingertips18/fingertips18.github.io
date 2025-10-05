@@ -20,7 +20,7 @@ const (
 type educationRepositoryTestFixture struct {
 	t                   *testing.T
 	databaseAPI         *database.MockDatabaseAPI
-	educationRepository educationRepository
+	educationRepository *educationRepository
 }
 
 func newEducationRepositoryTestFixture(t *testing.T, timeProvider func() time.Time) *educationRepositoryTestFixture {
@@ -34,7 +34,7 @@ func newEducationRepositoryTestFixture(t *testing.T, timeProvider func() time.Ti
 	return &educationRepositoryTestFixture{
 		t:                   t,
 		databaseAPI:         mockDatabaseAPI,
-		educationRepository: *educationRepository,
+		educationRepository: educationRepository,
 	}
 }
 
@@ -112,10 +112,8 @@ func TestEducationRepository_Create(t *testing.T) {
 							EndDate:     time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 						},
 					},
-					Projects:  validEducation.Projects,
-					Level:     validEducation.Level,
-					CreatedAt: validEducation.CreatedAt,
-					UpdatedAt: validEducation.UpdatedAt,
+					Projects: validEducation.Projects,
+					Level:    validEducation.Level,
 				},
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.Anything).Return(&fakeRow{id: fixedID})
