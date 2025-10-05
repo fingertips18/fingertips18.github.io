@@ -166,6 +166,24 @@ func TestGetQueryBool(t *testing.T) {
 			def:  true,
 			want: true,
 		},
+		"falsy 0": {
+			q:    url.Values{"active": {"0"}},
+			key:  "active",
+			def:  true,
+			want: false,
+		},
+		"truthy t": {
+			q:    url.Values{"active": {"t"}},
+			key:  "active",
+			def:  false,
+			want: true,
+		},
+		"empty string returns default": {
+			q:    url.Values{"active": {""}},
+			key:  "active",
+			def:  false,
+			want: false,
+		},
 	}
 
 	for name, tt := range tests {
