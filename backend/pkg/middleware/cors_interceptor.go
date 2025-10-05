@@ -35,6 +35,11 @@ func (c *corsInterceptor) CorsMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		w.Header().Set("Vary", "Origin")
 
+		if !c.local && c.clientURL == "" {
+			http.Error(w, "Server misconfiguration: clientURL cannot be empty", http.StatusInternalServerError)
+			return
+		}
+
 		if !c.local {
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
 		}

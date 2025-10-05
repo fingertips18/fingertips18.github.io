@@ -5,11 +5,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
+	"maps"
 	"net/http"
+	"time"
+
+	"github.com/fingertips18/fingertips18.github.io/backend/internal/client"
+	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
 )
 
 type EmailRepository interface {
-	Send(name, email, subject, message string) error
+	Send(send domain.SendEmail) error
 }
 
 type EmailRepositoryConfig struct {
@@ -18,10 +24,13 @@ type EmailRepositoryConfig struct {
 	UserID         string            `json:"user_id"`
 	AccessToken    string            `json:"accessToken,omitempty"`
 	TemplateParams map[string]string `json:"template_params"`
+
+	httpAPI client.HttpAPI
 }
 
 type emailRepository struct {
 	payload EmailRepositoryConfig
+	httpAPI client.HttpAPI
 }
 
 // NewEmailRepository creates and returns a new instance of EmailRepository using the provided configuration.
@@ -39,8 +48,14 @@ func NewEmailRepository(cfg EmailRepositoryConfig) EmailRepository {
 		payload.TemplateParams = make(map[string]string)
 	}
 
+	httpAPI := cfg.httpAPI
+	if httpAPI == nil {
+		httpAPI = client.NewHTTPAPI(30 * time.Second)
+	}
+
 	return &emailRepository{
 		payload: payload,
+		httpAPI: httpAPI,
 	}
 }
 
@@ -48,19 +63,27 @@ func NewEmailRepository(cfg EmailRepositoryConfig) EmailRepository {
 // It updates the template parameters with the given values, marshals the payload to JSON,
 // and performs an HTTP POST request to the EmailJS endpoint.
 // Returns an error if the request fails or if the response status is not OK.
-func (r *emailRepository) Send(name, email, subject, message string) error {
-	// Update template params with dynamic values before marshaling
-	r.payload.TemplateParams["name"] = name
-	r.payload.TemplateParams["email"] = email
-	r.payload.TemplateParams["subject"] = subject
-	r.payload.TemplateParams["message"] = message
+func (r *emailRepository) Send(send domain.SendEmail) error {
+	if err := send.Validate(); err != nil {
+		return fmt.Errorf("failed to validate send: %w", err)
+	}
 
-	body, err := json.Marshal(r.payload)
+	log.Printf("Sending email via EmailJS")
+
+	params := make(map[string]string, len(r.payload.TemplateParams)+4)
+	maps.Copy(params, r.payload.TemplateParams)
+	params["name"] = send.Name
+	params["email"] = send.Email
+	params["subject"] = send.Subject
+	params["message"] = send.Message
+
+	payload := r.payload
+	payload.TemplateParams = params
+
+	body, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("failed to marshal payload: %w", err)
 	}
-
-	fmt.Println("Sending to EmailJS:", string(body))
 
 	req, err := http.NewRequest("POST", "https://api.emailjs.com/api/v1.0/email/send", bytes.NewBuffer(body))
 	if err != nil {
@@ -68,8 +91,7 @@ func (r *emailRepository) Send(name, email, subject, message string) error {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := r.httpAPI.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to send HTTP request: %w", err)
 	}
@@ -77,8 +99,10 @@ func (r *emailRepository) Send(name, email, subject, message string) error {
 
 	if resp.StatusCode != http.StatusOK {
 		respBody, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("EmailJS error: %s - %s", resp.Status, string(respBody))
+		return fmt.Errorf("failed to send: [status=%s,message=%s]", resp.Status, string(respBody))
 	}
+
+	log.Printf("Email sent successfully via EmailJS")
 
 	return nil
 }

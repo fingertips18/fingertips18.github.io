@@ -245,7 +245,7 @@ func main() {
 			GoogleAPISecret:     googleAPISecret,
 			Username:            username,
 			Password:            password,
-			Database:            *database,
+			DatabaseAPI:         database,
 		},
 	)
 
@@ -266,7 +266,7 @@ func main() {
 	defer cancel()
 
 	// Close database pool after graceful shutdown
-	defer database.Pool.Close()
+	defer database.Close()
 
 	if err := s.Shutdown(ctx); err != nil {
 		log.Fatalf("Server forced to shutdown: %v", err)

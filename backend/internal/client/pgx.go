@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type PGXAPI interface {
+type PgxAPI interface {
 	QueryRow(ctx context.Context, query string, args ...any) pgx.Row
 	Exec(ctx context.Context, query string, args ...any) (pgconn.CommandTag, error)
 	Query(ctx context.Context, query string, args ...any) (pgx.Rows, error)
@@ -20,16 +20,16 @@ type pgxClient struct {
 	pool *pgxpool.Pool
 }
 
-// NewPGXAPI creates a new instance of PGXAPI using the provided PostgreSQL connection string.
-// It establishes a connection pool to the database and returns a PGXAPI implementation.
+// NewPGXAPI creates a new instance of PgxAPI using the provided PostgreSQL connection string.
+// It establishes a connection pool to the database and returns a PgxAPI implementation.
 // If the connection cannot be established, the function logs a fatal error and terminates the application.
 //
 // Parameters:
 //   - connectionString: The PostgreSQL connection string.
 //
 // Returns:
-//   - PGXAPI: An implementation of the PGXAPI interface connected to the specified database.
-func NewPGXAPI(connectionString string) PGXAPI {
+//   - PgxAPI: An implementation of the PgxAPI interface connected to the specified database.
+func NewPGXAPI(connectionString string) PgxAPI {
 	ctx := context.Background()
 
 	pool, err := pgxpool.New(ctx, connectionString)

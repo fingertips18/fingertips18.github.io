@@ -32,7 +32,7 @@ type Config struct {
 	GoogleAPISecret     string
 	Username            string
 	Password            string
-	Database            database.Database
+	DatabaseAPI         database.DatabaseAPI
 }
 
 type handlerConfig struct {
@@ -114,7 +114,7 @@ func createHandlers(cfg Config) []handlerConfig {
 
 	projectHandler := v1.NewProjectServiceHandler(
 		v1.ProjectServiceConfig{
-			Database: cfg.Database,
+			DatabaseAPI: cfg.DatabaseAPI,
 		},
 	)
 

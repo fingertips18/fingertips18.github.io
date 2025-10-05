@@ -23,7 +23,7 @@ type ProjectRepository interface {
 }
 
 type ProjectRepositoryConfig struct {
-	Database     database.Database
+	DatabaseAPI  database.DatabaseAPI
 	ProjectTable string
 
 	timeProvider domain.TimeProvider
@@ -31,7 +31,7 @@ type ProjectRepositoryConfig struct {
 
 type projectRepository struct {
 	projectTable string
-	database     database.Database
+	databaseAPI  database.DatabaseAPI
 	timeProvider domain.TimeProvider
 }
 
@@ -49,7 +49,7 @@ func NewProjectRepository(cfg ProjectRepositoryConfig) ProjectRepository {
 
 	return &projectRepository{
 		projectTable: cfg.ProjectTable,
-		database:     cfg.Database,
+		databaseAPI:  cfg.DatabaseAPI,
 		timeProvider: timeProvider,
 	}
 }
@@ -58,6 +58,10 @@ func NewProjectRepository(cfg ProjectRepositoryConfig) ProjectRepository {
 // It marshals the project's stack to JSON, generates a unique ID, and sets the creation and update timestamps.
 // Returns the generated project ID on success, or an error if the operation fails.
 func (r *projectRepository) Create(ctx context.Context, project domain.Project) (string, error) {
+	if err := project.ValidatePayload(); err != nil {
+		return "", fmt.Errorf("failed to validate project: %w", err)
+	}
+
 	stackJSON, err := json.Marshal(project.Stack)
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal project stack: %w", err)
@@ -79,7 +83,7 @@ func (r *projectRepository) Create(ctx context.Context, project domain.Project) 
 	)
 
 	var returnedID string
-	err = r.database.Pool.QueryRow(
+	err = r.databaseAPI.QueryRow(
 		ctx,
 		query,
 		id,
@@ -99,6 +103,10 @@ func (r *projectRepository) Create(ctx context.Context, project domain.Project) 
 		return "", fmt.Errorf("failed to create project: %w", err)
 	}
 
+	if returnedID == "" {
+		return "", errors.New("invalid project returned: ID missing")
+	}
+
 	return returnedID, nil
 }
 
@@ -113,6 +121,10 @@ func (r *projectRepository) Create(ctx context.Context, project domain.Project) 
 //   - *domain.Project: the project object if found.
 //   - error: an error if the project could not be retrieved or unmarshaled.
 func (r *projectRepository) Get(ctx context.Context, id string) (*domain.Project, error) {
+	if id == "" {
+		return nil, fmt.Errorf("failed to get project: ID missing")
+	}
+
 	var project domain.Project
 	stackJSON := []byte{}
 
@@ -123,7 +135,7 @@ func (r *projectRepository) Get(ctx context.Context, id string) (*domain.Project
 		r.projectTable,
 	)
 
-	err := r.database.Pool.QueryRow(
+	err := r.databaseAPI.QueryRow(
 		ctx,
 		query,
 		id,
@@ -143,14 +155,18 @@ func (r *projectRepository) Get(ctx context.Context, id string) (*domain.Project
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil // not found
+			return nil, fmt.Errorf("failed to get project: %w", err)
 		}
-		return nil, fmt.Errorf("failed to get project: %w", err)
+		return nil, fmt.Errorf("failed to scan project: %w", err)
 	}
 
 	// Decode stack JSON
 	if err = json.Unmarshal(stackJSON, &project.Stack); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal stack: %w", err)
+	}
+
+	if err := project.ValidateResponse(); err != nil {
+		return nil, fmt.Errorf("invalid project returned: %w", err)
 	}
 
 	return &project, nil
@@ -169,6 +185,9 @@ func (r *projectRepository) Get(ctx context.Context, id string) (*domain.Project
 //   - *domain.Project: pointer to the updated project.
 //   - error: error if the update fails or data cannot be marshaled/unmarshaled.
 func (r *projectRepository) Update(ctx context.Context, project domain.Project) (*domain.Project, error) {
+	if err := project.ValidatePayload(); err != nil {
+		return nil, fmt.Errorf("failed to validate project: %w", err)
+	}
 	stackJSON, err := json.Marshal(project.Stack)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal project stack: %w", err)
@@ -198,7 +217,7 @@ func (r *projectRepository) Update(ctx context.Context, project domain.Project) 
 		r.projectTable,
 	)
 
-	err = r.database.Pool.QueryRow(
+	err = r.databaseAPI.QueryRow(
 		ctx,
 		query,
 		project.Id,
@@ -251,10 +270,13 @@ func (r *projectRepository) Update(ctx context.Context, project domain.Project) 
 // Returns:
 //   - error: An error if the operation fails or if no project is found with the specified ID.
 func (r *projectRepository) Delete(ctx context.Context, id string) error {
+	if id == "" {
+		return fmt.Errorf("failed to delete project: ID missing")
+	}
 
 	query := fmt.Sprintf("DELETE FROM %s WHERE id=$1", r.projectTable)
 
-	cmdTag, err := r.database.Pool.Exec(
+	cmdTag, err := r.databaseAPI.Exec(
 		ctx,
 		query,
 		id,
@@ -327,7 +349,7 @@ func (r *projectRepository) List(ctx context.Context, filter domain.ProjectFilte
 	baseQuery += fmt.Sprintf(" LIMIT %d OFFSET %d", filter.PageSize, offset)
 
 	// Execute query
-	rows, err := r.database.Pool.Query(ctx, baseQuery, args...)
+	rows, err := r.databaseAPI.Query(ctx, baseQuery, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list projects: %w", err)
 	}

@@ -14,7 +14,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-type ProjectService interface {
+type ProjectHandler interface {
 	http.Handler
 	Create(w http.ResponseWriter, r *http.Request)
 	Get(w http.ResponseWriter, r *http.Request, id string)
@@ -24,7 +24,7 @@ type ProjectService interface {
 }
 
 type ProjectServiceConfig struct {
-	Database database.Database
+	DatabaseAPI database.DatabaseAPI
 
 	projectRepo v1.ProjectRepository
 }
@@ -38,12 +38,12 @@ type projectServiceHandler struct {
 // If no repository is provided in the config, it initializes a default ProjectRepository
 // using the provided connection string and a default table name.
 // Returns a ProjectService implementation.
-func NewProjectServiceHandler(cfg ProjectServiceConfig) ProjectService {
+func NewProjectServiceHandler(cfg ProjectServiceConfig) ProjectHandler {
 	projectRepo := cfg.projectRepo
 	if projectRepo == nil {
 		projectRepo = v1.NewProjectRepository(
 			v1.ProjectRepositoryConfig{
-				Database:     cfg.Database,
+				DatabaseAPI:  cfg.DatabaseAPI,
 				ProjectTable: "Project",
 			},
 		)
