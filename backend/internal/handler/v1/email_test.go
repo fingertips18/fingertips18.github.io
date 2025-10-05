@@ -124,7 +124,7 @@ func TestEmailServiceHandler_Send(t *testing.T) {
 			req := httptest.NewRequest(tt.given.method, "/email/send", strings.NewReader(tt.given.body))
 			w := httptest.NewRecorder()
 
-			f.emailHandler.(*emailServiceHandler).Send(w, req)
+			f.emailHandler.Send(w, req)
 
 			res := w.Result()
 			defer res.Body.Close()
