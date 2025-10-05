@@ -189,7 +189,6 @@ func TestEmailRepository_Send(t *testing.T) {
 				assert.EqualError(t, err, test.expected.err.Error())
 			} else {
 				assert.NoError(t, err)
-				assert.Empty(t, err)
 			}
 
 			f.mockHttpAPI.AssertExpectations(t)
