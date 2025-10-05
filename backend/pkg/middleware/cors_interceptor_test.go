@@ -143,6 +143,12 @@ func TestCorsInterceptor_CorsMiddleware(t *testing.T) {
 			req := httptest.NewRequest(tt.method, "/", nil)
 			if tt.reqOrigin != "" {
 				req.Header.Set("Origin", tt.reqOrigin)
+			} else if !tt.config.Local {
+				// Simulate a default non-local Origin
+				req.Header.Set("Origin", "http://some-origin.com")
+			} else {
+				// Optional: simulate local origin
+				req.Header.Set("Origin", "http://localhost")
 			}
 			rec := httptest.NewRecorder()
 
