@@ -66,7 +66,7 @@ func (r *emailRepository) Send(send domain.SendEmail) error {
 		return fmt.Errorf("failed to validate send: %w", err)
 	}
 
-	log.Printf("Sending email with: name=%s, email=%s, subject=%s, message=%s", send.Name, send.Email, send.Subject, send.Message)
+	log.Printf("Sending email via EmailJS")
 
 	// Update template params with dynamic values before marshaling
 	r.payload.TemplateParams["name"] = send.Name
@@ -96,7 +96,7 @@ func (r *emailRepository) Send(send domain.SendEmail) error {
 		return fmt.Errorf("failed to send: [status=%s,message=%s]", resp.Status, string(respBody))
 	}
 
-	log.Printf("Successful email send: name=%s, email=%s, subject=%s, message=%s", send.Name, send.Email, send.Subject, send.Message)
+	log.Printf("Email sent successfully via EmailJS")
 
 	return nil
 }
