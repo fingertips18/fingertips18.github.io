@@ -104,14 +104,14 @@ func TestCorsInterceptor_CorsMiddleware(t *testing.T) {
 			wantNextCalled: true,
 		},
 		{
-			name: "empty ClientURL non-local request",
+			name: "non-local request with clientURL",
 			config: CorsInterceptor{
-				ClientURL: "",
+				ClientURL: "http://prod-client.com",
 				Local:     false,
 			},
 			method:         http.MethodGet,
-			wantOrigin:     "",
-			wantCreds:      "",
+			wantOrigin:     "http://prod-client.com",
+			wantCreds:      "true",
 			wantCode:       http.StatusOK,
 			wantNextCalled: true,
 		},
@@ -127,6 +127,17 @@ func TestCorsInterceptor_CorsMiddleware(t *testing.T) {
 			wantCreds:      "true",
 			wantCode:       http.StatusOK,
 			wantNextCalled: true,
+		}, {
+			name: "empty ClientURL non-local request returns 500",
+			config: CorsInterceptor{
+				ClientURL: "",
+				Local:     false,
+			},
+			method:         http.MethodGet,
+			wantOrigin:     "",
+			wantCreds:      "",
+			wantCode:       http.StatusInternalServerError,
+			wantNextCalled: false,
 		},
 	}
 
@@ -165,13 +176,10 @@ func TestCorsInterceptor_CorsMiddleware(t *testing.T) {
 
 			if tt.wantCreds != "" {
 				assert.Equal(t, tt.wantCreds, res.Header.Get("Access-Control-Allow-Credentials"))
-			} else if tt.config.Local {
-				// For local requests, credentials should not be set
-				_, exists := res.Header["Access-Control-Allow-Credentials"]
-				assert.False(t, exists, "credentials header should not be set for local")
 			} else {
-				// For non-local requests with empty ClientURL, the middleware still sets it
-				assert.Equal(t, "true", res.Header.Get("Access-Control-Allow-Credentials"))
+				// For local requests or empty ClientURL, credentials should not be set
+				_, exists := res.Header["Access-Control-Allow-Credentials"]
+				assert.False(t, exists, "credentials header should not be set when wantCreds is empty")
 			}
 
 			assert.Equal(t, tt.wantNextCalled, nextCalled)
