@@ -82,7 +82,7 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 				body:   string(validBody),
 				mockRepo: func(m *mockRepo.MockProjectRepository) {
 					m.EXPECT().
-						Create(mock.Anything, mock.AnythingOfType("domain.Project")).
+						Create(mock.Anything, mock.AnythingOfType("*domain.Project")).
 						Return(fixedID, nil)
 				},
 			},
@@ -119,7 +119,7 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 				body:   string(validBody),
 				mockRepo: func(m *mockRepo.MockProjectRepository) {
 					m.EXPECT().
-						Create(mock.Anything, mock.AnythingOfType("domain.Project")).
+						Create(mock.Anything, mock.AnythingOfType("*domain.Project")).
 						Return("", errors.New("db failure"))
 				},
 			},
@@ -285,9 +285,8 @@ func TestProjectServiceHandler_Get(t *testing.T) {
 
 func TestProjectServiceHandler_Update(t *testing.T) {
 	fixedID := "123-abc"
-	fixedTime := time.Date(2025, 1, 1, 12, 0, 0, 0, time.UTC)
 
-	validProject := domain.Project{
+	validProject := &domain.Project{
 		Id:          fixedID,
 		Preview:     "preview.png",
 		BlurHash:    "hash",
@@ -297,8 +296,6 @@ func TestProjectServiceHandler_Update(t *testing.T) {
 		Stack:       []string{"go", "react"},
 		Type:        domain.Web,
 		Link:        "http://example.com",
-		CreatedAt:   fixedTime,
-		UpdatedAt:   fixedTime,
 	}
 
 	validBody, _ := json.Marshal(validProject)
@@ -325,7 +322,7 @@ func TestProjectServiceHandler_Update(t *testing.T) {
 				mockRepo: func(m *mockRepo.MockProjectRepository) {
 					m.EXPECT().
 						Update(mock.Anything, validProject).
-						Return(&validProject, nil)
+						Return(validProject, nil)
 				},
 			},
 			expected: Expected{

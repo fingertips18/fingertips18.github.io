@@ -140,8 +140,6 @@ func TestProjectRepository_Create(t *testing.T) {
 		Stack:       []string{"stack1"},
 		Type:        domain.Web,
 		Link:        "http://example.com",
-		CreatedAt:   fixedTime,
-		UpdatedAt:   fixedTime,
 	}
 
 	type Given struct {
@@ -161,12 +159,7 @@ func TestProjectRepository_Create(t *testing.T) {
 			given: Given{
 				project: validProject,
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
-					m.EXPECT().
-						QueryRow(
-							mock.Anything,
-							mock.Anything,
-							mock.Anything,
-						).
+					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.Anything).
 						Return(&fakeRow{id: "123-abc"})
 				},
 			},
@@ -391,7 +384,7 @@ func TestProjectRepository_Create(t *testing.T) {
 				test.given.mockQueryRow(f.databaseAPI)
 			}
 
-			id, err := f.projectRepository.Create(context.Background(), test.given.project)
+			id, err := f.projectRepository.Create(context.Background(), &test.given.project)
 
 			if test.expected.err != nil {
 				assert.EqualError(t, err, test.expected.err.Error())
@@ -796,7 +789,7 @@ func TestProjectRepository_Update(t *testing.T) {
 	fixedTime := time.Date(2025, 1, 1, 12, 0, 0, 0, time.UTC)
 	scanErr := errors.New("scan error")
 
-	validProject := domain.Project{
+	validProject := &domain.Project{
 		Id:          "123-abc",
 		Preview:     "test-preview",
 		BlurHash:    "test-blurhash",
@@ -806,8 +799,6 @@ func TestProjectRepository_Update(t *testing.T) {
 		Stack:       []string{"stack1"},
 		Type:        domain.Web,
 		Link:        "http://example.com",
-		CreatedAt:   fixedTime,
-		UpdatedAt:   fixedTime,
 	}
 
 	type Given struct {
@@ -826,27 +817,23 @@ func TestProjectRepository_Update(t *testing.T) {
 	}{
 		"Successful update project": {
 			given: Given{
-				project: validProject,
+				project: *validProject,
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
-						QueryRow(
-							mock.Anything,
-							mock.Anything,
-							mock.Anything,
-						).
+						QueryRow(mock.Anything, mock.Anything, mock.Anything).
 						Return(&fakeRow{
-							project: validProject,
+							project: *validProject,
 						})
 				},
 			},
 			expected: Expected{
-				updatedProject: &validProject,
+				updatedProject: validProject,
 				err:            nil,
 			},
 		},
 		"Database scan fails": {
 			given: Given{
-				project: validProject,
+				project: *validProject,
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, mock.Anything).
@@ -860,7 +847,7 @@ func TestProjectRepository_Update(t *testing.T) {
 		},
 		"Database returns no rows": {
 			given: Given{
-				project: validProject,
+				project: *validProject,
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, mock.Anything).
@@ -1062,7 +1049,7 @@ func TestProjectRepository_Update(t *testing.T) {
 				test.given.mockQueryRow(f.databaseAPI)
 			}
 
-			project, err := f.projectRepository.Update(context.Background(), test.given.project)
+			project, err := f.projectRepository.Update(context.Background(), &test.given.project)
 
 			if test.expected.err != nil {
 				assert.EqualError(t, err, test.expected.err.Error())
@@ -1075,6 +1062,7 @@ func TestProjectRepository_Update(t *testing.T) {
 					assert.NotNil(t, project)
 					assert.Equal(t, test.expected.updatedProject.Id, project.Id)
 				}
+				assert.Equal(t, fixedTime, test.given.project.UpdatedAt)
 			}
 
 			f.databaseAPI.AssertExpectations(t)

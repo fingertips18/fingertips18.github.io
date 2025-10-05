@@ -39,7 +39,7 @@ func (_m *MockEducationRepository) EXPECT() *MockEducationRepository_Expecter {
 }
 
 // Create provides a mock function for the type MockEducationRepository
-func (_mock *MockEducationRepository) Create(ctx context.Context, education domain.Education) (string, error) {
+func (_mock *MockEducationRepository) Create(ctx context.Context, education *domain.Education) (string, error) {
 	ret := _mock.Called(ctx, education)
 
 	if len(ret) == 0 {
@@ -48,15 +48,15 @@ func (_mock *MockEducationRepository) Create(ctx context.Context, education doma
 
 	var r0 string
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.Education) (string, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.Education) (string, error)); ok {
 		return returnFunc(ctx, education)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.Education) string); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.Education) string); ok {
 		r0 = returnFunc(ctx, education)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, domain.Education) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *domain.Education) error); ok {
 		r1 = returnFunc(ctx, education)
 	} else {
 		r1 = ret.Error(1)
@@ -71,20 +71,20 @@ type MockEducationRepository_Create_Call struct {
 
 // Create is a helper method to define mock.On call
 //   - ctx context.Context
-//   - education domain.Education
+//   - education *domain.Education
 func (_e *MockEducationRepository_Expecter) Create(ctx interface{}, education interface{}) *MockEducationRepository_Create_Call {
 	return &MockEducationRepository_Create_Call{Call: _e.mock.On("Create", ctx, education)}
 }
 
-func (_c *MockEducationRepository_Create_Call) Run(run func(ctx context.Context, education domain.Education)) *MockEducationRepository_Create_Call {
+func (_c *MockEducationRepository_Create_Call) Run(run func(ctx context.Context, education *domain.Education)) *MockEducationRepository_Create_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 domain.Education
+		var arg1 *domain.Education
 		if args[1] != nil {
-			arg1 = args[1].(domain.Education)
+			arg1 = args[1].(*domain.Education)
 		}
 		run(
 			arg0,
@@ -99,7 +99,7 @@ func (_c *MockEducationRepository_Create_Call) Return(s string, err error) *Mock
 	return _c
 }
 
-func (_c *MockEducationRepository_Create_Call) RunAndReturn(run func(ctx context.Context, education domain.Education) (string, error)) *MockEducationRepository_Create_Call {
+func (_c *MockEducationRepository_Create_Call) RunAndReturn(run func(ctx context.Context, education *domain.Education) (string, error)) *MockEducationRepository_Create_Call {
 	_c.Call.Return(run)
 	return _c
 }

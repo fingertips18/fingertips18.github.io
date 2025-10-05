@@ -39,8 +39,8 @@ func (_m *MockProjectRepository) EXPECT() *MockProjectRepository_Expecter {
 }
 
 // Create provides a mock function for the type MockProjectRepository
-func (_mock *MockProjectRepository) Create(ctx context.Context, createConfig domain.Project) (string, error) {
-	ret := _mock.Called(ctx, createConfig)
+func (_mock *MockProjectRepository) Create(ctx context.Context, project *domain.Project) (string, error) {
+	ret := _mock.Called(ctx, project)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Create")
@@ -48,16 +48,16 @@ func (_mock *MockProjectRepository) Create(ctx context.Context, createConfig dom
 
 	var r0 string
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.Project) (string, error)); ok {
-		return returnFunc(ctx, createConfig)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.Project) (string, error)); ok {
+		return returnFunc(ctx, project)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.Project) string); ok {
-		r0 = returnFunc(ctx, createConfig)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.Project) string); ok {
+		r0 = returnFunc(ctx, project)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, domain.Project) error); ok {
-		r1 = returnFunc(ctx, createConfig)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *domain.Project) error); ok {
+		r1 = returnFunc(ctx, project)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -71,20 +71,20 @@ type MockProjectRepository_Create_Call struct {
 
 // Create is a helper method to define mock.On call
 //   - ctx context.Context
-//   - createConfig domain.Project
-func (_e *MockProjectRepository_Expecter) Create(ctx interface{}, createConfig interface{}) *MockProjectRepository_Create_Call {
-	return &MockProjectRepository_Create_Call{Call: _e.mock.On("Create", ctx, createConfig)}
+//   - project *domain.Project
+func (_e *MockProjectRepository_Expecter) Create(ctx interface{}, project interface{}) *MockProjectRepository_Create_Call {
+	return &MockProjectRepository_Create_Call{Call: _e.mock.On("Create", ctx, project)}
 }
 
-func (_c *MockProjectRepository_Create_Call) Run(run func(ctx context.Context, createConfig domain.Project)) *MockProjectRepository_Create_Call {
+func (_c *MockProjectRepository_Create_Call) Run(run func(ctx context.Context, project *domain.Project)) *MockProjectRepository_Create_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 domain.Project
+		var arg1 *domain.Project
 		if args[1] != nil {
-			arg1 = args[1].(domain.Project)
+			arg1 = args[1].(*domain.Project)
 		}
 		run(
 			arg0,
@@ -99,7 +99,7 @@ func (_c *MockProjectRepository_Create_Call) Return(s string, err error) *MockPr
 	return _c
 }
 
-func (_c *MockProjectRepository_Create_Call) RunAndReturn(run func(ctx context.Context, createConfig domain.Project) (string, error)) *MockProjectRepository_Create_Call {
+func (_c *MockProjectRepository_Create_Call) RunAndReturn(run func(ctx context.Context, project *domain.Project) (string, error)) *MockProjectRepository_Create_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -298,7 +298,7 @@ func (_c *MockProjectRepository_List_Call) RunAndReturn(run func(ctx context.Con
 }
 
 // Update provides a mock function for the type MockProjectRepository
-func (_mock *MockProjectRepository) Update(ctx context.Context, project domain.Project) (*domain.Project, error) {
+func (_mock *MockProjectRepository) Update(ctx context.Context, project *domain.Project) (*domain.Project, error) {
 	ret := _mock.Called(ctx, project)
 
 	if len(ret) == 0 {
@@ -307,17 +307,17 @@ func (_mock *MockProjectRepository) Update(ctx context.Context, project domain.P
 
 	var r0 *domain.Project
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.Project) (*domain.Project, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.Project) (*domain.Project, error)); ok {
 		return returnFunc(ctx, project)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.Project) *domain.Project); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.Project) *domain.Project); ok {
 		r0 = returnFunc(ctx, project)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*domain.Project)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, domain.Project) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *domain.Project) error); ok {
 		r1 = returnFunc(ctx, project)
 	} else {
 		r1 = ret.Error(1)
@@ -332,20 +332,20 @@ type MockProjectRepository_Update_Call struct {
 
 // Update is a helper method to define mock.On call
 //   - ctx context.Context
-//   - project domain.Project
+//   - project *domain.Project
 func (_e *MockProjectRepository_Expecter) Update(ctx interface{}, project interface{}) *MockProjectRepository_Update_Call {
 	return &MockProjectRepository_Update_Call{Call: _e.mock.On("Update", ctx, project)}
 }
 
-func (_c *MockProjectRepository_Update_Call) Run(run func(ctx context.Context, project domain.Project)) *MockProjectRepository_Update_Call {
+func (_c *MockProjectRepository_Update_Call) Run(run func(ctx context.Context, project *domain.Project)) *MockProjectRepository_Update_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 domain.Project
+		var arg1 *domain.Project
 		if args[1] != nil {
-			arg1 = args[1].(domain.Project)
+			arg1 = args[1].(*domain.Project)
 		}
 		run(
 			arg0,
@@ -360,7 +360,7 @@ func (_c *MockProjectRepository_Update_Call) Return(project1 *domain.Project, er
 	return _c
 }
 
-func (_c *MockProjectRepository_Update_Call) RunAndReturn(run func(ctx context.Context, project domain.Project) (*domain.Project, error)) *MockProjectRepository_Update_Call {
+func (_c *MockProjectRepository_Update_Call) RunAndReturn(run func(ctx context.Context, project *domain.Project) (*domain.Project, error)) *MockProjectRepository_Update_Call {
 	_c.Call.Return(run)
 	return _c
 }

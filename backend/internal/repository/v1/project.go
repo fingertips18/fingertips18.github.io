@@ -14,9 +14,9 @@ import (
 )
 
 type ProjectRepository interface {
-	Create(ctx context.Context, createConfig domain.Project) (string, error)
+	Create(ctx context.Context, project *domain.Project) (string, error)
 	Get(ctx context.Context, id string) (*domain.Project, error)
-	Update(ctx context.Context, project domain.Project) (*domain.Project, error)
+	Update(ctx context.Context, project *domain.Project) (*domain.Project, error)
 	Delete(ctx context.Context, id string) error
 	List(ctx context.Context, filter domain.ProjectFilter) ([]domain.Project, error)
 }
@@ -65,7 +65,7 @@ func NewProjectRepository(cfg ProjectRepositoryConfig) ProjectRepository {
 // The provided context is used for the database operation and may cancel or time out the request.
 // Returns the new project ID on success. Returns an error if validation fails, the database query fails,
 // or the database returns an empty/missing ID.
-func (r *projectRepository) Create(ctx context.Context, project domain.Project) (string, error) {
+func (r *projectRepository) Create(ctx context.Context, project *domain.Project) (string, error) {
 	if err := project.ValidatePayload(); err != nil {
 		return "", fmt.Errorf("failed to validate project: %w", err)
 	}
@@ -171,7 +171,7 @@ func (r *projectRepository) Get(ctx context.Context, id string) (*domain.Project
 // database. If no row matches the provided id, it returns (nil, nil).
 // Validation errors or other database errors are returned (wrapped) to the
 // caller. The provided context is used for database cancellation and timeouts.
-func (r *projectRepository) Update(ctx context.Context, project domain.Project) (*domain.Project, error) {
+func (r *projectRepository) Update(ctx context.Context, project *domain.Project) (*domain.Project, error) {
 	if err := project.ValidatePayload(); err != nil {
 		return nil, fmt.Errorf("failed to validate project: %w", err)
 	}

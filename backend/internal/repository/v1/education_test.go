@@ -39,6 +39,7 @@ func newEducationRepositoryTestFixture(t *testing.T, timeProvider func() time.Ti
 }
 
 func TestEducationRepository_Create(t *testing.T) {
+	fixedID := "123-abc"
 	fixedTime := time.Date(2025, 1, 1, 12, 0, 0, 0, time.UTC)
 	scanErr := errors.New("scan error")
 
@@ -63,13 +64,9 @@ func TestEducationRepository_Create(t *testing.T) {
 				Stack:       []string{"stack1"},
 				Type:        domain.Web,
 				Link:        "http://example.com",
-				CreatedAt:   fixedTime,
-				UpdatedAt:   fixedTime,
 			},
 		},
-		Level:     domain.College,
-		CreatedAt: fixedTime,
-		UpdatedAt: fixedTime,
+		Level: domain.College,
 	}
 
 	type Given struct {
@@ -93,7 +90,7 @@ func TestEducationRepository_Create(t *testing.T) {
 						mock.Anything,
 						mock.Anything,
 						mock.Anything,
-					).Return(&fakeRow{id: "123-abc"})
+					).Return(&fakeRow{id: fixedID})
 				},
 			},
 			expected: Expected{
@@ -411,14 +408,12 @@ func TestEducationRepository_Create(t *testing.T) {
 				test.given.mockQueryRow(f.databaseAPI)
 			}
 
-			id, err := f.educationRepository.Create(context.Background(), test.given.education)
+			id, err := f.educationRepository.Create(context.Background(), &test.given.education)
 
 			if test.expected.err != nil {
 				assert.EqualError(t, err, test.expected.err.Error())
 			} else {
-				assert.NoError(t, err)
-				assert.Empty(t, err)
-				assert.NotEmpty(t, id)
+				assert.Equal(t, fixedID, id)
 				assert.Equal(t, fixedTime, test.given.education.CreatedAt)
 				assert.Equal(t, fixedTime, test.given.education.UpdatedAt)
 			}

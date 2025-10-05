@@ -12,7 +12,7 @@ import (
 )
 
 type EducationRepository interface {
-	Create(ctx context.Context, education domain.Education) (string, error)
+	Create(ctx context.Context, education *domain.Education) (string, error)
 }
 
 type EducationRepositoryConfig struct {
@@ -56,7 +56,7 @@ func NewEducationRepository(cfg EducationRepositoryConfig) EducationRepository {
 //   - Executes an INSERT against the configured education table using the repository's databaseAPI and expects the database to RETURN the inserted id.
 //
 // On success, Create returns the newly created record's ID. It returns an error if validation fails, if the database INSERT or Scan fails, or if the database returns an empty ID.
-func (r *educationRepository) Create(ctx context.Context, education domain.Education) (string, error) {
+func (r *educationRepository) Create(ctx context.Context, education *domain.Education) (string, error) {
 	if err := education.ValidatePayload(); err != nil {
 		return "", fmt.Errorf("failed to validate education: %w", err)
 	}
