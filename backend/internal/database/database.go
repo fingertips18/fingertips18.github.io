@@ -63,14 +63,13 @@ type database struct {
 	pool client.PgxAPI
 }
 
-// NewDatabase creates a new instance of Database using the provided connection string.
-// It initializes a connection pool to the PostgreSQL database and returns a pointer to the Database struct.
-//
-// Parameters:
-//   - connectionString: the database connection string.
-//
-// Returns:
-//   - *Database: a pointer to the initialized Database instance.
+// NewDatabase creates and returns a DatabaseAPI backed by a PostgreSQL connection pool.
+// The provided connectionString is used to initialize the underlying client pool and
+// should be in the format expected by the PostgreSQL client used by this package.
+// The returned DatabaseAPI is ready for use; consult the DatabaseAPI interface for
+// lifecycle responsibilities (for example, closing or releasing resources) and the
+// precise behaviour on connection or runtime errors, which are determined by the
+// underlying client implementation.
 func NewDatabase(connectionString string) DatabaseAPI {
 	pool := client.NewPGXAPI(connectionString)
 
