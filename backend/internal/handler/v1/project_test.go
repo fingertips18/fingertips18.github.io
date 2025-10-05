@@ -141,7 +141,7 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 			req := httptest.NewRequest(tt.given.method, "/project", strings.NewReader(tt.given.body))
 			w := httptest.NewRecorder()
 
-			f.projectHandler.(*projectServiceHandler).Create(w, req)
+			f.projectHandler.Create(w, req)
 
 			res := w.Result()
 			defer res.Body.Close()
