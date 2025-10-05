@@ -13,6 +13,7 @@ func TestCorsInterceptor_CorsMiddleware(t *testing.T) {
 		name           string
 		config         CorsInterceptor
 		method         string
+		reqOrigin      string
 		wantOrigin     string
 		wantCreds      string
 		wantCode       int
@@ -54,6 +55,79 @@ func TestCorsInterceptor_CorsMiddleware(t *testing.T) {
 			wantCode:       http.StatusOK,
 			wantNextCalled: false,
 		},
+		{
+			name: "local OPTIONS request",
+			config: CorsInterceptor{
+				ClientURL: "http://prod-client.com",
+				Local:     true,
+			},
+			method:         http.MethodOptions,
+			wantOrigin:     "*",
+			wantCreds:      "",
+			wantCode:       http.StatusOK,
+			wantNextCalled: false,
+		},
+		{
+			name: "non-local POST request",
+			config: CorsInterceptor{
+				ClientURL: "http://prod-client.com",
+				Local:     false,
+			},
+			method:         http.MethodPost,
+			wantOrigin:     "http://prod-client.com",
+			wantCreds:      "true",
+			wantCode:       http.StatusOK,
+			wantNextCalled: true,
+		},
+		{
+			name: "non-local PUT request",
+			config: CorsInterceptor{
+				ClientURL: "http://prod-client.com",
+				Local:     false,
+			},
+			method:         http.MethodPut,
+			wantOrigin:     "http://prod-client.com",
+			wantCreds:      "true",
+			wantCode:       http.StatusOK,
+			wantNextCalled: true,
+		},
+		{
+			name: "non-local DELETE request",
+			config: CorsInterceptor{
+				ClientURL: "http://prod-client.com",
+				Local:     false,
+			},
+			method:         http.MethodDelete,
+			wantOrigin:     "http://prod-client.com",
+			wantCreds:      "true",
+			wantCode:       http.StatusOK,
+			wantNextCalled: true,
+		},
+		{
+			name: "empty ClientURL non-local request",
+			config: CorsInterceptor{
+				ClientURL: "",
+				Local:     false,
+			},
+			method:         http.MethodGet,
+			wantOrigin:     "",
+			wantCreds:      "",
+			wantCode:       http.StatusOK,
+			wantNextCalled: true,
+		},
+		{
+			name: "non-local request with custom Origin header",
+			config: CorsInterceptor{
+				ClientURL: "http://prod-client.com",
+				Local:     false,
+			},
+			method:         http.MethodGet,
+			reqOrigin:      "http://custom-origin.com",
+			wantOrigin:     "http://prod-client.com",
+			wantCreds:      "true",
+			wantCode:       http.StatusOK,
+			wantNextCalled: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -67,6 +141,9 @@ func TestCorsInterceptor_CorsMiddleware(t *testing.T) {
 			handler := NewCorsInterceptor(tt.config).CorsMiddleware(next)
 
 			req := httptest.NewRequest(tt.method, "/", nil)
+			if tt.reqOrigin != "" {
+				req.Header.Set("Origin", tt.reqOrigin)
+			}
 			rec := httptest.NewRecorder()
 
 			handler.ServeHTTP(rec, req)
@@ -82,9 +159,13 @@ func TestCorsInterceptor_CorsMiddleware(t *testing.T) {
 
 			if tt.wantCreds != "" {
 				assert.Equal(t, tt.wantCreds, res.Header.Get("Access-Control-Allow-Credentials"))
-			} else {
+			} else if tt.config.Local {
+				// For local requests, credentials should not be set
 				_, exists := res.Header["Access-Control-Allow-Credentials"]
 				assert.False(t, exists, "credentials header should not be set for local")
+			} else {
+				// For non-local requests with empty ClientURL, the middleware still sets it
+				assert.Equal(t, "true", res.Header.Get("Access-Control-Allow-Credentials"))
 			}
 
 			assert.Equal(t, tt.wantNextCalled, nextCalled)

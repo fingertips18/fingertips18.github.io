@@ -86,7 +86,7 @@ func (r *emailRepository) Send(send domain.SendEmail) error {
 
 	req, err := http.NewRequest("POST", "https://api.emailjs.com/api/v1.0/email/send", bytes.NewBuffer(body))
 	if err != nil {
-		return fmt.Errorf("failed to create HTTP request %w", err)
+		return fmt.Errorf("failed to create HTTP request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
