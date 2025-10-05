@@ -58,3 +58,27 @@ func TestRequire_MissingFlags(t *testing.T) {
 		t.Fatalf("expected process to exit with error, got err=%v, out=%s", err, string(out))
 	}
 }
+
+func TestRequire_EmptyFlags(t *testing.T) {
+	if os.Getenv("BE_CRASHER") == "1" {
+		flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+		_ = flag.String("name", "", "name flag")
+		_ = flag.CommandLine.Parse([]string{})
+
+		Require("name")
+		return
+	}
+
+	cmd := exec.Command(os.Args[0], "-test.run=TestRequire_EmptyFlags")
+	cmd.Env = append(os.Environ(), "BE_CRASHER=1")
+
+	out, err := cmd.CombinedOutput()
+
+	if exitError, ok := err.(*exec.ExitError); ok && !exitError.Success() {
+		if !strings.Contains(string(out), "Missing required flags: name") {
+			t.Errorf("expected log to mention missing flag, got %q", string(out))
+		}
+	} else {
+		t.Fatalf("expected process to exit with error, got err=%v, out=%s", err, string(out))
+	}
+}
