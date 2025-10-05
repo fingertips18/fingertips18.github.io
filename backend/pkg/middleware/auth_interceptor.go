@@ -33,22 +33,25 @@ func (a *authInterceptor) abortWithStatus(w http.ResponseWriter, code int, messa
 // If the header is missing or the token is invalid, it responds with HTTP 401 Unauthorized and an error message.
 // Otherwise, it calls the next handler in the chain.
 func (a *authInterceptor) MiddlewareFunc(next http.Handler) http.Handler {
-	return http.HandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) {
-			authHeader := r.Header.Get("Authorization")
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" {
+			a.abortWithStatus(w, http.StatusUnauthorized, "Missing authorization header")
+			return
+		}
 
-			if authHeader == "" {
-				a.abortWithStatus(w, http.StatusUnauthorized, "Missing authorization header")
-				return
-			}
+		const prefix = "Bearer "
+		if !strings.HasPrefix(authHeader, prefix) {
+			a.abortWithStatus(w, http.StatusUnauthorized, "Invalid token")
+			return
+		}
 
-			token := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer"))
-			if token != a.validToken {
-				a.abortWithStatus(w, http.StatusUnauthorized, "Invalid token")
-				return
-			}
+		token := authHeader[len(prefix):]
+		if token != a.validToken {
+			a.abortWithStatus(w, http.StatusUnauthorized, "Invalid token")
+			return
+		}
 
-			next.ServeHTTP(w, r)
-		},
-	)
+		next.ServeHTTP(w, r)
+	})
 }
