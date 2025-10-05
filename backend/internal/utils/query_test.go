@@ -73,6 +73,10 @@ func TestGetQueryInt32(t *testing.T) {
 	}
 }
 
+func ptr(s domain.SortBy) *domain.SortBy {
+	return &s
+}
+
 func TestGetQuerySortBy(t *testing.T) {
 	tests := map[string]struct {
 		q      url.Values
@@ -89,13 +93,13 @@ func TestGetQuerySortBy(t *testing.T) {
 		"valid CreatedAt": {
 			q:      url.Values{"sort_by": {string(domain.CreatedAt)}},
 			key:    "sort_by",
-			want:   func() *domain.SortBy { s := domain.CreatedAt; return &s }(),
+			want:   ptr(domain.CreatedAt),
 			hasErr: false,
 		},
 		"valid UpdatedAt": {
 			q:      url.Values{"sort_by": {string(domain.UpdatedAt)}},
 			key:    "sort_by",
-			want:   func() *domain.SortBy { s := domain.UpdatedAt; return &s }(),
+			want:   ptr(domain.UpdatedAt),
 			hasErr: false,
 		},
 		"invalid value": {
@@ -103,6 +107,12 @@ func TestGetQuerySortBy(t *testing.T) {
 			key:    "sort_by",
 			want:   nil,
 			hasErr: true,
+		},
+		"empty string returns nil": {
+			q:      url.Values{"sort_by": {""}},
+			key:    "sort_by",
+			want:   nil,
+			hasErr: false,
 		},
 	}
 
