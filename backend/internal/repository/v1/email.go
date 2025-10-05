@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"maps"
 	"net/http"
 
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/client"
@@ -68,13 +69,17 @@ func (r *emailRepository) Send(send domain.SendEmail) error {
 
 	log.Printf("Sending email via EmailJS")
 
-	// Update template params with dynamic values before marshaling
-	r.payload.TemplateParams["name"] = send.Name
-	r.payload.TemplateParams["email"] = send.Email
-	r.payload.TemplateParams["subject"] = send.Subject
-	r.payload.TemplateParams["message"] = send.Message
+	params := make(map[string]string, len(r.payload.TemplateParams)+4)
+	maps.Copy(params, r.payload.TemplateParams)
+	params["name"] = send.Name
+	params["email"] = send.Email
+	params["subject"] = send.Subject
+	params["message"] = send.Message
 
-	body, err := json.Marshal(r.payload)
+	payload := r.payload
+	payload.TemplateParams = params
+
+	body, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("failed to marshal payload: %w", err)
 	}
