@@ -128,6 +128,7 @@ func newProjectRepositoryTestFixture(t *testing.T, timeProvider func() time.Time
 }
 
 func TestProjectRepository_Create(t *testing.T) {
+	fixedID := "123-abc"
 	fixedTime := time.Date(2025, 1, 1, 12, 0, 0, 0, time.UTC)
 	scanErr := errors.New("scan error")
 
@@ -160,7 +161,7 @@ func TestProjectRepository_Create(t *testing.T) {
 				project: validProject,
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.Anything).
-						Return(&fakeRow{id: "123-abc"})
+						Return(&fakeRow{id: fixedID})
 				},
 			},
 			expected: Expected{
@@ -390,8 +391,7 @@ func TestProjectRepository_Create(t *testing.T) {
 				assert.EqualError(t, err, test.expected.err.Error())
 			} else {
 				assert.NoError(t, err)
-				assert.Empty(t, err)
-				assert.NotEmpty(t, id)
+				assert.Equal(t, fixedID, id)
 				assert.Equal(t, fixedTime, test.given.project.CreatedAt)
 				assert.Equal(t, fixedTime, test.given.project.UpdatedAt)
 			}

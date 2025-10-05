@@ -97,6 +97,34 @@ func TestEducationRepository_Create(t *testing.T) {
 				err: nil,
 			},
 		},
+		"Valid multiple school periods": {
+			given: Given{
+				education: domain.Education{
+					MainSchool: validEducation.MainSchool,
+					SchoolPeriods: []domain.SchoolPeriod{
+						validEducation.MainSchool,
+						{
+							Name:        "Another School",
+							Description: "Desc",
+							Logo:        "Logo2",
+							BlurHash:    "BlurHash2",
+							StartDate:   time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC),
+							EndDate:     time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+						},
+					},
+					Projects:  validEducation.Projects,
+					Level:     validEducation.Level,
+					CreatedAt: validEducation.CreatedAt,
+					UpdatedAt: validEducation.UpdatedAt,
+				},
+				mockQueryRow: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.Anything).Return(&fakeRow{id: fixedID})
+				},
+			},
+			expected: Expected{
+				err: nil,
+			},
+		},
 		"Database scan fails": {
 			given: Given{
 				education: validEducation,
@@ -413,6 +441,7 @@ func TestEducationRepository_Create(t *testing.T) {
 			if test.expected.err != nil {
 				assert.EqualError(t, err, test.expected.err.Error())
 			} else {
+				assert.NoError(t, err)
 				assert.Equal(t, fixedID, id)
 				assert.Equal(t, fixedTime, test.given.education.CreatedAt)
 				assert.Equal(t, fixedTime, test.given.education.UpdatedAt)
