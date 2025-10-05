@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type PGXAPI interface {
+type PgxAPI interface {
 	QueryRow(ctx context.Context, query string, args ...any) pgx.Row
 	Exec(ctx context.Context, query string, args ...any) (pgconn.CommandTag, error)
 	Query(ctx context.Context, query string, args ...any) (pgx.Rows, error)
@@ -29,7 +29,7 @@ type pgxClient struct {
 //
 // Returns:
 //   - PGXAPI: An implementation of the PGXAPI interface connected to the specified database.
-func NewPGXAPI(connectionString string) PGXAPI {
+func NewPGXAPI(connectionString string) PgxAPI {
 	ctx := context.Background()
 
 	pool, err := pgxpool.New(ctx, connectionString)

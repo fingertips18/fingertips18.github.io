@@ -10,7 +10,7 @@ import (
 	v1 "github.com/fingertips18/fingertips18.github.io/backend/internal/repository/v1"
 )
 
-type EmailService interface {
+type EmailHandler interface {
 	http.Handler
 	Send(w http.ResponseWriter, r *http.Request)
 }
@@ -34,7 +34,7 @@ type emailServiceHandler struct {
 // If an email repository is not provided in the config, it creates a new one
 // using the configuration parameters. The returned EmailService can be used
 // to interact with email-related functionality.
-func NewEmailServiceHandler(cfg EmailServiceConfig) EmailService {
+func NewEmailServiceHandler(cfg EmailServiceConfig) EmailHandler {
 	emailRepo := cfg.emailRepo
 	if emailRepo == nil {
 		emailRepo = v1.NewEmailRepository(
@@ -99,7 +99,7 @@ func (h *emailServiceHandler) Send(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.emailRepo.Send(req.Name, req.Email, req.Subject, req.Message); err != nil {
+	if err := h.emailRepo.Send(req); err != nil {
 		http.Error(w, "Failed to send email: "+err.Error(), http.StatusInternalServerError)
 		return
 	}

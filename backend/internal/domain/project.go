@@ -1,6 +1,10 @@
 package domain
 
-import "time"
+import (
+	"errors"
+	"fmt"
+	"time"
+)
 
 type ProjectType string
 
@@ -45,4 +49,64 @@ type ProjectFilter struct {
 
 type ProjectIDResponse struct {
 	ID string `json:"id"`
+}
+
+func (pt ProjectType) isValid() bool {
+	switch pt {
+	case Web, Mobile, Game:
+		return true
+	default:
+		return false
+	}
+}
+
+func (p Project) ValidatePayload() error {
+	if p.Preview == "" {
+		return errors.New("preview missing")
+	}
+	if p.BlurHash == "" {
+		return errors.New("blurHash missing")
+	}
+	if p.Title == "" {
+		return errors.New("title missing")
+	}
+	if p.SubTitle == "" {
+		return errors.New("subTitle missing")
+	}
+	if p.Description == "" {
+		return errors.New("description missing")
+	}
+	if len(p.Stack) == 0 {
+		return errors.New("stack missing")
+	}
+	if p.Type == "" {
+		return errors.New("type missing")
+	} else if !p.Type.isValid() {
+		return fmt.Errorf("type invalid = %s", p.Type)
+	}
+	if p.Link == "" {
+		return errors.New("link missing")
+	}
+
+	return nil
+}
+
+func (p Project) ValidateResponse() error {
+	if p.Id == "" {
+		return errors.New("ID missing")
+	}
+
+	if err := p.ValidatePayload(); err != nil {
+		return err
+	}
+
+	if p.CreatedAt.IsZero() {
+		return errors.New("createdAt missing")
+	}
+
+	if p.UpdatedAt.IsZero() {
+		return errors.New("updatedAt missing")
+	}
+
+	return nil
 }

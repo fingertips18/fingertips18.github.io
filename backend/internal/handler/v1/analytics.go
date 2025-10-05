@@ -93,12 +93,7 @@ func (h *analyticsServiceHandler) PageView(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if req.PageLocation == "" || req.PageTitle == "" {
-		http.Error(w, "Missing required fields", http.StatusBadRequest)
-		return
-	}
-
-	if err := h.analyticsRepo.PageView(req.PageLocation, req.PageTitle); err != nil {
+	if err := h.analyticsRepo.PageView(req); err != nil {
 		http.Error(w, "Failed to view page: "+err.Error(), http.StatusInternalServerError)
 		return
 	}

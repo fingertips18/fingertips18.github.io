@@ -1,0 +1,23 @@
+dir: "{{.InterfaceDir}}/mocks"
+filename: "{{.InterfaceName | snakecase}}.go"
+structname: "Mock{{.InterfaceName}}"
+template: testify
+packages:
+  github.com/fingertips18/fingertips18.github.io/backend/internal/client:
+    interfaces:
+      GoogleAnalyticsAPI: {}
+      PgxAPI: {}
+      HttpAPI: {}
+  github.com/fingertips18/fingertips18.github.io/backend/internal/repository/v1:
+    interfaces:
+      AnalyticsRepository: {}
+      EmailRepository: {}
+      ProjectRepository: {}
+  github.com/fingertips18/fingertips18.github.io/backend/internal/handler/v1:
+    interfaces:
+      AnalyticsHandler: {}
+      EmailHandler: {}
+      ProjectHandler: {}
+  github.com/fingertips18/fingertips18.github.io/backend/internal/database:
+    interfaces:
+      DatabaseAPI: {}

@@ -55,29 +55,35 @@ jobs:
 
       - name: Check Go formatting
         run: |
-          echo "🎨 Checking Go code formatting..."
+          echo "Checking Go code formatting..."
           FILES_TO_CHECK=$(find . -name "*.go")
           if [ -n "$FILES_TO_CHECK" ]; then
             UNFORMATTED=$(gofmt -s -l $FILES_TO_CHECK)
             if [ -n "$UNFORMATTED" ]; then
-              echo "❌ Go code is not properly formatted!"
+              echo "Go code is not properly formatted!"
               echo "$UNFORMATTED"
               exit 1
             fi
           fi
-          echo "✅ Go code formatting is correct"
+          echo "Go code formatting is correct"
 
       - name: Run go vet
         run: |
           echo "🔍 Running go vet..."
           go vet ./...
-          echo "✅ go vet passed"
+          echo "go vet passed"
 
       - name: Build check
         run: |
           echo "🔨 Building Server..."
           go build -v ./cmd/server/...
-          echo "✅ Build successful"
+          echo "Build successful"
+
+      - name: Run tests with race detection
+        run: |
+          echo "Running tests with race detection..."
+          go test -race -coverprofile=coverage.out -covermode=atomic ./...
+          echo "All tests passed"
 
   security:
     name: Security Scan

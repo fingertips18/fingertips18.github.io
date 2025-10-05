@@ -45,27 +45,27 @@ jobs:
 
       - name: Prettier Check
         run: |
-          echo "🎨 Checking code formatting..."
+          echo "Checking code formatting..."
           npx prettier --check .
           if [ $? -ne 0 ]; then
             echo ""
-            echo "❌ Code formatting check failed!"
+            echo "Code formatting check failed!"
             echo 'Please run "npm run format" to fix formatting issues.'
             exit 1
           fi
-            echo "✅ Code formatting is correct!"
+            echo "Code formatting is correct!"
 
       - name: TypeScript check
         run: |
           echo "🔍 Running TypeScript type checking..."
           npm run typecheck
-          echo "✅ TypeScript checks passed!"
+          echo "TypeScript checks passed!"
 
       - name: ESLint Check
         run: |
           echo "🔧 Running ESLint checks..."
           npm run lint
-          echo "✅ ESLint checks passed!"
+          echo "ESLint checks passed!"
 
       - name: Build Check
         env:
@@ -104,7 +104,7 @@ jobs:
         run: |
           echo "🔒 Running npm security audit..."
           npm audit --audit-level=high
-          echo "✅ NPM audit completed!"
+          echo "NPM audit completed!"
 
       - name: Trivy Vulnerability Scanner
         uses: aquasecurity/trivy-action@master
