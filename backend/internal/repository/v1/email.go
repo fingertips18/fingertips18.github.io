@@ -8,6 +8,7 @@ import (
 	"log"
 	"maps"
 	"net/http"
+	"time"
 
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/client"
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
@@ -49,7 +50,7 @@ func NewEmailRepository(cfg EmailRepositoryConfig) EmailRepository {
 
 	httpAPI := cfg.httpAPI
 	if httpAPI == nil {
-		httpAPI = client.NewHTTPAPI()
+		httpAPI = client.NewHTTPAPI(30 * time.Second)
 	}
 
 	return &emailRepository{

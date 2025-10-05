@@ -1,6 +1,9 @@
 package client
 
-import "net/http"
+import (
+	"net/http"
+	"time"
+)
 
 type HttpAPI interface {
 	Do(req *http.Request) (*http.Response, error)
@@ -10,9 +13,11 @@ type httpAPI struct {
 	client *http.Client
 }
 
-func NewHTTPAPI() HttpAPI {
+func NewHTTPAPI(timeout time.Duration) HttpAPI {
 	return &httpAPI{
-		client: &http.Client{},
+		client: &http.Client{
+			Timeout: timeout,
+		},
 	}
 }
 
