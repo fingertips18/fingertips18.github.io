@@ -39,6 +39,30 @@ func TestGetQueryInt32(t *testing.T) {
 			def:  0,
 			want: 2147483647,
 		},
+		"overflow returns default": {
+			q:    url.Values{"page": {"2147483648"}}, // exceeds int32 max
+			key:  "page",
+			def:  1,
+			want: 1,
+		},
+		"underflow returns default": {
+			q:    url.Values{"page": {"-2147483649"}}, // below int32 min
+			key:  "page",
+			def:  1,
+			want: 1,
+		},
+		"negative integer": {
+			q:    url.Values{"page": {"-10"}},
+			key:  "page",
+			def:  1,
+			want: -10,
+		},
+		"empty string returns default": {
+			q:    url.Values{"page": {""}},
+			key:  "page",
+			def:  3,
+			want: 3,
+		},
 	}
 
 	for name, tt := range tests {
