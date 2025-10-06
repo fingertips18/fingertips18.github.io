@@ -2,6 +2,7 @@ package v1
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"testing"
@@ -9,6 +10,7 @@ import (
 
 	database "github.com/fingertips18/fingertips18.github.io/backend/internal/database/mocks"
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
+	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -16,6 +18,70 @@ import (
 const (
 	testEducationTable = "test-education"
 )
+
+type educationCreateFakeRow struct {
+	id      string
+	scanErr error
+}
+
+func (r *educationCreateFakeRow) Scan(dest ...interface{}) error {
+	if r.scanErr != nil {
+		return r.scanErr
+	}
+	if len(dest) != 1 {
+		return fmt.Errorf("expected 1 scan destination, got %d", len(dest))
+	}
+	if ptr, ok := dest[0].(*string); ok {
+		*ptr = r.id
+	}
+	return nil
+}
+
+type educationGetFakeRow struct {
+	id                string
+	mainSchoolJSON    []byte
+	schoolPeriodsJSON []byte
+	projectsJSON      []byte
+	level             domain.EducationLevel
+	createdAt         time.Time
+	updatedAt         time.Time
+	scanErr           error
+}
+
+// Scan mocks pgx.Row.Scan
+func (r *educationGetFakeRow) Scan(dest ...interface{}) error {
+	if r.scanErr != nil {
+		return r.scanErr
+	}
+
+	if len(dest) != 7 {
+		return fmt.Errorf("expected 7 scan destinations, got %d", len(dest))
+	}
+
+	if ptr, ok := dest[0].(*string); ok {
+		*ptr = r.id
+	}
+	if ptr, ok := dest[1].(*[]byte); ok {
+		*ptr = r.mainSchoolJSON
+	}
+	if ptr, ok := dest[2].(*[]byte); ok {
+		*ptr = r.schoolPeriodsJSON
+	}
+	if ptr, ok := dest[3].(*[]byte); ok {
+		*ptr = r.projectsJSON
+	}
+	if ptr, ok := dest[4].(*domain.EducationLevel); ok {
+		*ptr = r.level
+	}
+	if ptr, ok := dest[5].(*time.Time); ok {
+		*ptr = r.createdAt
+	}
+	if ptr, ok := dest[6].(*time.Time); ok {
+		*ptr = r.updatedAt
+	}
+
+	return nil
+}
 
 type educationRepositoryTestFixture struct {
 	t                   *testing.T
@@ -90,7 +156,7 @@ func TestEducationRepository_Create(t *testing.T) {
 						mock.Anything,
 						mock.Anything,
 						mock.Anything,
-					).Return(&fakeRow{id: fixedID})
+					).Return(&educationCreateFakeRow{id: fixedID})
 				},
 			},
 			expected: Expected{
@@ -116,7 +182,7 @@ func TestEducationRepository_Create(t *testing.T) {
 					Level:    validEducation.Level,
 				},
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
-					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.Anything).Return(&fakeRow{id: fixedID})
+					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.Anything).Return(&educationCreateFakeRow{id: fixedID})
 				},
 			},
 			expected: Expected{
@@ -128,7 +194,7 @@ func TestEducationRepository_Create(t *testing.T) {
 				education: validEducation,
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.Anything).
-						Return(&fakeRow{scanErr: scanErr})
+						Return(&educationCreateFakeRow{scanErr: scanErr})
 				},
 			},
 			expected: Expected{
@@ -141,7 +207,7 @@ func TestEducationRepository_Create(t *testing.T) {
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, mock.Anything).
-						Return(&fakeRow{id: ""})
+						Return(&educationCreateFakeRow{id: ""})
 				},
 			},
 			expected: Expected{
@@ -422,5 +488,230 @@ func TestEducationRepository_Create(t *testing.T) {
 			f.databaseAPI.AssertExpectations(t)
 		})
 
+	}
+}
+
+func TestEducationRepository_Get(t *testing.T) {
+	fixedID := "123-abc"
+	fixedTime := time.Date(2025, 1, 1, 12, 0, 0, 0, time.UTC)
+	scanErr := errors.New("scan error")
+
+	validMainSchool := domain.SchoolPeriod{
+		Link:        "http://example.com",
+		Name:        "test-name",
+		Description: "test-description",
+		Logo:        "test-logo",
+		BlurHash:    "test-blurhash",
+		Honor:       "test-honor",
+		StartDate:   time.Date(2021, 1, 1, 12, 0, 0, 0, time.UTC),
+		EndDate:     time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC),
+	}
+
+	validProjects := []domain.Project{
+		{
+			Preview:     "test-preview",
+			BlurHash:    "test-blurhash",
+			Title:       "test-title",
+			SubTitle:    "test-subtitle",
+			Description: "test-description",
+			Stack:       []string{"stack1"},
+			Type:        domain.Web,
+			Link:        "http://example.com",
+		},
+	}
+
+	mainSchoolJSON, _ := json.Marshal(validMainSchool)
+	schoolPeriodsJSON, _ := json.Marshal([]domain.SchoolPeriod{validMainSchool})
+	projectsJSON, _ := json.Marshal(validProjects)
+
+	type Given struct {
+		id           string
+		mockQueryRow func(m *database.MockDatabaseAPI)
+	}
+
+	type Expected struct {
+		education *domain.Education
+		err       error
+	}
+
+	tests := map[string]struct {
+		given    Given
+		expected Expected
+	}{
+		"Successful get education": {
+			given: Given{
+				id: fixedID,
+				mockQueryRow: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.MatchedBy(func(args []interface{}) bool {
+						return len(args) == 1 && args[0] == fixedID
+					})).
+						Return(&educationGetFakeRow{
+							id:                fixedID,
+							mainSchoolJSON:    mainSchoolJSON,
+							schoolPeriodsJSON: schoolPeriodsJSON,
+							projectsJSON:      projectsJSON,
+							level:             domain.College,
+							createdAt:         fixedTime,
+							updatedAt:         fixedTime,
+						})
+				},
+			},
+			expected: Expected{
+				education: &domain.Education{
+					Id:            fixedID,
+					MainSchool:    validMainSchool,
+					SchoolPeriods: []domain.SchoolPeriod{validMainSchool},
+					Projects:      validProjects,
+					Level:         domain.College,
+					CreatedAt:     fixedTime,
+					UpdatedAt:     fixedTime,
+				},
+				err: nil,
+			},
+		},
+		"Empty ID": {
+			given: Given{
+				id:           "",
+				mockQueryRow: nil,
+			},
+			expected: Expected{
+				education: nil,
+				err:       errors.New("failed to get education: ID missing"),
+			},
+		},
+		"Row not found": {
+			given: Given{
+				id: fixedID,
+				mockQueryRow: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.MatchedBy(func(args []interface{}) bool {
+						return len(args) == 1 && args[0] == fixedID
+					})).
+						Return(&educationGetFakeRow{scanErr: pgx.ErrNoRows})
+				},
+			},
+			expected: Expected{
+				education: nil,
+				err:       fmt.Errorf("education not found: %w", pgx.ErrNoRows),
+			},
+		},
+		"Database scan error": {
+			given: Given{
+				id: fixedID,
+				mockQueryRow: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.MatchedBy(func(args []interface{}) bool {
+						return len(args) == 1 && args[0] == fixedID
+					})).
+						Return(&educationGetFakeRow{scanErr: scanErr})
+				},
+			},
+			expected: Expected{
+				education: nil,
+				err:       fmt.Errorf("failed to scan education: %w", scanErr),
+			},
+		},
+		"Invalid main school JSON": {
+			given: Given{
+				id: fixedID,
+				mockQueryRow: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.MatchedBy(func(args []interface{}) bool {
+						return len(args) == 1 && args[0] == fixedID
+					})).
+						Return(&educationGetFakeRow{
+							id:             fixedID,
+							mainSchoolJSON: []byte("{invalid-json}"),
+							level:          domain.College,
+							createdAt:      fixedTime,
+							updatedAt:      fixedTime,
+						})
+				},
+			},
+			expected: Expected{
+				education: nil,
+				err:       fmt.Errorf("failed to unmarshal main school: %w", errors.New("invalid character 'i' looking for beginning of object key string")),
+			},
+		},
+		"Validation error on level": {
+			given: Given{
+				id: fixedID,
+				mockQueryRow: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.MatchedBy(func(args []interface{}) bool {
+						return len(args) == 1 && args[0] == fixedID
+					})).
+						Return(&educationGetFakeRow{
+							id:             fixedID,
+							mainSchoolJSON: mainSchoolJSON,
+							level:          "invalid-level",
+							createdAt:      fixedTime,
+							updatedAt:      fixedTime,
+						})
+				},
+			},
+			expected: Expected{
+				education: nil,
+				err:       fmt.Errorf("invalid education returned: level invalid = invalid-level"),
+			},
+		},
+		"Missing createdAt": {
+			given: Given{
+				id: fixedID,
+				mockQueryRow: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.MatchedBy(func(args []interface{}) bool {
+						return len(args) == 1 && args[0] == fixedID
+					})).
+						Return(&educationGetFakeRow{
+							id:             fixedID,
+							mainSchoolJSON: mainSchoolJSON,
+							level:          domain.College,
+							updatedAt:      fixedTime,
+						})
+				},
+			},
+			expected: Expected{
+				education: nil,
+				err:       fmt.Errorf("invalid education returned: createdAt missing"),
+			},
+		},
+		"Missing updatedAt": {
+			given: Given{
+				id: fixedID,
+				mockQueryRow: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.MatchedBy(func(args []interface{}) bool {
+						return len(args) == 1 && args[0] == fixedID
+					})).
+						Return(&educationGetFakeRow{
+							id:             fixedID,
+							mainSchoolJSON: mainSchoolJSON,
+							level:          domain.College,
+							createdAt:      fixedTime,
+						})
+				},
+			},
+			expected: Expected{
+				education: nil,
+				err:       fmt.Errorf("invalid education returned: updatedAt missing"),
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			f := newEducationRepositoryTestFixture(t, func() time.Time { return fixedTime })
+
+			if test.given.mockQueryRow != nil {
+				test.given.mockQueryRow(f.databaseAPI)
+			}
+
+			edu, err := f.educationRepository.Get(context.Background(), test.given.id)
+
+			if test.expected.err != nil {
+				assert.EqualError(t, err, test.expected.err.Error())
+				assert.Nil(t, edu)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, test.expected.education, edu)
+			}
+
+			f.databaseAPI.AssertExpectations(t)
+		})
 	}
 }

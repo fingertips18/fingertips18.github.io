@@ -102,3 +102,23 @@ func (e Education) ValidatePayload() error {
 
 	return nil
 }
+
+func (e Education) ValidateResponse() error {
+	if e.Id == "" {
+		return errors.New("ID missing")
+	}
+
+	if err := e.ValidatePayload(); err != nil {
+		return err
+	}
+
+	if e.CreatedAt.IsZero() {
+		return errors.New("createdAt missing")
+	}
+
+	if e.UpdatedAt.IsZero() {
+		return errors.New("updatedAt missing")
+	}
+
+	return nil
+}
