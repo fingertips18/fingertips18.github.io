@@ -67,9 +67,18 @@ func (r *educationRepository) Create(ctx context.Context, education *domain.Educ
 	id := utils.GenerateKey()
 	now := r.timeProvider()
 
-	mainSchoolJSON, _ := json.Marshal(education.MainSchool)
-	schoolPeriodsJSON, _ := json.Marshal(education.SchoolPeriods)
-	projectsJSON, _ := json.Marshal(education.Projects)
+	mainSchoolJSON, err := json.Marshal(education.MainSchool)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal main school: %w", err)
+	}
+	schoolPeriodsJSON, err := json.Marshal(education.SchoolPeriods)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal school periods: %w", err)
+	}
+	projectsJSON, err := json.Marshal(education.Projects)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal projects: %w", err)
+	}
 
 	education.CreatedAt = now
 	education.UpdatedAt = now
@@ -83,7 +92,7 @@ func (r *educationRepository) Create(ctx context.Context, education *domain.Educ
 	)
 
 	var returnedID string
-	err := r.databaseAPI.QueryRow(
+	err = r.databaseAPI.QueryRow(
 		ctx,
 		query,
 		id,
