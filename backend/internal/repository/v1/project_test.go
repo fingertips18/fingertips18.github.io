@@ -20,14 +20,14 @@ const (
 	testProjectTable = "test-projects"
 )
 
-// fakeRow is for QueryRow
-type fakeRow struct {
+// projectFakeRow is for QueryRow
+type projectFakeRow struct {
 	id      string
 	project domain.Project
 	scanErr error
 }
 
-func (f *fakeRow) Scan(dest ...any) error {
+func (f *projectFakeRow) Scan(dest ...any) error {
 	if f.scanErr != nil {
 		return f.scanErr
 	}
@@ -73,27 +73,27 @@ func (f *fakeRow) Scan(dest ...any) error {
 	}
 }
 
-type fakeCommandTag string
+type projectFakeCommandTag string
 
-func (f fakeCommandTag) RowsAffected() int64 {
+func (f projectFakeCommandTag) RowsAffected() int64 {
 	if f == "DELETE 1" {
 		return 1
 	}
 	return 0
 }
 
-// fakeRows is for Query
-type fakeRows struct {
-	rows   []*fakeRow
+// projectFakeRows is for Query
+type projectFakeRows struct {
+	rows   []*projectFakeRow
 	index  int
 	rowErr error
 }
 
-func (r *fakeRows) Next() bool {
+func (r *projectFakeRows) Next() bool {
 	return r.index < len(r.rows)
 }
 
-func (r *fakeRows) Scan(dest ...any) error {
+func (r *projectFakeRows) Scan(dest ...any) error {
 	if r.index >= len(r.rows) {
 		return io.EOF
 	}
@@ -102,10 +102,10 @@ func (r *fakeRows) Scan(dest ...any) error {
 	return err
 }
 
-func (r *fakeRows) Err() error { return r.rowErr }
+func (r *projectFakeRows) Err() error { return r.rowErr }
 
 // Must match database.Rows interface (no return)
-func (r *fakeRows) Close() {}
+func (r *projectFakeRows) Close() {}
 
 type projectRepositoryTestFixture struct {
 	t                 *testing.T
@@ -165,7 +165,7 @@ func TestProjectRepository_Create(t *testing.T) {
 						mock.Anything,
 						mock.MatchedBy(func(query string) bool { return strings.Contains(query, "INSERT INTO") }),
 						mock.AnythingOfType("[]interface {}"),
-					).Return(&fakeRow{id: fixedID})
+					).Return(&projectFakeRow{id: fixedID})
 				},
 			},
 			expected: Expected{
@@ -180,7 +180,7 @@ func TestProjectRepository_Create(t *testing.T) {
 						mock.Anything,
 						mock.MatchedBy(func(query string) bool { return strings.Contains(query, "INSERT INTO") }),
 						mock.AnythingOfType("[]interface {}"),
-					).Return(&fakeRow{scanErr: scanErr})
+					).Return(&projectFakeRow{scanErr: scanErr})
 				},
 			},
 			expected: Expected{
@@ -195,7 +195,7 @@ func TestProjectRepository_Create(t *testing.T) {
 						mock.Anything,
 						mock.MatchedBy(func(query string) bool { return strings.Contains(query, "INSERT INTO") }),
 						mock.AnythingOfType("[]interface {}"),
-					).Return(&fakeRow{id: ""})
+					).Return(&projectFakeRow{id: ""})
 				},
 			},
 			expected: Expected{
@@ -447,7 +447,7 @@ func TestProjectRepository_Get(t *testing.T) {
 				id: id,
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().QueryRow(mock.Anything, mock.Anything, []any{id}).
-						Return(&fakeRow{project: validProject})
+						Return(&projectFakeRow{project: validProject})
 				},
 			},
 			expected: Expected{
@@ -460,7 +460,7 @@ func TestProjectRepository_Get(t *testing.T) {
 				id: id,
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().QueryRow(mock.Anything, mock.Anything, []any{id}).
-						Return(&fakeRow{scanErr: scanErr})
+						Return(&projectFakeRow{scanErr: scanErr})
 				},
 			},
 			expected: Expected{
@@ -474,7 +474,7 @@ func TestProjectRepository_Get(t *testing.T) {
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
-						Return(&fakeRow{scanErr: pgx.ErrNoRows})
+						Return(&projectFakeRow{scanErr: pgx.ErrNoRows})
 				},
 			},
 			expected: Expected{
@@ -488,7 +488,7 @@ func TestProjectRepository_Get(t *testing.T) {
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
-						Return(&fakeRow{project: domain.Project{
+						Return(&projectFakeRow{project: domain.Project{
 							Id:          "",
 							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
@@ -514,7 +514,7 @@ func TestProjectRepository_Get(t *testing.T) {
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
-						Return(&fakeRow{project: domain.Project{
+						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
 							Preview:     "",
 							BlurHash:    validProject.BlurHash,
@@ -540,7 +540,7 @@ func TestProjectRepository_Get(t *testing.T) {
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
-						Return(&fakeRow{project: domain.Project{
+						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
 							Preview:     validProject.Preview,
 							BlurHash:    "",
@@ -566,7 +566,7 @@ func TestProjectRepository_Get(t *testing.T) {
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
-						Return(&fakeRow{project: domain.Project{
+						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
 							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
@@ -592,7 +592,7 @@ func TestProjectRepository_Get(t *testing.T) {
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
-						Return(&fakeRow{project: domain.Project{
+						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
 							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
@@ -618,7 +618,7 @@ func TestProjectRepository_Get(t *testing.T) {
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
-						Return(&fakeRow{project: domain.Project{
+						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
 							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
@@ -644,7 +644,7 @@ func TestProjectRepository_Get(t *testing.T) {
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
-						Return(&fakeRow{project: domain.Project{
+						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
 							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
@@ -670,7 +670,7 @@ func TestProjectRepository_Get(t *testing.T) {
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
-						Return(&fakeRow{project: domain.Project{
+						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
 							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
@@ -696,7 +696,7 @@ func TestProjectRepository_Get(t *testing.T) {
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
-						Return(&fakeRow{project: domain.Project{
+						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
 							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
@@ -722,7 +722,7 @@ func TestProjectRepository_Get(t *testing.T) {
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
-						Return(&fakeRow{project: domain.Project{
+						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
 							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
@@ -748,7 +748,7 @@ func TestProjectRepository_Get(t *testing.T) {
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
-						Return(&fakeRow{project: domain.Project{
+						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
 							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
@@ -830,7 +830,7 @@ func TestProjectRepository_Update(t *testing.T) {
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, mock.Anything).
-						Return(&fakeRow{
+						Return(&projectFakeRow{
 							project: *validProject,
 						})
 				},
@@ -846,7 +846,7 @@ func TestProjectRepository_Update(t *testing.T) {
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, mock.Anything).
-						Return(&fakeRow{scanErr: scanErr})
+						Return(&projectFakeRow{scanErr: scanErr})
 				},
 			},
 			expected: Expected{
@@ -860,7 +860,7 @@ func TestProjectRepository_Update(t *testing.T) {
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, mock.Anything).
-						Return(&fakeRow{scanErr: pgx.ErrNoRows})
+						Return(&projectFakeRow{scanErr: pgx.ErrNoRows})
 				},
 			},
 			expected: Expected{
@@ -1101,7 +1101,7 @@ func TestProjectRepository_Delete(t *testing.T) {
 				mockExec: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						Exec(mock.Anything, mock.Anything, mock.Anything).
-						Return(fakeCommandTag("DELETE 1"), nil)
+						Return(projectFakeCommandTag("DELETE 1"), nil)
 				},
 			},
 			expected: Expected{err: nil},
@@ -1125,7 +1125,7 @@ func TestProjectRepository_Delete(t *testing.T) {
 				mockExec: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						Exec(mock.Anything, mock.Anything, mock.Anything).
-						Return(fakeCommandTag("DELETE 0"), nil)
+						Return(projectFakeCommandTag("DELETE 0"), nil)
 				},
 			},
 			expected: Expected{
@@ -1202,8 +1202,8 @@ func TestProjectRepository_List(t *testing.T) {
 			given: Given{
 				filter: domain.ProjectFilter{},
 				mockQuery: func(m *database.MockDatabaseAPI) {
-					rows := &fakeRows{
-						rows: []*fakeRow{
+					rows := &projectFakeRows{
+						rows: []*projectFakeRow{
 							{project: validProject},
 						},
 					}
@@ -1235,8 +1235,8 @@ func TestProjectRepository_List(t *testing.T) {
 			given: Given{
 				filter: domain.ProjectFilter{},
 				mockQuery: func(m *database.MockDatabaseAPI) {
-					rows := &fakeRows{
-						rows: []*fakeRow{
+					rows := &projectFakeRows{
+						rows: []*projectFakeRow{
 							{scanErr: scanErr},
 						},
 					}
@@ -1254,8 +1254,8 @@ func TestProjectRepository_List(t *testing.T) {
 			given: Given{
 				filter: domain.ProjectFilter{},
 				mockQuery: func(m *database.MockDatabaseAPI) {
-					rows := &fakeRows{
-						rows:   []*fakeRow{},
+					rows := &projectFakeRows{
+						rows:   []*projectFakeRow{},
 						rowErr: rowErr,
 					}
 					m.EXPECT().
