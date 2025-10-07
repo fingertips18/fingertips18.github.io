@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -117,10 +118,14 @@ func (r *educationFakeRows) Scan(dest ...interface{}) error {
 	}
 	ed := row.education
 
+	mainSchoolJSON, _ := json.Marshal(ed.MainSchool)
+	schoolPeriodsJSON, _ := json.Marshal(ed.SchoolPeriods)
+	projectsJSON, _ := json.Marshal(ed.Projects)
+
 	*(dest[0].(*string)) = ed.Id
-	*(dest[1].(*domain.SchoolPeriod)) = ed.MainSchool
-	*(dest[2].(*[]domain.SchoolPeriod)) = ed.SchoolPeriods
-	*(dest[3].(*[]domain.Project)) = ed.Projects
+	*(dest[1].(*[]byte)) = mainSchoolJSON
+	*(dest[2].(*[]byte)) = schoolPeriodsJSON
+	*(dest[3].(*[]byte)) = projectsJSON
 	*(dest[4].(*domain.EducationLevel)) = ed.Level
 	*(dest[5].(*time.Time)) = ed.CreatedAt
 	*(dest[6].(*time.Time)) = ed.UpdatedAt
@@ -1370,7 +1375,7 @@ func TestEducationRepository_List(t *testing.T) {
 		Id:         "edu-001",
 		MainSchool: validMainSchool,
 		Projects:   validProjects,
-		Level:      "Bachelor",
+		Level:      domain.College,
 		CreatedAt:  fixedTime,
 		UpdatedAt:  fixedTime,
 	}
@@ -1399,7 +1404,7 @@ func TestEducationRepository_List(t *testing.T) {
 						},
 					}
 					m.EXPECT().
-						Query(mock.Anything, mock.Anything).
+						Query(mock.Anything, mock.Anything, mock.Anything).
 						Return(rows, nil)
 				},
 			},
@@ -1413,7 +1418,7 @@ func TestEducationRepository_List(t *testing.T) {
 				filter: domain.EducationFilter{},
 				mockQuery: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
-						Query(mock.Anything, mock.Anything).
+						Query(mock.Anything, mock.Anything, mock.Anything).
 						Return(nil, queryErr)
 				},
 			},
@@ -1432,7 +1437,7 @@ func TestEducationRepository_List(t *testing.T) {
 						},
 					}
 					m.EXPECT().
-						Query(mock.Anything, mock.Anything).
+						Query(mock.Anything, mock.Anything, mock.Anything).
 						Return(rows, nil)
 				},
 			},
@@ -1450,13 +1455,30 @@ func TestEducationRepository_List(t *testing.T) {
 						rowErr: rowErr,
 					}
 					m.EXPECT().
-						Query(mock.Anything, mock.Anything).
+						Query(mock.Anything, mock.Anything, mock.Anything).
 						Return(rows, nil)
 				},
 			},
 			expected: Expected{
 				education: nil,
 				err:       fmt.Errorf("row iteration error: %w", rowErr),
+			},
+		},
+		"Applies defaults when filter is empty": {
+			given: Given{
+				filter: domain.EducationFilter{},
+				mockQuery: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().
+						Query(mock.Anything, mock.MatchedBy(func(query string) bool {
+							return strings.Contains(query, "ORDER BY created_at DESC") &&
+								strings.Contains(query, "LIMIT $1 OFFSET $2")
+						}), mock.Anything).
+						Return(&educationFakeRows{rows: []*educationFakeRow{}}, nil)
+				},
+			},
+			expected: Expected{
+				education: []domain.Education{},
+				err:       nil,
 			},
 		},
 	}

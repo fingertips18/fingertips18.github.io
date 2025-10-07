@@ -359,6 +359,15 @@ func (r *educationRepository) List(ctx context.Context, filter domain.EducationF
 		r.educationTable,
 	)
 
+	// Validate SortBy against allowed columns
+	allowedSortColumns := map[domain.SortBy]bool{
+		domain.CreatedAt: true,
+		domain.UpdatedAt: true,
+	}
+	if !allowedSortColumns[*filter.SortBy] {
+		return nil, fmt.Errorf("invalid sort column: %s", *filter.SortBy)
+	}
+
 	// Add sorting
 	sortOrder := "ASC"
 	if !filter.SortAscending {
@@ -368,30 +377,49 @@ func (r *educationRepository) List(ctx context.Context, filter domain.EducationF
 
 	// Add pagination
 	offset := (filter.Page - 1) * filter.PageSize
-	baseQuery += fmt.Sprintf(" LIMIT %d OFFSET %d", filter.PageSize, offset)
+	baseQuery += " LIMIT $1 OFFSET $2"
 
 	// Execute query
-	rows, err := r.databaseAPI.Query(ctx, baseQuery)
+	rows, err := r.databaseAPI.Query(ctx, baseQuery, filter.PageSize, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list education: %w", err)
 	}
 	defer rows.Close()
 
-	var education []domain.Education
+	education := []domain.Education{}
 	for rows.Next() {
-		var ed domain.Education
+		var (
+			ed                domain.Education
+			mainSchoolJSON    []byte
+			schoolPeriodsJSON []byte
+			projectsJSON      []byte
+		)
 
 		err := rows.Scan(
 			&ed.Id,
-			&ed.MainSchool,
-			&ed.SchoolPeriods,
-			&ed.Projects,
+			&mainSchoolJSON,
+			&schoolPeriodsJSON,
+			&projectsJSON,
 			&ed.Level,
 			&ed.CreatedAt,
 			&ed.UpdatedAt,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan education: %w", err)
+		}
+
+		if err = json.Unmarshal(mainSchoolJSON, &ed.MainSchool); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal main school: %w", err)
+		}
+		if len(schoolPeriodsJSON) > 0 {
+			if err = json.Unmarshal(schoolPeriodsJSON, &ed.SchoolPeriods); err != nil {
+				return nil, fmt.Errorf("failed to unmarshal school periods: %w", err)
+			}
+		}
+		if len(projectsJSON) > 0 {
+			if err = json.Unmarshal(projectsJSON, &ed.Projects); err != nil {
+				return nil, fmt.Errorf("failed to unmarshal projects: %w", err)
+			}
 		}
 
 		education = append(education, ed)

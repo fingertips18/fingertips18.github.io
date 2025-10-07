@@ -104,6 +104,63 @@ func (_c *MockEducationRepository_Create_Call) RunAndReturn(run func(ctx context
 	return _c
 }
 
+// Delete provides a mock function for the type MockEducationRepository
+func (_mock *MockEducationRepository) Delete(ctx context.Context, id string) error {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockEducationRepository_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
+type MockEducationRepository_Delete_Call struct {
+	*mock.Call
+}
+
+// Delete is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *MockEducationRepository_Expecter) Delete(ctx interface{}, id interface{}) *MockEducationRepository_Delete_Call {
+	return &MockEducationRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, id)}
+}
+
+func (_c *MockEducationRepository_Delete_Call) Run(run func(ctx context.Context, id string)) *MockEducationRepository_Delete_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockEducationRepository_Delete_Call) Return(err error) *MockEducationRepository_Delete_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockEducationRepository_Delete_Call) RunAndReturn(run func(ctx context.Context, id string) error) *MockEducationRepository_Delete_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Get provides a mock function for the type MockEducationRepository
 func (_mock *MockEducationRepository) Get(ctx context.Context, id string) (*domain.Education, error) {
 	ret := _mock.Called(ctx, id)
@@ -168,6 +225,142 @@ func (_c *MockEducationRepository_Get_Call) Return(education *domain.Education, 
 }
 
 func (_c *MockEducationRepository_Get_Call) RunAndReturn(run func(ctx context.Context, id string) (*domain.Education, error)) *MockEducationRepository_Get_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// List provides a mock function for the type MockEducationRepository
+func (_mock *MockEducationRepository) List(ctx context.Context, filter domain.EducationFilter) ([]domain.Education, error) {
+	ret := _mock.Called(ctx, filter)
+
+	if len(ret) == 0 {
+		panic("no return value specified for List")
+	}
+
+	var r0 []domain.Education
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.EducationFilter) ([]domain.Education, error)); ok {
+		return returnFunc(ctx, filter)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.EducationFilter) []domain.Education); ok {
+		r0 = returnFunc(ctx, filter)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]domain.Education)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, domain.EducationFilter) error); ok {
+		r1 = returnFunc(ctx, filter)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockEducationRepository_List_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'List'
+type MockEducationRepository_List_Call struct {
+	*mock.Call
+}
+
+// List is a helper method to define mock.On call
+//   - ctx context.Context
+//   - filter domain.EducationFilter
+func (_e *MockEducationRepository_Expecter) List(ctx interface{}, filter interface{}) *MockEducationRepository_List_Call {
+	return &MockEducationRepository_List_Call{Call: _e.mock.On("List", ctx, filter)}
+}
+
+func (_c *MockEducationRepository_List_Call) Run(run func(ctx context.Context, filter domain.EducationFilter)) *MockEducationRepository_List_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 domain.EducationFilter
+		if args[1] != nil {
+			arg1 = args[1].(domain.EducationFilter)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockEducationRepository_List_Call) Return(educations []domain.Education, err error) *MockEducationRepository_List_Call {
+	_c.Call.Return(educations, err)
+	return _c
+}
+
+func (_c *MockEducationRepository_List_Call) RunAndReturn(run func(ctx context.Context, filter domain.EducationFilter) ([]domain.Education, error)) *MockEducationRepository_List_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Update provides a mock function for the type MockEducationRepository
+func (_mock *MockEducationRepository) Update(ctx context.Context, education *domain.Education) (*domain.Education, error) {
+	ret := _mock.Called(ctx, education)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Update")
+	}
+
+	var r0 *domain.Education
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.Education) (*domain.Education, error)); ok {
+		return returnFunc(ctx, education)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.Education) *domain.Education); ok {
+		r0 = returnFunc(ctx, education)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.Education)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *domain.Education) error); ok {
+		r1 = returnFunc(ctx, education)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockEducationRepository_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
+type MockEducationRepository_Update_Call struct {
+	*mock.Call
+}
+
+// Update is a helper method to define mock.On call
+//   - ctx context.Context
+//   - education *domain.Education
+func (_e *MockEducationRepository_Expecter) Update(ctx interface{}, education interface{}) *MockEducationRepository_Update_Call {
+	return &MockEducationRepository_Update_Call{Call: _e.mock.On("Update", ctx, education)}
+}
+
+func (_c *MockEducationRepository_Update_Call) Run(run func(ctx context.Context, education *domain.Education)) *MockEducationRepository_Update_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *domain.Education
+		if args[1] != nil {
+			arg1 = args[1].(*domain.Education)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockEducationRepository_Update_Call) Return(education1 *domain.Education, err error) *MockEducationRepository_Update_Call {
+	_c.Call.Return(education1, err)
+	return _c
+}
+
+func (_c *MockEducationRepository_Update_Call) RunAndReturn(run func(ctx context.Context, education *domain.Education) (*domain.Education, error)) *MockEducationRepository_Update_Call {
 	_c.Call.Return(run)
 	return _c
 }
