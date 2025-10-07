@@ -16,6 +16,7 @@ import (
 type EducationRepository interface {
 	Create(ctx context.Context, education *domain.Education) (string, error)
 	Get(ctx context.Context, id string) (*domain.Education, error)
+	Update(ctx context.Context, education *domain.Education) (*domain.Education, error)
 }
 
 type EducationRepositoryConfig struct {
@@ -115,6 +116,27 @@ func (r *educationRepository) Create(ctx context.Context, education *domain.Educ
 	return returnedID, nil
 }
 
+// Get retrieves an education record by its identifier from the repository.
+// The provided context is used for the database query. If id is empty, Get
+// returns an error immediately.
+//
+// The method queries the underlying table for the columns
+// (id, main_school, school_periods, projects, level, created_at, updated_at),
+// scans the JSON columns (main_school, school_periods, projects) into byte
+// slices and then unmarshals them into the corresponding fields of
+// domain.Education. school_periods and projects are optional and only
+// unmarshaled when non-empty. After unmarshaling, the returned education
+// value is validated via Education.ValidateResponse.
+//
+// Errors returned include:
+//   - a specific error when the id is empty,
+//   - a not-found error when the row does not exist,
+//   - wrapped errors for database scan failures,
+//   - wrapped JSON unmarshal errors, and
+//   - wrapped validation errors.
+//
+// On success, a pointer to a fully-populated and validated domain.Education is
+// returned.
 func (r *educationRepository) Get(ctx context.Context, id string) (*domain.Education, error) {
 	if id == "" {
 		return nil, fmt.Errorf("failed to get education: ID missing")
@@ -173,4 +195,110 @@ func (r *educationRepository) Get(ctx context.Context, id string) (*domain.Educa
 	}
 
 	return &education, nil
+}
+
+// Update validates and persists changes to an existing Education record.
+//
+// It performs the following steps:
+//   - Validates the provided education payload via ValidatePayload.
+//   - Sets the UpdatedAt timestamp using the repository's time provider.
+//   - Marshals JSON-serializable fields (MainSchool, SchoolPeriods, Projects).
+//   - Executes an SQL UPDATE that writes MainSchool, SchoolPeriods, Projects, and Level,
+//     sets UpdatedAt to the current timestamp, and RETURNs the updated row.
+//   - Scans the returned row, unmarshals JSON columns back into the domain.Education,
+//     and returns the updated object.
+//
+// Returns:
+// - (*domain.Education, nil) on success with the updated record.
+// - (nil, nil) if no row with the given id was found.
+// - (nil, error) on validation, marshaling, database, or unmarshaling errors.
+func (r *educationRepository) Update(ctx context.Context, education *domain.Education) (*domain.Education, error) {
+	if education.Id == "" {
+		return nil, fmt.Errorf("failed to update education: ID missing")
+	}
+
+	if err := education.ValidatePayload(); err != nil {
+		return nil, fmt.Errorf("failed to validate education: %w", err)
+	}
+
+	now := r.timeProvider()
+	education.UpdatedAt = now
+
+	mainSchoolJSON, err := json.Marshal(education.MainSchool)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal main school: %w", err)
+	}
+	schoolPeriodsJSON, err := json.Marshal(education.SchoolPeriods)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal school periods: %w", err)
+	}
+	projectsJSON, err := json.Marshal(education.Projects)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal projects: %w", err)
+	}
+
+	var (
+		mainSchoolBytes    []byte
+		schoolPeriodsBytes []byte
+		projectsBytes      []byte
+		updatedEducation   domain.Education
+	)
+
+	query := fmt.Sprintf(
+		`UPDATE %s
+		SET main_school=$2,
+			school_periods=$3,
+			projects=$4,
+			level=$5,
+			updated_at=$6
+		WHERE id=$1
+		RETURNING id, main_school, school_periods, projects, level, created_at, updated_at`,
+		r.educationTable,
+	)
+
+	err = r.databaseAPI.QueryRow(
+		ctx,
+		query,
+		education.Id,
+		mainSchoolJSON,
+		schoolPeriodsJSON,
+		projectsJSON,
+		education.Level,
+		education.UpdatedAt,
+	).Scan(
+		&updatedEducation.Id,
+		&mainSchoolBytes,
+		&schoolPeriodsBytes,
+		&projectsBytes,
+		&updatedEducation.Level,
+		&updatedEducation.CreatedAt,
+		&updatedEducation.UpdatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to update education: %w", err)
+	}
+
+	if err := json.Unmarshal(mainSchoolBytes, &updatedEducation.MainSchool); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal main school: %w", err)
+	}
+	if len(schoolPeriodsBytes) > 0 {
+		if err = json.Unmarshal(schoolPeriodsBytes, &updatedEducation.SchoolPeriods); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal school periods: %w", err)
+		}
+	}
+	if len(projectsBytes) > 0 {
+		if err = json.Unmarshal(projectsBytes, &updatedEducation.Projects); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal projects: %w", err)
+		}
+	}
+
+	if err := updatedEducation.ValidateResponse(); err != nil {
+		return nil, fmt.Errorf("invalid education returned: %w", err)
+	}
+
+	return &updatedEducation, nil
 }
