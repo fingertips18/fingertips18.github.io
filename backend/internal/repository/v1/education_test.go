@@ -783,7 +783,7 @@ func TestEducationRepository_Update(t *testing.T) {
 							mock.Anything,
 							mock.Anything,
 							mock.MatchedBy(func(args []interface{}) bool {
-								return len(args) == 7 &&
+								return len(args) == 6 &&
 									args[0] == fixedID &&
 									bytes.Equal(args[1].([]byte), mainSchoolJSON)
 							}),
@@ -1110,6 +1110,40 @@ func TestEducationRepository_Update(t *testing.T) {
 				err: errors.New("failed to validate education: level invalid = invalid"),
 			},
 		},
+		"Update with empty optional fields": {
+			given: Given{
+				education: domain.Education{
+					Id:         fixedID,
+					MainSchool: validMainSchool,
+					Level:      domain.College,
+					CreatedAt:  fixedTime,
+					UpdatedAt:  fixedTime,
+				},
+				mockQueryRow: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().
+						QueryRow(mock.Anything, mock.Anything, mock.Anything).
+						Return(&educationGetFakeRow{
+							id:                fixedID,
+							mainSchoolJSON:    mainSchoolJSON,
+							schoolPeriodsJSON: []byte{},
+							projectsJSON:      []byte{},
+							level:             domain.College,
+							createdAt:         fixedTime,
+							updatedAt:         fixedTime,
+						})
+				},
+			},
+			expected: Expected{
+				education: &domain.Education{
+					Id:         fixedID,
+					MainSchool: validMainSchool,
+					Level:      domain.College,
+					CreatedAt:  fixedTime,
+					UpdatedAt:  fixedTime,
+				},
+				err: nil,
+			},
+		},
 	}
 
 	for name, test := range tests {
@@ -1129,6 +1163,9 @@ func TestEducationRepository_Update(t *testing.T) {
 				assert.NoError(t, err)
 				assert.Equal(t, test.expected.education, edu)
 				assert.Equal(t, fixedTime, test.given.education.UpdatedAt)
+				if edu != nil && test.expected.education != nil {
+					assert.Equal(t, fixedTime, edu.CreatedAt, "CreatedAt should not change on update")
+				}
 			}
 
 			f.databaseAPI.AssertExpectations(t)

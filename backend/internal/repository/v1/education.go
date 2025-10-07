@@ -246,8 +246,7 @@ func (r *educationRepository) Update(ctx context.Context, education *domain.Educ
 			school_periods=$3,
 			projects=$4,
 			level=$5,
-			created_at=$6,
-			updated_at=$7
+			updated_at=$6
 		WHERE id=$1
 		RETURNING id, main_school, school_periods, projects, level, created_at, updated_at`,
 		r.educationTable,
@@ -261,7 +260,6 @@ func (r *educationRepository) Update(ctx context.Context, education *domain.Educ
 		schoolPeriodsJSON,
 		projectsJSON,
 		education.Level,
-		education.CreatedAt,
 		education.UpdatedAt,
 	).Scan(
 		&updatedEducation.Id,
@@ -280,15 +278,18 @@ func (r *educationRepository) Update(ctx context.Context, education *domain.Educ
 		return nil, fmt.Errorf("failed to update education: %w", err)
 	}
 
-	// Unmarshal JSON fields
 	if err := json.Unmarshal(mainSchoolBytes, &updatedEducation.MainSchool); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal main school: %w", err)
 	}
-	if err := json.Unmarshal(schoolPeriodsBytes, &updatedEducation.SchoolPeriods); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal school periods: %w", err)
+	if len(schoolPeriodsJSON) > 0 {
+		if err = json.Unmarshal(schoolPeriodsJSON, &updatedEducation.SchoolPeriods); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal school periods: %w", err)
+		}
 	}
-	if err := json.Unmarshal(projectsBytes, &updatedEducation.Projects); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal projects: %w", err)
+	if len(projectsJSON) > 0 {
+		if err = json.Unmarshal(projectsJSON, &updatedEducation.Projects); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal projects: %w", err)
+		}
 	}
 
 	return &updatedEducation, nil
