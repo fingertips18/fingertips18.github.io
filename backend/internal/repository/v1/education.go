@@ -304,6 +304,19 @@ func (r *educationRepository) Update(ctx context.Context, education *domain.Educ
 	return &updatedEducation, nil
 }
 
+// Delete removes the education record with the given id from the repository.
+// It validates the id is not empty, executes a SQL DELETE against the repository's
+// education table, and returns an error if the deletion fails.
+//
+// The function returns:
+//   - an error wrapping the underlying database error when the Exec fails,
+//   - pgx.ErrNoRows when no row was deleted (i.e., the id does not exist),
+//   - an error if the provided id is empty.
+//
+// Parameters:
+//
+//	ctx - context for cancellations, timeouts and request-scoped values.
+//	id  - unique identifier of the education record to delete.
 func (r *educationRepository) Delete(ctx context.Context, id string) error {
 	if id == "" {
 		return fmt.Errorf("failed to delete education: ID missing")
