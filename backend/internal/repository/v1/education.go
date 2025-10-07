@@ -18,6 +18,7 @@ type EducationRepository interface {
 	Get(ctx context.Context, id string) (*domain.Education, error)
 	Update(ctx context.Context, education *domain.Education) (*domain.Education, error)
 	Delete(ctx context.Context, id string) error
+	List(ctx context.Context, filter domain.EducationFilter) ([]domain.Education, error)
 }
 
 type EducationRepositoryConfig struct {
@@ -338,4 +339,67 @@ func (r *educationRepository) Delete(ctx context.Context, id string) error {
 	}
 
 	return nil
+}
+
+func (r *educationRepository) List(ctx context.Context, filter domain.EducationFilter) ([]domain.Education, error) {
+	// Set defaults if not provided
+	if filter.Page <= 0 {
+		filter.Page = 1
+	}
+	if filter.PageSize <= 0 || filter.PageSize > 20 {
+		filter.PageSize = 20
+	}
+	if filter.SortBy == nil {
+		defaultSort := domain.CreatedAt
+		filter.SortBy = &defaultSort
+	}
+
+	baseQuery := fmt.Sprintf(
+		`SELECT id, main_school, school_periods, projects, level, created_at, updated_at FROM %s`,
+		r.educationTable,
+	)
+
+	// Add sorting
+	sortOrder := "ASC"
+	if !filter.SortAscending {
+		sortOrder = "DESC"
+	}
+	baseQuery += fmt.Sprintf(" ORDER BY %s %s", *filter.SortBy, sortOrder)
+
+	// Add pagination
+	offset := (filter.Page - 1) * filter.PageSize
+	baseQuery += fmt.Sprintf(" LIMIT %d OFFSET %d", filter.PageSize, offset)
+
+	// Execute query
+	rows, err := r.databaseAPI.Query(ctx, baseQuery)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list education: %w", err)
+	}
+	defer rows.Close()
+
+	var education []domain.Education
+	for rows.Next() {
+		var ed domain.Education
+
+		err := rows.Scan(
+			&ed.Id,
+			&ed.MainSchool,
+			&ed.SchoolPeriods,
+			&ed.Projects,
+			&ed.Level,
+			&ed.CreatedAt,
+			&ed.UpdatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan education: %w", err)
+		}
+
+		education = append(education, ed)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("row iteration error: %w", err)
+	}
+
+	return education, nil
 }
