@@ -17,6 +17,7 @@ type EducationRepository interface {
 	Create(ctx context.Context, education *domain.Education) (string, error)
 	Get(ctx context.Context, id string) (*domain.Education, error)
 	Update(ctx context.Context, education *domain.Education) (*domain.Education, error)
+	Delete(ctx context.Context, id string) error
 }
 
 type EducationRepositoryConfig struct {
@@ -301,4 +302,27 @@ func (r *educationRepository) Update(ctx context.Context, education *domain.Educ
 	}
 
 	return &updatedEducation, nil
+}
+
+func (r *educationRepository) Delete(ctx context.Context, id string) error {
+	if id == "" {
+		return fmt.Errorf("failed to delete education: ID missing")
+	}
+
+	query := fmt.Sprintf("DELETE FROM %s WHERE id=$1", r.educationTable)
+
+	cmdTag, err := r.databaseAPI.Exec(
+		ctx,
+		query,
+		id,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to delete education: %w", err)
+	}
+
+	if cmdTag.RowsAffected() == 0 {
+		return pgx.ErrNoRows
+	}
+
+	return nil
 }
