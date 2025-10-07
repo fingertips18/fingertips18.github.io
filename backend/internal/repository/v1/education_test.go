@@ -860,9 +860,24 @@ func TestEducationRepository_Update(t *testing.T) {
 				err:       fmt.Errorf("failed to unmarshal main school: %w", errors.New("invalid character 'i' looking for beginning of object key string")),
 			},
 		},
+		"Missing ID fails": {
+			given: Given{
+				education: domain.Education{
+					MainSchool:    validEducation.MainSchool,
+					SchoolPeriods: validEducation.SchoolPeriods,
+					Projects:      validEducation.Projects,
+					Level:         validEducation.Level,
+				},
+				mockQueryRow: nil,
+			},
+			expected: Expected{
+				err: errors.New("failed to update education: ID missing"),
+			},
+		},
 		"Missing main school fails": {
 			given: Given{
 				education: domain.Education{
+					Id:            validEducation.Id,
 					MainSchool:    domain.SchoolPeriod{},
 					SchoolPeriods: validEducation.SchoolPeriods,
 					Projects:      validEducation.Projects,
@@ -877,6 +892,7 @@ func TestEducationRepository_Update(t *testing.T) {
 		"Missing main school name fails": {
 			given: Given{
 				education: domain.Education{
+					Id: validEducation.Id,
 					MainSchool: domain.SchoolPeriod{
 						Name:        "",
 						Description: validEducation.MainSchool.Description,
@@ -898,6 +914,7 @@ func TestEducationRepository_Update(t *testing.T) {
 		"Missing main school description fails": {
 			given: Given{
 				education: domain.Education{
+					Id: validEducation.Id,
 					MainSchool: domain.SchoolPeriod{
 						Name:        validEducation.MainSchool.Name,
 						Description: "",
@@ -919,6 +936,7 @@ func TestEducationRepository_Update(t *testing.T) {
 		"Missing main school logo fails": {
 			given: Given{
 				education: domain.Education{
+					Id: validEducation.Id,
 					MainSchool: domain.SchoolPeriod{
 						Name:        validEducation.MainSchool.Name,
 						Description: validEducation.MainSchool.Description,
@@ -940,6 +958,7 @@ func TestEducationRepository_Update(t *testing.T) {
 		"Missing main school blurhash fails": {
 			given: Given{
 				education: domain.Education{
+					Id: validEducation.Id,
 					MainSchool: domain.SchoolPeriod{
 						Name:        validEducation.MainSchool.Name,
 						Description: validEducation.MainSchool.Description,
@@ -961,6 +980,7 @@ func TestEducationRepository_Update(t *testing.T) {
 		"Missing main school start date fails": {
 			given: Given{
 				education: domain.Education{
+					Id: validEducation.Id,
 					MainSchool: domain.SchoolPeriod{
 						Name:        validEducation.MainSchool.Name,
 						Description: validEducation.MainSchool.Description,
@@ -982,6 +1002,7 @@ func TestEducationRepository_Update(t *testing.T) {
 		"Missing main school end date fails": {
 			given: Given{
 				education: domain.Education{
+					Id: validEducation.Id,
 					MainSchool: domain.SchoolPeriod{
 						Name:        validEducation.MainSchool.Name,
 						Description: validEducation.MainSchool.Description,
@@ -1003,6 +1024,7 @@ func TestEducationRepository_Update(t *testing.T) {
 		"End date before start date fails": {
 			given: Given{
 				education: domain.Education{
+					Id: validEducation.Id,
 					MainSchool: domain.SchoolPeriod{
 						Name:        validEducation.MainSchool.Name,
 						Description: validEducation.MainSchool.Description,
@@ -1024,6 +1046,7 @@ func TestEducationRepository_Update(t *testing.T) {
 		"Missing school period fails": {
 			given: Given{
 				education: domain.Education{
+					Id:         validEducation.Id,
 					MainSchool: validEducation.MainSchool,
 					SchoolPeriods: []domain.SchoolPeriod{
 						{},
@@ -1040,6 +1063,7 @@ func TestEducationRepository_Update(t *testing.T) {
 		"Missing school period value fails": {
 			given: Given{
 				education: domain.Education{
+					Id:         validEducation.Id,
 					MainSchool: validEducation.MainSchool,
 					SchoolPeriods: []domain.SchoolPeriod{
 						{
@@ -1063,6 +1087,7 @@ func TestEducationRepository_Update(t *testing.T) {
 		"Missing projects value fails": {
 			given: Given{
 				education: domain.Education{
+					Id:         validEducation.Id,
 					MainSchool: validEducation.MainSchool,
 					Projects: []domain.Project{
 						{
@@ -1087,6 +1112,7 @@ func TestEducationRepository_Update(t *testing.T) {
 		"Missing level fails": {
 			given: Given{
 				education: domain.Education{
+					Id:         validEducation.Id,
 					MainSchool: validEducation.MainSchool,
 					Projects:   validEducation.Projects,
 					Level:      "",
@@ -1100,6 +1126,7 @@ func TestEducationRepository_Update(t *testing.T) {
 		"Invalid level fails": {
 			given: Given{
 				education: domain.Education{
+					Id:         validEducation.Id,
 					MainSchool: validEducation.MainSchool,
 					Projects:   validEducation.Projects,
 					Level:      "invalid",
