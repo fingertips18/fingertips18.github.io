@@ -17,6 +17,7 @@ type EducationRepository interface {
 	Create(ctx context.Context, education *domain.Education) (string, error)
 	Get(ctx context.Context, id string) (*domain.Education, error)
 	Update(ctx context.Context, education *domain.Education) (*domain.Education, error)
+	Delete(ctx context.Context, id string) error
 }
 
 type EducationRepositoryConfig struct {
@@ -301,4 +302,40 @@ func (r *educationRepository) Update(ctx context.Context, education *domain.Educ
 	}
 
 	return &updatedEducation, nil
+}
+
+// Delete removes the education record with the given id from the repository.
+// It validates the id is not empty, executes a SQL DELETE against the repository's
+// education table, and returns an error if the deletion fails.
+//
+// The function returns:
+//   - an error wrapping the underlying database error when the Exec fails,
+//   - pgx.ErrNoRows when no row was deleted (i.e., the id does not exist),
+//   - an error if the provided id is empty.
+//
+// Parameters:
+//
+//	ctx - context for cancellations, timeouts and request-scoped values.
+//	id  - unique identifier of the education record to delete.
+func (r *educationRepository) Delete(ctx context.Context, id string) error {
+	if id == "" {
+		return fmt.Errorf("failed to delete education: ID missing")
+	}
+
+	query := fmt.Sprintf("DELETE FROM %s WHERE id=$1", r.educationTable)
+
+	cmdTag, err := r.databaseAPI.Exec(
+		ctx,
+		query,
+		id,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to delete education: %w", err)
+	}
+
+	if cmdTag.RowsAffected() == 0 {
+		return pgx.ErrNoRows
+	}
+
+	return nil
 }

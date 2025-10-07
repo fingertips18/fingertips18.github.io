@@ -49,7 +49,6 @@ type educationGetFakeRow struct {
 	scanErr           error
 }
 
-// Scan mocks pgx.Row.Scan
 func (r *educationGetFakeRow) Scan(dest ...interface{}) error {
 	if r.scanErr != nil {
 		return r.scanErr
@@ -82,6 +81,15 @@ func (r *educationGetFakeRow) Scan(dest ...interface{}) error {
 	}
 
 	return nil
+}
+
+type educationFakeCommandTag string
+
+func (f educationFakeCommandTag) RowsAffected() int64 {
+	if f == "DELETE 1" {
+		return 1
+	}
+	return 0
 }
 
 type educationRepositoryTestFixture struct {
@@ -1193,6 +1201,92 @@ func TestEducationRepository_Update(t *testing.T) {
 				if edu != nil && test.expected.education != nil {
 					assert.Equal(t, fixedTime, edu.CreatedAt, "CreatedAt should not change on update")
 				}
+			}
+
+			f.databaseAPI.AssertExpectations(t)
+		})
+	}
+}
+
+func TestEducationRepository_Delete(t *testing.T) {
+	fixedId := "123-abc"
+	dbErr := errors.New("db exec error")
+
+	type Given struct {
+		id       string
+		mockExec func(m *database.MockDatabaseAPI)
+	}
+
+	type Expected struct {
+		err error
+	}
+
+	tests := map[string]struct {
+		given    Given
+		expected Expected
+	}{
+		"Successful delete": {
+			given: Given{
+				id: fixedId,
+				mockExec: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().
+						Exec(mock.Anything, mock.Anything, mock.Anything).
+						Return(educationFakeCommandTag("DELETE 1"), nil)
+				},
+			},
+			expected: Expected{err: nil},
+		},
+		"Database error during delete": {
+			given: Given{
+				id: fixedId,
+				mockExec: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().
+						Exec(mock.Anything, mock.Anything, mock.Anything).
+						Return(nil, dbErr)
+				},
+			},
+			expected: Expected{
+				err: fmt.Errorf("failed to delete education: %w", dbErr),
+			},
+		},
+		"No rows affected": {
+			given: Given{
+				id: fixedId,
+				mockExec: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().
+						Exec(mock.Anything, mock.Anything, mock.Anything).
+						Return(educationFakeCommandTag("DELETE 0"), nil)
+				},
+			},
+			expected: Expected{
+				err: pgx.ErrNoRows,
+			},
+		},
+		"Delete with empty ID": {
+			given: Given{
+				id:       "",
+				mockExec: nil,
+			},
+			expected: Expected{
+				err: fmt.Errorf("failed to delete education: ID missing"),
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			f := newEducationRepositoryTestFixture(t, time.Now)
+
+			if test.given.mockExec != nil {
+				test.given.mockExec(f.databaseAPI)
+			}
+
+			err := f.educationRepository.Delete(context.Background(), test.given.id)
+
+			if test.expected.err != nil {
+				assert.EqualError(t, err, test.expected.err.Error())
+			} else {
+				assert.NoError(t, err)
 			}
 
 			f.databaseAPI.AssertExpectations(t)
