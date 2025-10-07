@@ -369,11 +369,21 @@ func (r *educationRepository) List(ctx context.Context, filter domain.EducationF
 	}
 
 	// Add sorting
+	var sortColumn string
+	switch *filter.SortBy {
+	case domain.CreatedAt:
+		sortColumn = "created_at"
+	case domain.UpdatedAt:
+		sortColumn = "updated_at"
+	default:
+		return nil, fmt.Errorf("invalid sort column: %s", *filter.SortBy)
+	}
+
 	sortOrder := "ASC"
 	if !filter.SortAscending {
 		sortOrder = "DESC"
 	}
-	baseQuery += fmt.Sprintf(" ORDER BY %s %s", *filter.SortBy, sortOrder)
+	baseQuery += fmt.Sprintf(" ORDER BY %s %s", sortColumn, sortOrder)
 
 	// Add pagination
 	offset := (filter.Page - 1) * filter.PageSize
