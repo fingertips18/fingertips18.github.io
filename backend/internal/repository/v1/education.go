@@ -281,13 +281,13 @@ func (r *educationRepository) Update(ctx context.Context, education *domain.Educ
 	if err := json.Unmarshal(mainSchoolBytes, &updatedEducation.MainSchool); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal main school: %w", err)
 	}
-	if len(schoolPeriodsJSON) > 0 {
-		if err = json.Unmarshal(schoolPeriodsJSON, &updatedEducation.SchoolPeriods); err != nil {
+	if len(schoolPeriodsBytes) > 0 {
+		if err = json.Unmarshal(schoolPeriodsBytes, &updatedEducation.SchoolPeriods); err != nil {
 			return nil, fmt.Errorf("failed to unmarshal school periods: %w", err)
 		}
 	}
-	if len(projectsJSON) > 0 {
-		if err = json.Unmarshal(projectsJSON, &updatedEducation.Projects); err != nil {
+	if len(projectsBytes) > 0 {
+		if err = json.Unmarshal(projectsBytes, &updatedEducation.Projects); err != nil {
 			return nil, fmt.Errorf("failed to unmarshal projects: %w", err)
 		}
 	}
