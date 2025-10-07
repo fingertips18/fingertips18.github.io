@@ -203,8 +203,8 @@ func (r *educationRepository) Get(ctx context.Context, id string) (*domain.Educa
 //   - Validates the provided education payload via ValidatePayload.
 //   - Sets the UpdatedAt timestamp using the repository's time provider.
 //   - Marshals JSON-serializable fields (MainSchool, SchoolPeriods, Projects).
-//   - Executes an SQL UPDATE that writes the provided fields (including CreatedAt and UpdatedAt)
-//     and RETURNING the updated row.
+//   - Executes an SQL UPDATE that writes MainSchool, SchoolPeriods, Projects, and Level,
+//     sets UpdatedAt to the current timestamp, and RETURNs the updated row.
 //   - Scans the returned row, unmarshals JSON columns back into the domain.Education,
 //     and returns the updated object.
 //
@@ -290,6 +290,10 @@ func (r *educationRepository) Update(ctx context.Context, education *domain.Educ
 		if err = json.Unmarshal(projectsBytes, &updatedEducation.Projects); err != nil {
 			return nil, fmt.Errorf("failed to unmarshal projects: %w", err)
 		}
+	}
+
+	if err := updatedEducation.ValidateResponse(); err != nil {
+		return nil, fmt.Errorf("invalid education returned: %w", err)
 	}
 
 	return &updatedEducation, nil
