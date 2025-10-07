@@ -18,6 +18,7 @@ type EducationRepository interface {
 	Get(ctx context.Context, id string) (*domain.Education, error)
 	Update(ctx context.Context, education *domain.Education) (*domain.Education, error)
 	Delete(ctx context.Context, id string) error
+	List(ctx context.Context, filter domain.EducationFilter) ([]domain.Education, error)
 }
 
 type EducationRepositoryConfig struct {
@@ -338,4 +339,105 @@ func (r *educationRepository) Delete(ctx context.Context, id string) error {
 	}
 
 	return nil
+}
+
+func (r *educationRepository) List(ctx context.Context, filter domain.EducationFilter) ([]domain.Education, error) {
+	// Set defaults if not provided
+	if filter.Page <= 0 {
+		filter.Page = 1
+	}
+	if filter.PageSize <= 0 || filter.PageSize > 20 {
+		filter.PageSize = 20
+	}
+	if filter.SortBy == nil {
+		defaultSort := domain.CreatedAt
+		filter.SortBy = &defaultSort
+	}
+
+	baseQuery := fmt.Sprintf(
+		`SELECT id, main_school, school_periods, projects, level, created_at, updated_at FROM %s`,
+		r.educationTable,
+	)
+
+	// Validate SortBy against allowed columns
+	allowedSortColumns := map[domain.SortBy]bool{
+		domain.CreatedAt: true,
+		domain.UpdatedAt: true,
+	}
+	if !allowedSortColumns[*filter.SortBy] {
+		return nil, fmt.Errorf("invalid sort column: %s", *filter.SortBy)
+	}
+
+	// Add sorting
+	var sortColumn string
+	switch *filter.SortBy {
+	case domain.CreatedAt:
+		sortColumn = "created_at"
+	case domain.UpdatedAt:
+		sortColumn = "updated_at"
+	default:
+		return nil, fmt.Errorf("invalid sort column: %s", *filter.SortBy)
+	}
+
+	sortOrder := "ASC"
+	if !filter.SortAscending {
+		sortOrder = "DESC"
+	}
+	baseQuery += fmt.Sprintf(" ORDER BY %s %s", sortColumn, sortOrder)
+
+	// Add pagination
+	offset := (filter.Page - 1) * filter.PageSize
+	baseQuery += " LIMIT $1 OFFSET $2"
+
+	// Execute query
+	rows, err := r.databaseAPI.Query(ctx, baseQuery, filter.PageSize, offset)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list education: %w", err)
+	}
+	defer rows.Close()
+
+	education := []domain.Education{}
+	for rows.Next() {
+		var (
+			ed                domain.Education
+			mainSchoolJSON    []byte
+			schoolPeriodsJSON []byte
+			projectsJSON      []byte
+		)
+
+		err := rows.Scan(
+			&ed.Id,
+			&mainSchoolJSON,
+			&schoolPeriodsJSON,
+			&projectsJSON,
+			&ed.Level,
+			&ed.CreatedAt,
+			&ed.UpdatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan education: %w", err)
+		}
+
+		if err = json.Unmarshal(mainSchoolJSON, &ed.MainSchool); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal main school: %w", err)
+		}
+		if len(schoolPeriodsJSON) > 0 {
+			if err = json.Unmarshal(schoolPeriodsJSON, &ed.SchoolPeriods); err != nil {
+				return nil, fmt.Errorf("failed to unmarshal school periods: %w", err)
+			}
+		}
+		if len(projectsJSON) > 0 {
+			if err = json.Unmarshal(projectsJSON, &ed.Projects); err != nil {
+				return nil, fmt.Errorf("failed to unmarshal projects: %w", err)
+			}
+		}
+
+		education = append(education, ed)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("row iteration error: %w", err)
+	}
+
+	return education, nil
 }

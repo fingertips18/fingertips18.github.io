@@ -45,6 +45,13 @@ type Education struct {
 	UpdatedAt     time.Time      `json:"updated_at"`
 }
 
+type EducationFilter struct {
+	Page          int32
+	PageSize      int32
+	SortBy        *SortBy
+	SortAscending bool
+}
+
 func (s SchoolPeriod) Validate() error {
 	if s.Name == "" {
 		return errors.New("name missing")

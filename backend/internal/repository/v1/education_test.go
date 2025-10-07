@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -90,6 +91,52 @@ func (f educationFakeCommandTag) RowsAffected() int64 {
 		return 1
 	}
 	return 0
+}
+
+type educationFakeRow struct {
+	education domain.Education
+	scanErr   error
+}
+type educationFakeRows struct {
+	rows   []*educationFakeRow
+	index  int
+	rowErr error
+}
+
+func (r *educationFakeRows) Next() bool {
+	if r.index >= len(r.rows) {
+		return false
+	}
+	r.index++
+	return true
+}
+
+func (r *educationFakeRows) Scan(dest ...interface{}) error {
+	row := r.rows[r.index-1]
+	if row.scanErr != nil {
+		return row.scanErr
+	}
+	ed := row.education
+
+	mainSchoolJSON, _ := json.Marshal(ed.MainSchool)
+	schoolPeriodsJSON, _ := json.Marshal(ed.SchoolPeriods)
+	projectsJSON, _ := json.Marshal(ed.Projects)
+
+	*(dest[0].(*string)) = ed.Id
+	*(dest[1].(*[]byte)) = mainSchoolJSON
+	*(dest[2].(*[]byte)) = schoolPeriodsJSON
+	*(dest[3].(*[]byte)) = projectsJSON
+	*(dest[4].(*domain.EducationLevel)) = ed.Level
+	*(dest[5].(*time.Time)) = ed.CreatedAt
+	*(dest[6].(*time.Time)) = ed.UpdatedAt
+
+	return nil
+}
+
+func (r *educationFakeRows) Close() {}
+
+func (r *educationFakeRows) Err() error {
+	return r.rowErr
 }
 
 type educationRepositoryTestFixture struct {
@@ -1287,6 +1334,172 @@ func TestEducationRepository_Delete(t *testing.T) {
 				assert.EqualError(t, err, test.expected.err.Error())
 			} else {
 				assert.NoError(t, err)
+			}
+
+			f.databaseAPI.AssertExpectations(t)
+		})
+	}
+}
+
+func TestEducationRepository_List(t *testing.T) {
+	fixedTime := time.Date(2025, 1, 1, 12, 0, 0, 0, time.UTC)
+	scanErr := errors.New("scan error")
+	queryErr := errors.New("query error")
+	rowErr := errors.New("row iteration error")
+
+	validMainSchool := domain.SchoolPeriod{
+		Link:        "http://example.com",
+		Name:        "test-name",
+		Description: "test-description",
+		Logo:        "test-logo",
+		BlurHash:    "test-blurhash",
+		Honor:       "test-honor",
+		StartDate:   time.Date(2021, 1, 1, 12, 0, 0, 0, time.UTC),
+		EndDate:     time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC),
+	}
+
+	validProjects := []domain.Project{
+		{
+			Preview:     "test-preview",
+			BlurHash:    "test-blurhash",
+			Title:       "test-title",
+			SubTitle:    "test-subtitle",
+			Description: "test-description",
+			Stack:       []string{"stack1"},
+			Type:        domain.Web,
+			Link:        "http://example.com",
+		},
+	}
+
+	validEducation := domain.Education{
+		Id:         "edu-001",
+		MainSchool: validMainSchool,
+		Projects:   validProjects,
+		Level:      domain.College,
+		CreatedAt:  fixedTime,
+		UpdatedAt:  fixedTime,
+	}
+
+	type Given struct {
+		filter    domain.EducationFilter
+		mockQuery func(m *database.MockDatabaseAPI)
+	}
+
+	type Expected struct {
+		education []domain.Education
+		err       error
+	}
+
+	tests := map[string]struct {
+		given    Given
+		expected Expected
+	}{
+		"Successful list education": {
+			given: Given{
+				filter: domain.EducationFilter{},
+				mockQuery: func(m *database.MockDatabaseAPI) {
+					rows := &educationFakeRows{
+						rows: []*educationFakeRow{
+							{education: validEducation},
+						},
+					}
+					m.EXPECT().
+						Query(mock.Anything, mock.Anything, mock.Anything).
+						Return(rows, nil)
+				},
+			},
+			expected: Expected{
+				education: []domain.Education{validEducation},
+				err:       nil,
+			},
+		},
+		"Query fails": {
+			given: Given{
+				filter: domain.EducationFilter{},
+				mockQuery: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().
+						Query(mock.Anything, mock.Anything, mock.Anything).
+						Return(nil, queryErr)
+				},
+			},
+			expected: Expected{
+				education: nil,
+				err:       fmt.Errorf("failed to list education: %w", queryErr),
+			},
+		},
+		"Scan fails": {
+			given: Given{
+				filter: domain.EducationFilter{},
+				mockQuery: func(m *database.MockDatabaseAPI) {
+					rows := &educationFakeRows{
+						rows: []*educationFakeRow{
+							{scanErr: scanErr},
+						},
+					}
+					m.EXPECT().
+						Query(mock.Anything, mock.Anything, mock.Anything).
+						Return(rows, nil)
+				},
+			},
+			expected: Expected{
+				education: nil,
+				err:       fmt.Errorf("failed to scan education: %w", scanErr),
+			},
+		},
+		"Row iteration error": {
+			given: Given{
+				filter: domain.EducationFilter{},
+				mockQuery: func(m *database.MockDatabaseAPI) {
+					rows := &educationFakeRows{
+						rows:   []*educationFakeRow{},
+						rowErr: rowErr,
+					}
+					m.EXPECT().
+						Query(mock.Anything, mock.Anything, mock.Anything).
+						Return(rows, nil)
+				},
+			},
+			expected: Expected{
+				education: nil,
+				err:       fmt.Errorf("row iteration error: %w", rowErr),
+			},
+		},
+		"Applies defaults when filter is empty": {
+			given: Given{
+				filter: domain.EducationFilter{},
+				mockQuery: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().
+						Query(mock.Anything, mock.MatchedBy(func(query string) bool {
+							return strings.Contains(query, "ORDER BY created_at DESC") &&
+								strings.Contains(query, "LIMIT $1 OFFSET $2")
+						}), mock.Anything).
+						Return(&educationFakeRows{rows: []*educationFakeRow{}}, nil)
+				},
+			},
+			expected: Expected{
+				education: []domain.Education{},
+				err:       nil,
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			f := newEducationRepositoryTestFixture(t, func() time.Time { return fixedTime })
+
+			if test.given.mockQuery != nil {
+				test.given.mockQuery(f.databaseAPI)
+			}
+
+			education, err := f.educationRepository.List(context.Background(), test.given.filter)
+
+			if test.expected.err != nil {
+				assert.EqualError(t, err, test.expected.err.Error())
+				assert.Nil(t, education)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, education)
+				assert.Equal(t, test.expected.education, education)
 			}
 
 			f.databaseAPI.AssertExpectations(t)
