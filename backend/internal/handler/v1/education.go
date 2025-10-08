@@ -97,21 +97,27 @@ func (h *educationServiceHandler) Create(w http.ResponseWriter, r *http.Request)
 
 	defer r.Body.Close()
 
-	var education domain.CreateEducation
-	if err := json.NewDecoder(r.Body).Decode(&education); err != nil {
+	var createReq domain.CreateEducation
+	if err := json.NewDecoder(r.Body).Decode(&createReq); err != nil {
 		http.Error(w, "Invalid JSON in request body", http.StatusBadRequest)
 		return
 	}
 
-	id, err := h.educationRepo.Create(
-		r.Context(),
-		&domain.Education{
-			MainSchool:    education.MainSchool,
-			SchoolPeriods: education.SchoolPeriods,
-			Projects:      education.Projects,
-			Level:         education.Level,
-		},
-	)
+	// Map to Education and validate BEFORE calling repository
+	education := &domain.Education{
+		MainSchool:    createReq.MainSchool,
+		SchoolPeriods: createReq.SchoolPeriods,
+		Projects:      createReq.Projects,
+		Level:         createReq.Level,
+	}
+
+	// Add validation here
+	if err := education.ValidatePayload(); err != nil {
+		http.Error(w, "Invalid education payload: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	id, err := h.educationRepo.Create(r.Context(), education)
 
 	if err != nil {
 		http.Error(w, "Failed to create education: "+err.Error(), http.StatusInternalServerError)

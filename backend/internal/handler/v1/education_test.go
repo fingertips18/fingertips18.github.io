@@ -145,16 +145,11 @@ func TestEducationServiceHandler_Create(t *testing.T) {
 					b, _ := json.Marshal(invalid)
 					return string(b)
 				}(),
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
-					// Still called since handler doesn’t validate input itself
-					m.EXPECT().
-						Create(mock.Anything, mock.AnythingOfType("*domain.Education")).
-						Return(fixedID, nil)
-				},
+				mockRepo: nil, // No mock needed - validation happens before repo call
 			},
 			expected: Expected{
-				code: http.StatusCreated,
-				body: string(validResp),
+				code: http.StatusBadRequest,
+				body: "Invalid education payload: level invalid = PhD\n",
 			},
 		},
 		"missing required fields in school": {
@@ -166,15 +161,11 @@ func TestEducationServiceHandler_Create(t *testing.T) {
 					b, _ := json.Marshal(bad)
 					return string(b)
 				}(),
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
-					m.EXPECT().
-						Create(mock.Anything, mock.AnythingOfType("*domain.Education")).
-						Return(fixedID, nil)
-				},
+				mockRepo: nil,
 			},
 			expected: Expected{
-				code: http.StatusCreated,
-				body: string(validResp),
+				code: http.StatusBadRequest,
+				body: "Invalid education payload: main school name missing\n",
 			},
 		},
 	}
