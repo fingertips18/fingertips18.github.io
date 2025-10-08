@@ -45,11 +45,22 @@ type Education struct {
 	UpdatedAt     time.Time      `json:"updated_at"`
 }
 
+type CreateEducation struct {
+	MainSchool    SchoolPeriod   `json:"main_school"`
+	SchoolPeriods []SchoolPeriod `json:"school_periods,omitempty"`
+	Projects      []Project      `json:"projects,omitempty"`
+	Level         EducationLevel `json:"level"`
+}
+
 type EducationFilter struct {
 	Page          int32
 	PageSize      int32
 	SortBy        *SortBy
 	SortAscending bool
+}
+
+type EducationIDResponse struct {
+	ID string `json:"id"`
 }
 
 func (s SchoolPeriod) Validate() error {
