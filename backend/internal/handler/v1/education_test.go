@@ -79,7 +79,11 @@ func TestEducationServiceHandler_Create(t *testing.T) {
 				body:   string(validBody),
 				mockRepo: func(m *mockRepo.MockEducationRepository) {
 					m.EXPECT().
-						Create(mock.Anything, mock.AnythingOfType("*domain.Education")).
+						Create(mock.Anything, mock.MatchedBy(func(edu *domain.Education) bool {
+							return edu.Level == domain.College &&
+								edu.MainSchool.Name == "Harvard University" &&
+								len(edu.SchoolPeriods) == 1
+						})).
 						Return(fixedID, nil)
 				},
 			},
@@ -166,6 +170,100 @@ func TestEducationServiceHandler_Create(t *testing.T) {
 			expected: Expected{
 				code: http.StatusBadRequest,
 				body: "Invalid education payload: main school name missing\n",
+			},
+		}, "very large payload": {
+			given: Given{
+				method: http.MethodPost,
+				body: func() string {
+					bigDesc := strings.Repeat("A", 10_000) // simulate large input
+					large := validCreateReq
+					large.MainSchool.Description = bigDesc
+					b, _ := json.Marshal(large)
+					return string(b)
+				}(),
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					m.EXPECT().
+						Create(mock.Anything, mock.AnythingOfType("*domain.Education")).
+						Return(fixedID, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusCreated,
+				body: string(validResp),
+			},
+		},
+		"unicode characters in fields": {
+			given: Given{
+				method: http.MethodPost,
+				body: func() string {
+					unicodeReq := validCreateReq
+					unicodeReq.MainSchool.Name = "Université de Montréal 🏫"
+					unicodeReq.MainSchool.Description = "研究と教育 excellence"
+					b, _ := json.Marshal(unicodeReq)
+					return string(b)
+				}(),
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					m.EXPECT().
+						Create(mock.Anything, mock.MatchedBy(func(edu *domain.Education) bool {
+							return strings.Contains(edu.MainSchool.Name, "Montréal")
+						})).
+						Return(fixedID, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusCreated,
+				body: string(validResp),
+			},
+		},
+		"start date after end date": {
+			given: Given{
+				method: http.MethodPost,
+				body: func() string {
+					invalidDates := validCreateReq
+					invalidDates.MainSchool.StartDate = time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
+					invalidDates.MainSchool.EndDate = time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)
+					b, _ := json.Marshal(invalidDates)
+					return string(b)
+				}(),
+				mockRepo: nil,
+			},
+			expected: Expected{
+				code: http.StatusBadRequest,
+				body: "Invalid education payload: main school end date must be after start date\n",
+			},
+		},
+		"multiple school periods": {
+			given: Given{
+				method: http.MethodPost,
+				body: func() string {
+					multi := validCreateReq
+					secondSchool := domain.SchoolPeriod{
+						Name:        "Massachusetts Institute of Technology",
+						Description: "Exchange program in Computer Science",
+						Logo:        "mit_logo.png",
+						BlurHash:    "mitHash456",
+						StartDate:   time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC),
+						EndDate:     time.Date(2018, 6, 1, 0, 0, 0, 0, time.UTC),
+					}
+					multi.SchoolPeriods = []domain.SchoolPeriod{
+						validSchool,
+						secondSchool,
+					}
+					b, _ := json.Marshal(multi)
+					return string(b)
+				}(),
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					m.EXPECT().
+						Create(mock.Anything, mock.MatchedBy(func(edu *domain.Education) bool {
+							return len(edu.SchoolPeriods) == 2 &&
+								edu.SchoolPeriods[1].Name == "Massachusetts Institute of Technology"
+						})).
+						Return(fixedID, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusCreated,
+				body: string(validResp),
 			},
 		},
 	}
