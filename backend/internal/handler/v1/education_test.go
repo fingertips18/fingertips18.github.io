@@ -525,9 +525,7 @@ func TestEducationServiceHandler_Update(t *testing.T) {
 					b, _ := json.Marshal(bad)
 					return string(b)
 				}(),
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
-					// no repo call, validation fails before
-				},
+				mockRepo: nil,
 			},
 			expected: Expected{
 				code: http.StatusBadRequest,
