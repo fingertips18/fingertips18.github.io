@@ -437,3 +437,202 @@ func TestEducationServiceHandler_Get(t *testing.T) {
 		})
 	}
 }
+
+func TestEducationServiceHandler_Update(t *testing.T) {
+	fixedID := "edu-123"
+
+	validSchool := domain.SchoolPeriod{
+		Name:        "Harvard University",
+		Description: "Top-tier education",
+		Logo:        "logo.png",
+		BlurHash:    "hash123",
+		StartDate:   time.Date(2015, 9, 1, 0, 0, 0, 0, time.UTC),
+		EndDate:     time.Date(2019, 6, 1, 0, 0, 0, 0, time.UTC),
+	}
+
+	existingEducation := &domain.Education{
+		Id:            fixedID,
+		MainSchool:    validSchool,
+		SchoolPeriods: []domain.SchoolPeriod{validSchool},
+		Projects:      nil,
+		Level:         domain.College,
+		CreatedAt:     time.Now().Add(-time.Hour * 24),
+		UpdatedAt:     time.Now(),
+	}
+
+	validBody, _ := json.Marshal(existingEducation)
+	validResp, _ := json.Marshal(existingEducation)
+
+	type Given struct {
+		method   string
+		body     string
+		mockRepo func(m *mockRepo.MockEducationRepository)
+	}
+	type Expected struct {
+		code int
+		body string
+	}
+
+	tests := map[string]struct {
+		given    Given
+		expected Expected
+	}{
+		"success": {
+			given: Given{
+				method: http.MethodPut,
+				body:   string(validBody),
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					m.EXPECT().
+						Update(mock.Anything, mock.MatchedBy(func(edu *domain.Education) bool {
+							return edu.Id == fixedID && edu.MainSchool.Name == "Harvard University"
+						})).
+						Return(existingEducation, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusOK,
+				body: string(validResp),
+			},
+		},
+		"method not allowed": {
+			given: Given{
+				method:   http.MethodPost,
+				body:     string(validBody),
+				mockRepo: nil,
+			},
+			expected: Expected{
+				code: http.StatusMethodNotAllowed,
+				body: "Method not allowed: only PUT is supported\n",
+			},
+		},
+		"invalid JSON": {
+			given: Given{
+				method:   http.MethodPut,
+				body:     `{"invalid":}`,
+				mockRepo: nil,
+			},
+			expected: Expected{
+				code: http.StatusBadRequest,
+				body: "Invalid JSON in request body\n",
+			},
+		},
+		"invalid payload (validation failure)": {
+			given: Given{
+				method: http.MethodPut,
+				body: func() string {
+					bad := *existingEducation
+					bad.MainSchool.Name = "" // fails ValidatePayload()
+					b, _ := json.Marshal(bad)
+					return string(b)
+				}(),
+				mockRepo: nil,
+			},
+			expected: Expected{
+				code: http.StatusBadRequest,
+				body: "Invalid education payload: main school name missing\n",
+			},
+		},
+		"repository error": {
+			given: Given{
+				method: http.MethodPut,
+				body:   string(validBody),
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					m.EXPECT().
+						Update(mock.Anything, mock.AnythingOfType("*domain.Education")).
+						Return(nil, errors.New("database failure"))
+				},
+			},
+			expected: Expected{
+				code: http.StatusInternalServerError,
+				body: "Failed to update education: database failure\n",
+			},
+		},
+		"education not found": {
+			given: Given{
+				method: http.MethodPut,
+				body:   string(validBody),
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					m.EXPECT().
+						Update(mock.Anything, mock.AnythingOfType("*domain.Education")).
+						Return(nil, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusNotFound,
+				body: "Education not found\n",
+			},
+		},
+		"large payload": {
+			given: Given{
+				method: http.MethodPut,
+				body: func() string {
+					large := *existingEducation
+					large.MainSchool.Description = strings.Repeat("A", 10_000)
+					b, _ := json.Marshal(large)
+					return string(b)
+				}(),
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					m.EXPECT().
+						Update(mock.Anything, mock.AnythingOfType("*domain.Education")).
+						Return(existingEducation, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusOK,
+				body: string(validResp),
+			},
+		},
+		"unicode fields": {
+			given: Given{
+				method: http.MethodPut,
+				body: func() string {
+					unicode := *existingEducation
+					unicode.MainSchool.Name = "東京大学 🏫"
+					unicode.MainSchool.Description = "研究 excellence"
+					b, _ := json.Marshal(unicode)
+					return string(b)
+				}(),
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					m.EXPECT().
+						Update(mock.Anything, mock.MatchedBy(func(edu *domain.Education) bool {
+							return strings.Contains(edu.MainSchool.Name, "東京")
+						})).
+						Return(existingEducation, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusOK,
+				body: string(validResp),
+			},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			f := newEducationHandlerTestFixture(t)
+
+			if tt.given.mockRepo != nil {
+				tt.given.mockRepo(f.mockEducationRepo)
+			}
+
+			req := httptest.NewRequest(tt.given.method, "/education", strings.NewReader(tt.given.body))
+			w := httptest.NewRecorder()
+
+			f.educationHandler.Update(w, req)
+
+			res := w.Result()
+			defer res.Body.Close()
+
+			body, _ := io.ReadAll(res.Body)
+			assert.Equal(t, tt.expected.code, res.StatusCode)
+
+			if strings.HasPrefix(tt.expected.body, "{") {
+				assert.JSONEq(t, tt.expected.body, string(body))
+			} else {
+				assert.Equal(t, tt.expected.body, string(body))
+			}
+
+			f.mockEducationRepo.AssertExpectations(t)
+		})
+	}
+}
