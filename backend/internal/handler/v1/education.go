@@ -350,7 +350,7 @@ func (h *educationServiceHandler) Delete(w http.ResponseWriter, r *http.Request,
 // @Accept json
 // @Produce json
 // @Param page query int false "Page number (default 1)"
-// @Param page_size query int false "Number of items per page (default 10)"
+// @Param page_size query int false "Number of items per page (default 20)"
 // @Param sort_by query string false "Field to sort by" Enums(created_at, updated_at)
 // @Param sort_ascending query bool false "Sort ascending order"
 // @Success 200 {array} domain.Education
