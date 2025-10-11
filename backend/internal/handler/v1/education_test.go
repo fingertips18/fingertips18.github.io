@@ -12,6 +12,7 @@ import (
 
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
 	mockRepo "github.com/fingertips18/fingertips18.github.io/backend/internal/repository/v1/mocks"
+	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -631,6 +632,123 @@ func TestEducationServiceHandler_Update(t *testing.T) {
 			} else {
 				assert.Equal(t, tt.expected.body, string(body))
 			}
+
+			f.mockEducationRepo.AssertExpectations(t)
+		})
+	}
+}
+
+func TestEducationServiceHandler_Delete(t *testing.T) {
+	fixedID := "edu-123"
+
+	type Given struct {
+		method   string
+		id       string
+		mockRepo func(m *mockRepo.MockEducationRepository)
+	}
+	type Expected struct {
+		code int
+		body string
+	}
+
+	tests := map[string]struct {
+		given    Given
+		expected Expected
+	}{
+		"success": {
+			given: Given{
+				method: http.MethodDelete,
+				id:     fixedID,
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					m.EXPECT().
+						Delete(mock.Anything, fixedID).
+						Return(nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusNoContent,
+				body: "",
+			},
+		},
+		"method not allowed": {
+			given: Given{
+				method: http.MethodGet,
+				id:     fixedID,
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					// no call expected
+				},
+			},
+			expected: Expected{
+				code: http.StatusMethodNotAllowed,
+				body: "Method not allowed: only DELETE is supported\n",
+			},
+		},
+		"education not found (pgx.ErrNoRows)": {
+			given: Given{
+				method: http.MethodDelete,
+				id:     "missing-id",
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					m.EXPECT().
+						Delete(mock.Anything, "missing-id").
+						Return(pgx.ErrNoRows)
+				},
+			},
+			expected: Expected{
+				code: http.StatusNotFound,
+				body: "Education not found\n",
+			},
+		},
+		"repository error": {
+			given: Given{
+				method: http.MethodDelete,
+				id:     fixedID,
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					m.EXPECT().
+						Delete(mock.Anything, fixedID).
+						Return(errors.New("database failure"))
+				},
+			},
+			expected: Expected{
+				code: http.StatusInternalServerError,
+				body: "Failed to delete education: database failure\n",
+			},
+		},
+		"empty id": {
+			given: Given{
+				method: http.MethodDelete,
+				id:     "",
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					m.EXPECT().
+						Delete(mock.Anything, "").
+						Return(pgx.ErrNoRows)
+				},
+			},
+			expected: Expected{
+				code: http.StatusNotFound,
+				body: "Education not found\n",
+			},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			f := newEducationHandlerTestFixture(t)
+
+			if tt.given.mockRepo != nil {
+				tt.given.mockRepo(f.mockEducationRepo)
+			}
+
+			req := httptest.NewRequest(tt.given.method, "/education/"+tt.given.id, nil)
+			w := httptest.NewRecorder()
+
+			f.educationHandler.Delete(w, req, tt.given.id)
+
+			res := w.Result()
+			defer res.Body.Close()
+
+			body, _ := io.ReadAll(res.Body)
+			assert.Equal(t, tt.expected.code, res.StatusCode)
+			assert.Equal(t, tt.expected.body, string(body))
 
 			f.mockEducationRepo.AssertExpectations(t)
 		})
