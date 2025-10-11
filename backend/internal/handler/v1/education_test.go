@@ -899,6 +899,116 @@ func TestEducationServiceHandler_List(t *testing.T) {
 				body: "[]",
 			},
 		},
+		"page zero defaults to one": {
+			given: Given{
+				method: http.MethodGet,
+				query:  "?page=0",
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					// When page=0 is provided, it should default to page=1
+					expectedFilter := domain.EducationFilter{
+						Page:          1,
+						PageSize:      20,
+						SortBy:        nil,
+						SortAscending: false,
+					}
+					m.EXPECT().
+						List(mock.Anything, expectedFilter).
+						Return(listResp, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusOK,
+				body: string(validJSON),
+			},
+		},
+		"negative page size": {
+			given: Given{
+				method: http.MethodGet,
+				query:  "?page_size=-1",
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					// Negative page_size should be handled gracefully (default to 20 or error)
+					expectedFilter := domain.EducationFilter{
+						Page:          1,
+						PageSize:      20, // Should default to 20
+						SortBy:        nil,
+						SortAscending: false,
+					}
+					m.EXPECT().
+						List(mock.Anything, expectedFilter).
+						Return(listResp, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusOK,
+				body: string(validJSON),
+			},
+		},
+		"page size exceeds maximum": {
+			given: Given{
+				method: http.MethodGet,
+				query:  "?page_size=1000",
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					// Assuming max page_size is 100, it should be clamped
+					expectedFilter := domain.EducationFilter{
+						Page:          1,
+						PageSize:      100, // Should be clamped to max (adjust based on your handler logic)
+						SortBy:        nil,
+						SortAscending: false,
+					}
+					m.EXPECT().
+						List(mock.Anything, expectedFilter).
+						Return(listResp, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusOK,
+				body: string(validJSON),
+			},
+		},
+		"invalid page parameter": {
+			given: Given{
+				method: http.MethodGet,
+				query:  "?page=invalid",
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					// Invalid page should default to 1
+					expectedFilter := domain.EducationFilter{
+						Page:          1,
+						PageSize:      20,
+						SortBy:        nil,
+						SortAscending: false,
+					}
+					m.EXPECT().
+						List(mock.Anything, expectedFilter).
+						Return(listResp, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusOK,
+				body: string(validJSON),
+			},
+		},
+		"invalid page size parameter": {
+			given: Given{
+				method: http.MethodGet,
+				query:  "?page_size=invalid",
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					// Invalid page_size should default to 20
+					expectedFilter := domain.EducationFilter{
+						Page:          1,
+						PageSize:      20,
+						SortBy:        nil,
+						SortAscending: false,
+					}
+					m.EXPECT().
+						List(mock.Anything, expectedFilter).
+						Return(listResp, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusOK,
+				body: string(validJSON),
+			},
+		},
 	}
 
 	for name, tt := range tests {
@@ -928,4 +1038,58 @@ func TestEducationServiceHandler_List(t *testing.T) {
 			f.mockEducationRepo.AssertExpectations(t)
 		})
 	}
+}
+
+func TestEducationServiceHandler_List_Routing(t *testing.T) {
+	sampleEducation := domain.Education{
+		Id: "edu-123",
+		MainSchool: domain.SchoolPeriod{
+			Name:        "MIT",
+			Description: "Computer Science",
+			Logo:        "mit.png",
+			BlurHash:    "hash123",
+			StartDate:   time.Date(2014, 9, 1, 0, 0, 0, 0, time.UTC),
+			EndDate:     time.Date(2018, 6, 1, 0, 0, 0, 0, time.UTC),
+		},
+		SchoolPeriods: []domain.SchoolPeriod{},
+		Projects:      nil,
+		Level:         domain.College,
+		CreatedAt:     time.Now().Add(-24 * time.Hour),
+		UpdatedAt:     time.Now(),
+	}
+
+	listResp := []domain.Education{sampleEducation}
+	validJSON, _ := json.Marshal(listResp)
+
+	f := newEducationHandlerTestFixture(t)
+
+	// Setup mock expectation
+	expectedFilter := domain.EducationFilter{
+		Page:          1,
+		PageSize:      20,
+		SortBy:        nil,
+		SortAscending: false,
+	}
+	f.mockEducationRepo.EXPECT().
+		List(mock.Anything, expectedFilter).
+		Return(listResp, nil)
+
+	// Create request and recorder
+	req := httptest.NewRequest(http.MethodGet, "/educations", nil)
+	w := httptest.NewRecorder()
+
+	// Cast handler to http.Handler and call ServeHTTP
+	handler, ok := f.educationHandler.(http.Handler)
+	assert.True(t, ok, "educationHandler should implement http.Handler")
+	handler.ServeHTTP(w, req)
+
+	// Verify response
+	res := w.Result()
+	defer res.Body.Close()
+
+	body, _ := io.ReadAll(res.Body)
+	assert.Equal(t, http.StatusOK, res.StatusCode)
+	assert.JSONEq(t, string(validJSON), string(body))
+
+	f.mockEducationRepo.AssertExpectations(t)
 }

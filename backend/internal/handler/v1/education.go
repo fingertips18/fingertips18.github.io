@@ -58,6 +58,15 @@ func (h *educationServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	path := strings.TrimSuffix(r.URL.Path, "/")
 
 	switch {
+	// GET /educations
+	case path == "/educations":
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		h.List(w, r)
+		return
+
 	// POST / PUT /education
 	case path == "/education":
 		switch r.Method {
@@ -369,15 +378,20 @@ func (h *educationServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 		SortAscending: utils.GetQueryBool(q, "sort_ascending", false),
 	}
 
-	educations, err := h.educationRepo.List(
-		r.Context(),
-		domain.EducationFilter{
-			Page:          filter.Page,
-			PageSize:      filter.PageSize,
-			SortBy:        filter.SortBy,
-			SortAscending: filter.SortAscending,
-		},
-	)
+	// Clamp page to minimum of 1
+	if filter.Page < 1 {
+		filter.Page = 1
+	}
+
+	// Clamp page_size to valid range
+	const maxPageSize = 100
+	if filter.PageSize < 1 {
+		filter.PageSize = 20 // default
+	} else if filter.PageSize > maxPageSize {
+		filter.PageSize = maxPageSize
+	}
+
+	educations, err := h.educationRepo.List(r.Context(), filter)
 	if err != nil {
 		http.Error(w, "Failed to list educations: "+err.Error(), http.StatusInternalServerError)
 		return
