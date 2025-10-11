@@ -1,5 +1,17 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["src", "global.d.ts", "vite.config.ts"],
-  "exclude": ["node_modules", "dist"]
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "bundler"
+  },
+  "include": [
+    "src/**/*",
+    "vite.config.ts",
+    "eslint.config.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/components/shadcn/**"
+  ]
 }
