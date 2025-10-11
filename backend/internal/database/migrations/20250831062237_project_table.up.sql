@@ -5,8 +5,8 @@ CREATE TABLE project (
     title TEXT NOT NULL,
     sub_title TEXT,
     description TEXT,
-    stack JSONB,
-    type TEXT,
+    stack TEXT[] NOT NULL DEFAULT '{}',  -- matches []string in Go
+    type TEXT CHECK (type IN ('web', 'mobile', 'game')),  -- enforces valid ProjectType
     link TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
