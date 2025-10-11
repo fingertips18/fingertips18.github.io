@@ -3,12 +3,14 @@ package v1
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/database"
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
 	v1 "github.com/fingertips18/fingertips18.github.io/backend/internal/repository/v1"
+	"github.com/jackc/pgx/v5"
 )
 
 type EducationHandler interface {
@@ -16,6 +18,7 @@ type EducationHandler interface {
 	Create(w http.ResponseWriter, r *http.Request)
 	Get(w http.ResponseWriter, r *http.Request, id string)
 	Update(w http.ResponseWriter, r *http.Request)
+	Delete(w http.ResponseWriter, r *http.Request, id string)
 }
 
 type EducationServiceConfig struct {
@@ -76,6 +79,8 @@ func (h *educationServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 		switch r.Method {
 		case http.MethodGet:
 			h.Get(w, r, id)
+		case http.MethodDelete:
+			h.Delete(w, r, id)
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
@@ -273,4 +278,42 @@ func (h *educationServiceHandler) Update(w http.ResponseWriter, r *http.Request)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(buf.Bytes())
+}
+
+// Delete handles HTTP DELETE requests to remove an education resource identified by id.
+// It enforces the DELETE method (returns 405 Method Not Allowed for other methods).
+// The handler delegates deletion to the education repository using the request context.
+// If the repository reports no matching row, Delete responds with 404 Not Found.
+// For other repository errors it responds with 500 Internal Server Error and an error message.
+// On successful deletion it writes a 204 No Content response with no body.
+//
+// @Security ApiKeyAuth
+// @Summary Delete a education
+// @Description Deletes an existing education by its unique ID provided in the path.
+// @Tags education
+// @Param id path string true "Education ID"
+// @Success 204 "No Content"
+// @Failure 400 {object} domain.ErrorResponse
+// @Failure 404 {object} domain.ErrorResponse
+// @Failure 500 {object} domain.ErrorResponse
+// @Router /education/{id} [delete]
+func (h *educationServiceHandler) Delete(w http.ResponseWriter, r *http.Request, id string) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "Method not allowed: only DELETE is supported", http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := h.educationRepo.Delete(r.Context(), id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			http.Error(w, "Education not found", http.StatusNotFound)
+			return
+		}
+
+		http.Error(w, "Failed to delete education: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Successful delete → 204 No Content
+	w.WriteHeader(http.StatusNoContent)
 }
