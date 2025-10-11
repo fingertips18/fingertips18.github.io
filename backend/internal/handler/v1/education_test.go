@@ -351,11 +351,9 @@ func TestEducationServiceHandler_Get(t *testing.T) {
 		},
 		"method not allowed": {
 			given: Given{
-				method: http.MethodPost,
-				id:     fixedID,
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
-					// No repo call expected
-				},
+				method:   http.MethodPost,
+				id:       fixedID,
+				mockRepo: nil,
 			},
 			expected: Expected{
 				code: http.StatusMethodNotAllowed,
@@ -397,7 +395,7 @@ func TestEducationServiceHandler_Get(t *testing.T) {
 				method: http.MethodGet,
 				id:     "",
 				mockRepo: func(m *mockRepo.MockEducationRepository) {
-					// Called with empty string — still valid but unusual
+					// Testing Get() directly with empty id (bypasses ServeHTTP validation)
 					m.EXPECT().
 						Get(mock.Anything, "").
 						Return(nil, nil)
