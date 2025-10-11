@@ -299,6 +299,58 @@ func TestEducationServiceHandler_Create(t *testing.T) {
 	}
 }
 
+func TestEducationServiceHandler_Create_Routing(t *testing.T) {
+	fixedID := "edu-123"
+
+	validSchool := domain.SchoolPeriod{
+		Name:        "Harvard University",
+		Description: "Top-tier education",
+		Logo:        "logo.png",
+		BlurHash:    "hash123",
+		StartDate:   time.Date(2015, 9, 1, 0, 0, 0, 0, time.UTC),
+		EndDate:     time.Date(2019, 6, 1, 0, 0, 0, 0, time.UTC),
+	}
+
+	validCreateReq := domain.CreateEducation{
+		MainSchool:    validSchool,
+		SchoolPeriods: []domain.SchoolPeriod{validSchool},
+		Projects:      nil,
+		Level:         domain.College,
+	}
+	validBody, _ := json.Marshal(validCreateReq)
+	expectedResp, _ := json.Marshal(domain.EducationIDResponse{ID: fixedID})
+
+	f := newEducationHandlerTestFixture(t)
+
+	// Setup mock expectation
+	f.mockEducationRepo.EXPECT().
+		Create(mock.Anything, mock.MatchedBy(func(edu *domain.Education) bool {
+			return edu.Level == domain.College &&
+				edu.MainSchool.Name == "Harvard University" &&
+				len(edu.SchoolPeriods) == 1
+		})).
+		Return(fixedID, nil)
+
+	// Create request and recorder
+	req := httptest.NewRequest(http.MethodPost, "/education", strings.NewReader(string(validBody)))
+	w := httptest.NewRecorder()
+
+	// Cast handler to http.Handler and call ServeHTTP
+	handler, ok := f.educationHandler.(http.Handler)
+	assert.True(t, ok, "educationHandler should implement http.Handler")
+	handler.ServeHTTP(w, req)
+
+	// Verify response
+	res := w.Result()
+	defer res.Body.Close()
+
+	body, _ := io.ReadAll(res.Body)
+	assert.Equal(t, http.StatusCreated, res.StatusCode)
+	assert.JSONEq(t, string(expectedResp), string(body))
+
+	f.mockEducationRepo.AssertExpectations(t)
+}
+
 func TestEducationServiceHandler_Get(t *testing.T) {
 	fixedID := "edu-123"
 
@@ -437,6 +489,55 @@ func TestEducationServiceHandler_Get(t *testing.T) {
 			f.mockEducationRepo.AssertExpectations(t)
 		})
 	}
+}
+
+func TestEducationServiceHandler_Get_Routing(t *testing.T) {
+	fixedID := "edu-123"
+
+	sampleEducation := &domain.Education{
+		Id: fixedID,
+		MainSchool: domain.SchoolPeriod{
+			Name:        "Stanford University",
+			Description: "Engineering excellence",
+			Logo:        "stanford_logo.png",
+			BlurHash:    "blurhash123",
+			StartDate:   time.Date(2016, 9, 1, 0, 0, 0, 0, time.UTC),
+			EndDate:     time.Date(2020, 6, 1, 0, 0, 0, 0, time.UTC),
+		},
+		SchoolPeriods: []domain.SchoolPeriod{},
+		Projects:      nil,
+		Level:         domain.College,
+		CreatedAt:     time.Now(),
+		UpdatedAt:     time.Now(),
+	}
+
+	expectedResp, _ := json.Marshal(sampleEducation)
+
+	f := newEducationHandlerTestFixture(t)
+
+	// Setup mock expectation
+	f.mockEducationRepo.EXPECT().
+		Get(mock.Anything, fixedID).
+		Return(sampleEducation, nil)
+
+	// Create request and recorder
+	req := httptest.NewRequest(http.MethodGet, "/education/"+fixedID, nil)
+	w := httptest.NewRecorder()
+
+	// Cast handler to http.Handler and call ServeHTTP
+	handler, ok := f.educationHandler.(http.Handler)
+	assert.True(t, ok, "educationHandler should implement http.Handler")
+	handler.ServeHTTP(w, req)
+
+	// Verify response
+	res := w.Result()
+	defer res.Body.Close()
+
+	body, _ := io.ReadAll(res.Body)
+	assert.Equal(t, http.StatusOK, res.StatusCode)
+	assert.JSONEq(t, string(expectedResp), string(body))
+
+	f.mockEducationRepo.AssertExpectations(t)
 }
 
 func TestEducationServiceHandler_Update(t *testing.T) {
@@ -638,6 +739,60 @@ func TestEducationServiceHandler_Update(t *testing.T) {
 	}
 }
 
+func TestEducationServiceHandler_Update_Routing(t *testing.T) {
+	fixedID := "edu-123"
+
+	validSchool := domain.SchoolPeriod{
+		Name:        "Harvard University",
+		Description: "Top-tier education",
+		Logo:        "logo.png",
+		BlurHash:    "hash123",
+		StartDate:   time.Date(2015, 9, 1, 0, 0, 0, 0, time.UTC),
+		EndDate:     time.Date(2019, 6, 1, 0, 0, 0, 0, time.UTC),
+	}
+
+	existingEducation := &domain.Education{
+		Id:            fixedID,
+		MainSchool:    validSchool,
+		SchoolPeriods: []domain.SchoolPeriod{validSchool},
+		Projects:      nil,
+		Level:         domain.College,
+		CreatedAt:     time.Now().Add(-time.Hour * 24),
+		UpdatedAt:     time.Now(),
+	}
+
+	validBody, _ := json.Marshal(existingEducation)
+	expectedResp, _ := json.Marshal(existingEducation)
+
+	f := newEducationHandlerTestFixture(t)
+
+	// Setup mock expectation
+	f.mockEducationRepo.EXPECT().
+		Update(mock.Anything, mock.MatchedBy(func(edu *domain.Education) bool {
+			return edu.Id == fixedID && edu.MainSchool.Name == "Harvard University"
+		})).
+		Return(existingEducation, nil)
+
+	// Create request and recorder
+	req := httptest.NewRequest(http.MethodPut, "/education", strings.NewReader(string(validBody)))
+	w := httptest.NewRecorder()
+
+	// Cast handler to http.Handler and call ServeHTTP
+	handler, ok := f.educationHandler.(http.Handler)
+	assert.True(t, ok, "educationHandler should implement http.Handler")
+	handler.ServeHTTP(w, req)
+
+	// Verify response
+	res := w.Result()
+	defer res.Body.Close()
+
+	body, _ := io.ReadAll(res.Body)
+	assert.Equal(t, http.StatusOK, res.StatusCode)
+	assert.JSONEq(t, string(expectedResp), string(body))
+
+	f.mockEducationRepo.AssertExpectations(t)
+}
+
 func TestEducationServiceHandler_Delete(t *testing.T) {
 	fixedID := "edu-123"
 
@@ -753,6 +908,36 @@ func TestEducationServiceHandler_Delete(t *testing.T) {
 			f.mockEducationRepo.AssertExpectations(t)
 		})
 	}
+}
+
+func TestEducationServiceHandler_Delete_Routing(t *testing.T) {
+	fixedID := "edu-123"
+
+	f := newEducationHandlerTestFixture(t)
+
+	// Setup mock expectation
+	f.mockEducationRepo.EXPECT().
+		Delete(mock.Anything, fixedID).
+		Return(nil)
+
+	// Create request and recorder
+	req := httptest.NewRequest(http.MethodDelete, "/education/"+fixedID, nil)
+	w := httptest.NewRecorder()
+
+	// Cast handler to http.Handler and call ServeHTTP
+	handler, ok := f.educationHandler.(http.Handler)
+	assert.True(t, ok, "educationHandler should implement http.Handler")
+	handler.ServeHTTP(w, req)
+
+	// Verify response
+	res := w.Result()
+	defer res.Body.Close()
+
+	body, _ := io.ReadAll(res.Body)
+	assert.Equal(t, http.StatusNoContent, res.StatusCode)
+	assert.Equal(t, "", string(body))
+
+	f.mockEducationRepo.AssertExpectations(t)
 }
 
 func TestEducationServiceHandler_List(t *testing.T) {
