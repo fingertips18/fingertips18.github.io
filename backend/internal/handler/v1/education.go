@@ -10,6 +10,7 @@ import (
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/database"
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
 	v1 "github.com/fingertips18/fingertips18.github.io/backend/internal/repository/v1"
+	"github.com/fingertips18/fingertips18.github.io/backend/internal/utils"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -19,6 +20,7 @@ type EducationHandler interface {
 	Get(w http.ResponseWriter, r *http.Request, id string)
 	Update(w http.ResponseWriter, r *http.Request)
 	Delete(w http.ResponseWriter, r *http.Request, id string)
+	List(w http.ResponseWriter, r *http.Request)
 }
 
 type EducationServiceConfig struct {
@@ -56,6 +58,15 @@ func (h *educationServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	path := strings.TrimSuffix(r.URL.Path, "/")
 
 	switch {
+	// GET /educations
+	case path == "/educations":
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		h.List(w, r)
+		return
+
 	// POST / PUT /education
 	case path == "/education":
 		switch r.Method {
@@ -316,4 +327,83 @@ func (h *educationServiceHandler) Delete(w http.ResponseWriter, r *http.Request,
 
 	// Successful delete → 204 No Content
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// List handles HTTP GET requests to list education records.
+// It accepts query parameters:
+//   - "page" (int, default 1)
+//   - "page_size" (int, default 20)
+//   - "sort_by" (validated by utils.GetQuerySortBy)
+//   - "sort_ascending" (bool, default false)
+//
+// If the request method is not GET the handler responds with 405 Method Not Allowed.
+// If "sort_by" is invalid the handler responds with 400 Bad Request.
+// The handler constructs a domain.EducationFilter from the parsed parameters, calls
+// h.educationRepo.List with the request context, and returns the result as JSON with
+// Content-Type "application/json" and HTTP 200 on success. Repository or encoding errors
+// result in a 500 Internal Server Error response.
+//
+// @Security ApiKeyAuth
+// @Summary List educations
+// @Description Retrieves a paginated list of educations with optional filtering and sorting.
+// @Tags education
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number (default 1)"
+// @Param page_size query int false "Number of items per page (default 20)"
+// @Param sort_by query string false "Field to sort by" Enums(created_at, updated_at)
+// @Param sort_ascending query bool false "Sort ascending order"
+// @Success 200 {array} domain.Education
+// @Failure 400 {object} domain.ErrorResponse
+// @Failure 500 {object} domain.ErrorResponse
+// @Router /educations [get]
+func (h *educationServiceHandler) List(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed: only GET is supported", http.StatusMethodNotAllowed)
+		return
+	}
+
+	q := r.URL.Query()
+
+	sortBy, err := utils.GetQuerySortBy(q, "sort_by")
+	if err != nil {
+		http.Error(w, "invalid sort by", http.StatusBadRequest)
+		return
+	}
+
+	filter := domain.EducationFilter{
+		Page:          utils.GetQueryInt32(q, "page", 1),
+		PageSize:      utils.GetQueryInt32(q, "page_size", 20),
+		SortBy:        sortBy,
+		SortAscending: utils.GetQueryBool(q, "sort_ascending", false),
+	}
+
+	// Clamp page to minimum of 1
+	if filter.Page < 1 {
+		filter.Page = 1
+	}
+
+	// Clamp page_size to valid range
+	const maxPageSize = 100
+	if filter.PageSize < 1 {
+		filter.PageSize = 20 // default
+	} else if filter.PageSize > maxPageSize {
+		filter.PageSize = maxPageSize
+	}
+
+	educations, err := h.educationRepo.List(r.Context(), filter)
+	if err != nil {
+		http.Error(w, "Failed to list educations: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(educations); err != nil {
+		http.Error(w, "Failed to write response: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(buf.Bytes())
 }
