@@ -249,24 +249,12 @@ func (h *educationServiceHandler) Update(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	// Map to Education and validate BEFORE calling repository
-	education := &domain.Education{
-		Id:            updateReq.Id,
-		MainSchool:    updateReq.MainSchool,
-		SchoolPeriods: updateReq.SchoolPeriods,
-		Projects:      updateReq.Projects,
-		Level:         updateReq.Level,
-		CreatedAt:     updateReq.CreatedAt,
-		UpdatedAt:     updateReq.UpdatedAt,
-	}
-
-	// Add validation here
-	if err := education.ValidatePayload(); err != nil {
+	if err := updateReq.ValidatePayload(); err != nil {
 		http.Error(w, "Invalid education payload: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	updatedEducation, err := h.educationRepo.Update(r.Context(), education)
+	updatedEducation, err := h.educationRepo.Update(r.Context(), &updateReq)
 	if err != nil {
 		http.Error(w, "Failed to update education: "+err.Error(), http.StatusInternalServerError)
 		return

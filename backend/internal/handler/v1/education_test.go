@@ -496,11 +496,9 @@ func TestEducationServiceHandler_Update(t *testing.T) {
 		},
 		"method not allowed": {
 			given: Given{
-				method: http.MethodPost,
-				body:   string(validBody),
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
-					// no calls expected
-				},
+				method:   http.MethodPost,
+				body:     string(validBody),
+				mockRepo: nil,
 			},
 			expected: Expected{
 				code: http.StatusMethodNotAllowed,
@@ -509,11 +507,9 @@ func TestEducationServiceHandler_Update(t *testing.T) {
 		},
 		"invalid JSON": {
 			given: Given{
-				method: http.MethodPut,
-				body:   `{"invalid":}`,
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
-					// no calls expected
-				},
+				method:   http.MethodPut,
+				body:     `{"invalid":}`,
+				mockRepo: nil,
 			},
 			expected: Expected{
 				code: http.StatusBadRequest,
