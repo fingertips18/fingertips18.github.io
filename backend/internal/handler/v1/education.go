@@ -14,6 +14,7 @@ import (
 type EducationHandler interface {
 	http.Handler
 	Create(w http.ResponseWriter, r *http.Request)
+	Get(w http.ResponseWriter, r *http.Request, id string)
 }
 
 type EducationServiceConfig struct {
@@ -50,15 +51,32 @@ func (h *educationServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	// Normalize path by trimming trailing slash
 	path := strings.TrimSuffix(r.URL.Path, "/")
 
-	switch path {
+	switch {
 	// POST / PUT /education
-	case "/education":
+	case path == "/education":
 		switch r.Method {
 		case http.MethodPost:
 			h.Create(w, r)
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
+
+		// GET / DELETE /education/{id}
+	case strings.HasPrefix(path, "/education/"):
+		id := strings.TrimPrefix(path, "/education/")
+
+		if id == "" {
+			http.Error(w, "Education ID is required", http.StatusBadRequest)
+			return
+		}
+
+		switch r.Method {
+		case http.MethodGet:
+			h.Get(w, r, id)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+		return
 
 	// Unknown route
 	default:
@@ -134,5 +152,52 @@ func (h *educationServiceHandler) Create(w http.ResponseWriter, r *http.Request)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
+	w.Write(buf.Bytes())
+}
+
+// Get handles HTTP GET requests for an education resource identified by id.
+// It enforces the GET method and returns StatusMethodNotAllowed for other HTTP methods.
+// The handler uses the request context to retrieve the education entity from the repository.
+// If the repository returns an error, Get responds with StatusInternalServerError.
+// If the requested education resource is not found, Get responds with StatusNotFound.
+// On success it encodes the education entity as JSON, sets Content-Type to application/json,
+// and writes the payload with StatusOK. Any encoding or write error results in an internal server error response.
+//
+// @Security ApiKeyAuth
+// @Summary Get a education by ID
+// @Description Retrieves the details of a specific education using its unique ID.
+// @Tags education
+// @Accept json
+// @Produce json
+// @Param id path string true "Education ID"
+// @Success 200 {object} domain.Education
+// @Failure 400 {object} domain.ErrorResponse
+// @Failure 404 {object} domain.ErrorResponse
+// @Failure 500 {object} domain.ErrorResponse
+// @Router /education/{id} [get]
+func (h *educationServiceHandler) Get(w http.ResponseWriter, r *http.Request, id string) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed: only GET is supported", http.StatusMethodNotAllowed)
+		return
+	}
+
+	education, err := h.educationRepo.Get(r.Context(), id)
+	if err != nil {
+		http.Error(w, "GET error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if education == nil {
+		http.Error(w, "Education not found", http.StatusNotFound)
+		return
+	}
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(education); err != nil {
+		http.Error(w, "Failed to write response: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	w.Write(buf.Bytes())
 }

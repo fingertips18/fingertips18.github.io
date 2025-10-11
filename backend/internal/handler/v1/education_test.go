@@ -297,3 +297,143 @@ func TestEducationServiceHandler_Create(t *testing.T) {
 		})
 	}
 }
+
+func TestEducationServiceHandler_Get(t *testing.T) {
+	fixedID := "edu-123"
+
+	sampleEducation := &domain.Education{
+		Id: fixedID,
+		MainSchool: domain.SchoolPeriod{
+			Name:        "Stanford University",
+			Description: "Engineering excellence",
+			Logo:        "stanford_logo.png",
+			BlurHash:    "blurhash123",
+			StartDate:   time.Date(2016, 9, 1, 0, 0, 0, 0, time.UTC),
+			EndDate:     time.Date(2020, 6, 1, 0, 0, 0, 0, time.UTC),
+		},
+		SchoolPeriods: []domain.SchoolPeriod{},
+		Projects:      nil,
+		Level:         domain.College,
+		CreatedAt:     time.Now(),
+		UpdatedAt:     time.Now(),
+	}
+
+	validResp, _ := json.Marshal(sampleEducation)
+
+	type Given struct {
+		method   string
+		id       string
+		mockRepo func(m *mockRepo.MockEducationRepository)
+	}
+	type Expected struct {
+		code int
+		body string
+	}
+
+	tests := map[string]struct {
+		given    Given
+		expected Expected
+	}{
+		"success": {
+			given: Given{
+				method: http.MethodGet,
+				id:     fixedID,
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					m.EXPECT().
+						Get(mock.Anything, fixedID).
+						Return(sampleEducation, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusOK,
+				body: string(validResp),
+			},
+		},
+		"method not allowed": {
+			given: Given{
+				method:   http.MethodPost,
+				id:       fixedID,
+				mockRepo: nil,
+			},
+			expected: Expected{
+				code: http.StatusMethodNotAllowed,
+				body: "Method not allowed: only GET is supported\n",
+			},
+		},
+		"education not found": {
+			given: Given{
+				method: http.MethodGet,
+				id:     "nonexistent",
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					m.EXPECT().
+						Get(mock.Anything, "nonexistent").
+						Return(nil, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusNotFound,
+				body: "Education not found\n",
+			},
+		},
+		"repository error": {
+			given: Given{
+				method: http.MethodGet,
+				id:     fixedID,
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					m.EXPECT().
+						Get(mock.Anything, fixedID).
+						Return(nil, errors.New("database failure"))
+				},
+			},
+			expected: Expected{
+				code: http.StatusInternalServerError,
+				body: "GET error: database failure\n",
+			},
+		},
+		"empty id": {
+			given: Given{
+				method: http.MethodGet,
+				id:     "",
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					// Testing Get() directly with empty id (bypasses ServeHTTP validation)
+					m.EXPECT().
+						Get(mock.Anything, "").
+						Return(nil, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusNotFound,
+				body: "Education not found\n",
+			},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			f := newEducationHandlerTestFixture(t)
+
+			if tt.given.mockRepo != nil {
+				tt.given.mockRepo(f.mockEducationRepo)
+			}
+
+			req := httptest.NewRequest(tt.given.method, "/education/"+tt.given.id, nil)
+			w := httptest.NewRecorder()
+
+			f.educationHandler.Get(w, req, tt.given.id)
+
+			res := w.Result()
+			defer res.Body.Close()
+
+			body, _ := io.ReadAll(res.Body)
+			assert.Equal(t, tt.expected.code, res.StatusCode)
+
+			if strings.HasPrefix(tt.expected.body, "{") {
+				assert.JSONEq(t, tt.expected.body, string(body))
+			} else {
+				assert.Equal(t, tt.expected.body, string(body))
+			}
+
+			f.mockEducationRepo.AssertExpectations(t)
+		})
+	}
+}
