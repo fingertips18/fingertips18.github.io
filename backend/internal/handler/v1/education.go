@@ -15,6 +15,7 @@ type EducationHandler interface {
 	http.Handler
 	Create(w http.ResponseWriter, r *http.Request)
 	Get(w http.ResponseWriter, r *http.Request, id string)
+	Update(w http.ResponseWriter, r *http.Request)
 }
 
 type EducationServiceConfig struct {
@@ -57,6 +58,8 @@ func (h *educationServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 		switch r.Method {
 		case http.MethodPost:
 			h.Create(w, r)
+		case http.MethodPut:
+			h.Update(w, r)
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
@@ -193,6 +196,88 @@ func (h *educationServiceHandler) Get(w http.ResponseWriter, r *http.Request, id
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(education); err != nil {
+		http.Error(w, "Failed to write response: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(buf.Bytes())
+}
+
+// Update handles HTTP requests to update an existing education resource.
+//
+// Behavior:
+//   - Only supports the HTTP PUT method. Returns 405 Method Not Allowed for others.
+//   - Expects a JSON request body representing domain.Education. Typical fields include:
+//     Id, MainSchool, SchoolPeriods, Projects, Level, CreatedAt, UpdatedAt.
+//   - Decodes the JSON payload and maps it to a domain.Education value.
+//   - Validates the mapped education payload via Education.ValidatePayload(); returns 400 Bad Request on validation errors.
+//   - Calls h.educationRepo.Update(ctx, education) to perform the persistent update.
+//   - If the repository returns an error, responds with 500 Internal Server Error.
+//   - If the repository returns nil (not found), responds with 404 Not Found.
+//   - On success, encodes the updated education as JSON, sets Content-Type: application/json and responds with 200 OK.
+//   - Ensures the request body is closed and propagates request context to the repository call.
+//
+// Notes:
+// - This handler performs input validation before invoking the repository to avoid persisting invalid data.
+// - All error responses include concise diagnostic messages and appropriate HTTP status codes.
+//
+// @Security ApiKeyAuth
+// @Summary Update a education
+// @Description Updates an existing education using the ID provided in the request body. Returns the updated education.
+// @Tags education
+// @Accept json
+// @Produce json
+// @Param education body domain.Education true "Education payload with ID"
+// @Success 200 {object} domain.Education
+// @Failure 400 {object} domain.ErrorResponse
+// @Failure 404 {object} domain.ErrorResponse
+// @Failure 500 {object} domain.ErrorResponse
+// @Router /education [put]
+func (h *educationServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "Method not allowed: only PUT is supported", http.StatusMethodNotAllowed)
+		return
+	}
+
+	defer r.Body.Close()
+
+	var updateReq domain.Education
+	if err := json.NewDecoder(r.Body).Decode(&updateReq); err != nil {
+		http.Error(w, "Invalid JSON in request body", http.StatusBadRequest)
+		return
+	}
+
+	// Map to Education and validate BEFORE calling repository
+	education := &domain.Education{
+		Id:            updateReq.Id,
+		MainSchool:    updateReq.MainSchool,
+		SchoolPeriods: updateReq.SchoolPeriods,
+		Projects:      updateReq.Projects,
+		Level:         updateReq.Level,
+		CreatedAt:     updateReq.CreatedAt,
+		UpdatedAt:     updateReq.UpdatedAt,
+	}
+
+	// Add validation here
+	if err := education.ValidatePayload(); err != nil {
+		http.Error(w, "Invalid education payload: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	updatedEducation, err := h.educationRepo.Update(r.Context(), education)
+	if err != nil {
+		http.Error(w, "Failed to update education: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if updatedEducation == nil {
+		http.Error(w, "Education not found", http.StatusNotFound)
+		return
+	}
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(updatedEducation); err != nil {
 		http.Error(w, "Failed to write response: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
