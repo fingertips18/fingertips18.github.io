@@ -1203,7 +1203,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 				tt.given.mockRepo(f.mockEducationRepo)
 			}
 
-			req := httptest.NewRequest(tt.given.method, "/education"+tt.given.query, nil)
+			req := httptest.NewRequest(tt.given.method, "/educations"+tt.given.query, nil)
 			w := httptest.NewRecorder()
 
 			f.educationHandler.List(w, req)
