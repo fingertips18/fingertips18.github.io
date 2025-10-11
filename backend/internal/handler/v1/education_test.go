@@ -754,3 +754,178 @@ func TestEducationServiceHandler_Delete(t *testing.T) {
 		})
 	}
 }
+
+func TestEducationServiceHandler_List(t *testing.T) {
+	sampleEducation := domain.Education{
+		Id: "edu-123",
+		MainSchool: domain.SchoolPeriod{
+			Name:        "MIT",
+			Description: "Computer Science",
+			Logo:        "mit.png",
+			BlurHash:    "hash123",
+			StartDate:   time.Date(2014, 9, 1, 0, 0, 0, 0, time.UTC),
+			EndDate:     time.Date(2018, 6, 1, 0, 0, 0, 0, time.UTC),
+		},
+		SchoolPeriods: []domain.SchoolPeriod{},
+		Projects:      nil,
+		Level:         domain.College,
+		CreatedAt:     time.Now().Add(-24 * time.Hour),
+		UpdatedAt:     time.Now(),
+	}
+
+	listResp := []domain.Education{sampleEducation}
+	validJSON, _ := json.Marshal(listResp)
+
+	type Given struct {
+		method   string
+		query    string
+		mockRepo func(m *mockRepo.MockEducationRepository)
+	}
+	type Expected struct {
+		code int
+		body string
+	}
+
+	tests := map[string]struct {
+		given    Given
+		expected Expected
+	}{
+		"success with default params": {
+			given: Given{
+				method: http.MethodGet,
+				query:  "",
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					expectedFilter := domain.EducationFilter{
+						Page:          1,
+						PageSize:      20,
+						SortBy:        nil, // default: no sort
+						SortAscending: false,
+					}
+					m.EXPECT().
+						List(mock.Anything, expectedFilter).
+						Return(listResp, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusOK,
+				body: string(validJSON),
+			},
+		},
+		"method not allowed": {
+			given: Given{
+				method:   http.MethodPost,
+				query:    "",
+				mockRepo: nil,
+			},
+			expected: Expected{
+				code: http.StatusMethodNotAllowed,
+				body: "Method not allowed: only GET is supported\n",
+			},
+		},
+		"invalid sort_by": {
+			given: Given{
+				method:   http.MethodGet,
+				query:    "?sort_by=!!invalid",
+				mockRepo: nil,
+			},
+			expected: Expected{
+				code: http.StatusBadRequest,
+				body: "invalid sort by\n",
+			},
+		},
+		"repository error": {
+			given: Given{
+				method: http.MethodGet,
+				query:  "?page=1&page_size=10&sort_by=created_at",
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					sortBy := domain.CreatedAt
+					expectedFilter := domain.EducationFilter{
+						Page:          1,
+						PageSize:      10,
+						SortBy:        &sortBy,
+						SortAscending: false,
+					}
+					m.EXPECT().
+						List(mock.Anything, expectedFilter).
+						Return(nil, errors.New("database failure"))
+				},
+			},
+			expected: Expected{
+				code: http.StatusInternalServerError,
+				body: "Failed to list educations: database failure\n",
+			},
+		},
+		"success with custom filters": {
+			given: Given{
+				method: http.MethodGet,
+				query:  "?page=2&page_size=5&sort_by=updated_at&sort_ascending=true",
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					sortBy := domain.UpdatedAt
+					expectedFilter := domain.EducationFilter{
+						Page:          2,
+						PageSize:      5,
+						SortBy:        &sortBy,
+						SortAscending: true,
+					}
+					m.EXPECT().
+						List(mock.Anything, expectedFilter).
+						Return(listResp, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusOK,
+				body: string(validJSON),
+			},
+		},
+		"empty list response": {
+			given: Given{
+				method: http.MethodGet,
+				query:  "?sort_by=created_at",
+				mockRepo: func(m *mockRepo.MockEducationRepository) {
+					sortBy := domain.CreatedAt
+					expectedFilter := domain.EducationFilter{
+						Page:          1,
+						PageSize:      20,
+						SortBy:        &sortBy,
+						SortAscending: false,
+					}
+					m.EXPECT().
+						List(mock.Anything, expectedFilter).
+						Return([]domain.Education{}, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusOK,
+				body: "[]",
+			},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			f := newEducationHandlerTestFixture(t)
+			if tt.given.mockRepo != nil {
+				tt.given.mockRepo(f.mockEducationRepo)
+			}
+
+			req := httptest.NewRequest(tt.given.method, "/education"+tt.given.query, nil)
+			w := httptest.NewRecorder()
+
+			f.educationHandler.List(w, req)
+
+			res := w.Result()
+			defer res.Body.Close()
+
+			body, _ := io.ReadAll(res.Body)
+			assert.Equal(t, tt.expected.code, res.StatusCode)
+
+			if strings.HasPrefix(tt.expected.body, "[") {
+				assert.JSONEq(t, tt.expected.body, string(body))
+			} else {
+				assert.Equal(t, tt.expected.body, string(body))
+			}
+
+			f.mockEducationRepo.AssertExpectations(t)
+		})
+	}
+}
