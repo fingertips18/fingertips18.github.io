@@ -50,14 +50,14 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 
 	validResp, _ := json.Marshal(domain.ProjectIDResponse{ID: fixedID})
 
-	createReq := domain.CreateProject{
+	createReq := ProjectDTO{
 		Preview:     "preview.png",
 		BlurHash:    "hash",
 		Title:       "title",
 		SubTitle:    "subtitle",
 		Description: "desc",
 		Stack:       []string{"go", "react"},
-		Type:        domain.Web,
+		Type:        "web",
 		Link:        "http://example.com",
 	}
 	validBody, _ := json.Marshal(createReq)

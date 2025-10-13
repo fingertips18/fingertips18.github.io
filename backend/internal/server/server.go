@@ -118,6 +118,12 @@ func createHandlers(cfg Config) []handlerConfig {
 		},
 	)
 
+	educationHandler := v1.NewEducationServiceHandler(
+		v1.EducationServiceConfig{
+			DatabaseAPI: cfg.DatabaseAPI,
+		},
+	)
+
 	handlers := []handlerConfig{
 		{
 			paths:   []string{"/email", "/email/"},
@@ -130,6 +136,10 @@ func createHandlers(cfg Config) []handlerConfig {
 		{
 			paths:   []string{"/project", "/project/", "/projects", "/projects/"},
 			handler: projectHandler,
+		},
+		{
+			paths:   []string{"/education", "/education/", "/educations", "/educations/"},
+			handler: educationHandler,
 		},
 	}
 

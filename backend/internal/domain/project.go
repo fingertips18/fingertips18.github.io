@@ -25,19 +25,9 @@ type Project struct {
 	Stack       []string    `json:"stack"`
 	Type        ProjectType `json:"type"`
 	Link        string      `json:"link"`
+	EducationID string      `json:"education_id,omitempty"`
 	CreatedAt   time.Time   `json:"created_at"`
 	UpdatedAt   time.Time   `json:"updated_at"`
-}
-
-type CreateProject struct {
-	Preview     string      `json:"preview"`
-	BlurHash    string      `json:"blur_hash"`
-	Title       string      `json:"title"`
-	SubTitle    string      `json:"sub_title"`
-	Description string      `json:"description"`
-	Stack       []string    `json:"stack"`
-	Type        ProjectType `json:"type"`
-	Link        string      `json:"link"`
 }
 
 type ProjectFilter struct {

@@ -83,6 +83,156 @@ func (_c *MockEducationHandler_Create_Call) RunAndReturn(run func(w http.Respons
 	return _c
 }
 
+// Delete provides a mock function for the type MockEducationHandler
+func (_mock *MockEducationHandler) Delete(w http.ResponseWriter, r *http.Request, id string) {
+	_mock.Called(w, r, id)
+	return
+}
+
+// MockEducationHandler_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
+type MockEducationHandler_Delete_Call struct {
+	*mock.Call
+}
+
+// Delete is a helper method to define mock.On call
+//   - w http.ResponseWriter
+//   - r *http.Request
+//   - id string
+func (_e *MockEducationHandler_Expecter) Delete(w interface{}, r interface{}, id interface{}) *MockEducationHandler_Delete_Call {
+	return &MockEducationHandler_Delete_Call{Call: _e.mock.On("Delete", w, r, id)}
+}
+
+func (_c *MockEducationHandler_Delete_Call) Run(run func(w http.ResponseWriter, r *http.Request, id string)) *MockEducationHandler_Delete_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 http.ResponseWriter
+		if args[0] != nil {
+			arg0 = args[0].(http.ResponseWriter)
+		}
+		var arg1 *http.Request
+		if args[1] != nil {
+			arg1 = args[1].(*http.Request)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockEducationHandler_Delete_Call) Return() *MockEducationHandler_Delete_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *MockEducationHandler_Delete_Call) RunAndReturn(run func(w http.ResponseWriter, r *http.Request, id string)) *MockEducationHandler_Delete_Call {
+	_c.Run(run)
+	return _c
+}
+
+// Get provides a mock function for the type MockEducationHandler
+func (_mock *MockEducationHandler) Get(w http.ResponseWriter, r *http.Request, id string) {
+	_mock.Called(w, r, id)
+	return
+}
+
+// MockEducationHandler_Get_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Get'
+type MockEducationHandler_Get_Call struct {
+	*mock.Call
+}
+
+// Get is a helper method to define mock.On call
+//   - w http.ResponseWriter
+//   - r *http.Request
+//   - id string
+func (_e *MockEducationHandler_Expecter) Get(w interface{}, r interface{}, id interface{}) *MockEducationHandler_Get_Call {
+	return &MockEducationHandler_Get_Call{Call: _e.mock.On("Get", w, r, id)}
+}
+
+func (_c *MockEducationHandler_Get_Call) Run(run func(w http.ResponseWriter, r *http.Request, id string)) *MockEducationHandler_Get_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 http.ResponseWriter
+		if args[0] != nil {
+			arg0 = args[0].(http.ResponseWriter)
+		}
+		var arg1 *http.Request
+		if args[1] != nil {
+			arg1 = args[1].(*http.Request)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockEducationHandler_Get_Call) Return() *MockEducationHandler_Get_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *MockEducationHandler_Get_Call) RunAndReturn(run func(w http.ResponseWriter, r *http.Request, id string)) *MockEducationHandler_Get_Call {
+	_c.Run(run)
+	return _c
+}
+
+// List provides a mock function for the type MockEducationHandler
+func (_mock *MockEducationHandler) List(w http.ResponseWriter, r *http.Request) {
+	_mock.Called(w, r)
+	return
+}
+
+// MockEducationHandler_List_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'List'
+type MockEducationHandler_List_Call struct {
+	*mock.Call
+}
+
+// List is a helper method to define mock.On call
+//   - w http.ResponseWriter
+//   - r *http.Request
+func (_e *MockEducationHandler_Expecter) List(w interface{}, r interface{}) *MockEducationHandler_List_Call {
+	return &MockEducationHandler_List_Call{Call: _e.mock.On("List", w, r)}
+}
+
+func (_c *MockEducationHandler_List_Call) Run(run func(w http.ResponseWriter, r *http.Request)) *MockEducationHandler_List_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 http.ResponseWriter
+		if args[0] != nil {
+			arg0 = args[0].(http.ResponseWriter)
+		}
+		var arg1 *http.Request
+		if args[1] != nil {
+			arg1 = args[1].(*http.Request)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockEducationHandler_List_Call) Return() *MockEducationHandler_List_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *MockEducationHandler_List_Call) RunAndReturn(run func(w http.ResponseWriter, r *http.Request)) *MockEducationHandler_List_Call {
+	_c.Run(run)
+	return _c
+}
+
 // ServeHTTP provides a mock function for the type MockEducationHandler
 func (_mock *MockEducationHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 	_mock.Called(responseWriter, request)
@@ -125,6 +275,52 @@ func (_c *MockEducationHandler_ServeHTTP_Call) Return() *MockEducationHandler_Se
 }
 
 func (_c *MockEducationHandler_ServeHTTP_Call) RunAndReturn(run func(responseWriter http.ResponseWriter, request *http.Request)) *MockEducationHandler_ServeHTTP_Call {
+	_c.Run(run)
+	return _c
+}
+
+// Update provides a mock function for the type MockEducationHandler
+func (_mock *MockEducationHandler) Update(w http.ResponseWriter, r *http.Request) {
+	_mock.Called(w, r)
+	return
+}
+
+// MockEducationHandler_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
+type MockEducationHandler_Update_Call struct {
+	*mock.Call
+}
+
+// Update is a helper method to define mock.On call
+//   - w http.ResponseWriter
+//   - r *http.Request
+func (_e *MockEducationHandler_Expecter) Update(w interface{}, r interface{}) *MockEducationHandler_Update_Call {
+	return &MockEducationHandler_Update_Call{Call: _e.mock.On("Update", w, r)}
+}
+
+func (_c *MockEducationHandler_Update_Call) Run(run func(w http.ResponseWriter, r *http.Request)) *MockEducationHandler_Update_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 http.ResponseWriter
+		if args[0] != nil {
+			arg0 = args[0].(http.ResponseWriter)
+		}
+		var arg1 *http.Request
+		if args[1] != nil {
+			arg1 = args[1].(*http.Request)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockEducationHandler_Update_Call) Return() *MockEducationHandler_Update_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *MockEducationHandler_Update_Call) RunAndReturn(run func(w http.ResponseWriter, r *http.Request)) *MockEducationHandler_Update_Call {
 	_c.Run(run)
 	return _c
 }

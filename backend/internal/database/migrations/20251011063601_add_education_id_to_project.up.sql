@@ -1,0 +1,2 @@
+ALTER TABLE project
+ADD COLUMN education_id UUID REFERENCES education(id) ON DELETE CASCADE;

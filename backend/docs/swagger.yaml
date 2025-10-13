@@ -1,4 +1,19 @@
 definitions:
+  domain.CreateEducation:
+    properties:
+      level:
+        $ref: '#/definitions/domain.EducationLevel'
+      main_school:
+        $ref: '#/definitions/domain.SchoolPeriod'
+      projects:
+        items:
+          $ref: '#/definitions/domain.CreateProject'
+        type: array
+      school_periods:
+        items:
+          $ref: '#/definitions/domain.SchoolPeriod'
+        type: array
+    type: object
   domain.CreateProject:
     properties:
       blur_hash:
@@ -20,6 +35,39 @@ definitions:
       type:
         $ref: '#/definitions/domain.ProjectType'
     type: object
+  domain.Education:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      level:
+        $ref: '#/definitions/domain.EducationLevel'
+      main_school:
+        $ref: '#/definitions/domain.SchoolPeriod'
+      projects:
+        items:
+          $ref: '#/definitions/domain.Project'
+        type: array
+      school_periods:
+        items:
+          $ref: '#/definitions/domain.SchoolPeriod'
+        type: array
+      updated_at:
+        type: string
+    type: object
+  domain.EducationLevel:
+    enum:
+    - elementary
+    - junior-high-school
+    - senior-high-school
+    - college
+    type: string
+    x-enum-varnames:
+    - Elementary
+    - JuniorHighSchool
+    - SeniorHighSchool
+    - College
   domain.ErrorResponse:
     properties:
       error:
@@ -39,6 +87,8 @@ definitions:
       created_at:
         type: string
       description:
+        type: string
+      education_id:
         type: string
       id:
         type: string
@@ -69,6 +119,27 @@ definitions:
     - Web
     - Mobile
     - Game
+  domain.SchoolPeriod:
+    properties:
+      blur_hash:
+        type: string
+      description:
+        type: string
+      end_date:
+        example: "2024-06-01T00:00:00Z"
+        type: string
+      honor:
+        type: string
+      link:
+        type: string
+      logo:
+        type: string
+      name:
+        type: string
+      start_date:
+        example: "2020-09-01T00:00:00Z"
+        type: string
+    type: object
   domain.SendEmail:
     properties:
       email:
@@ -125,6 +196,188 @@ paths:
       summary: Record a page view
       tags:
       - analytics
+  /education:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new education from the provided JSON payload. Returns
+        the created education with an assigned ID.
+      parameters:
+      - description: Education payload
+        in: body
+        name: education
+        required: true
+        schema:
+          $ref: '#/definitions/domain.CreateEducation'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Education ID
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create an education
+      tags:
+      - education
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing education using the ID provided in the request
+        body. Returns the updated education.
+      parameters:
+      - description: Education payload with ID
+        in: body
+        name: education
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Education'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Education'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update an education
+      tags:
+      - education
+  /education/{id}:
+    delete:
+      description: Deletes an existing education by its unique ID provided in the
+        path.
+      parameters:
+      - description: Education ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete an education
+      tags:
+      - education
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the details of a specific education using its unique
+        ID.
+      parameters:
+      - description: Education ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Education'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get an education by ID
+      tags:
+      - education
+  /educations:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a paginated list of educations with optional filtering
+        and sorting.
+      parameters:
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Number of items per page (default 20)
+        in: query
+        name: page_size
+        type: integer
+      - description: Field to sort by
+        enum:
+        - created_at
+        - updated_at
+        in: query
+        name: sort_by
+        type: string
+      - description: Sort ascending order
+        in: query
+        name: sort_ascending
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Education'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: List educations
+      tags:
+      - education
   /email/send:
     post:
       consumes:

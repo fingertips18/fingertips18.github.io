@@ -25,12 +25,14 @@ type EducationHandler interface {
 
 type EducationServiceConfig struct {
 	DatabaseAPI database.DatabaseAPI
+	ProjectRepo v1.ProjectRepository
 
 	educationRepo v1.EducationRepository
 }
 
 type educationServiceHandler struct {
 	educationRepo v1.EducationRepository
+	projectRepo   v1.ProjectRepository
 }
 
 // NewEducationServiceHandler creates and returns an EducationHandler configured using the provided
@@ -48,8 +50,19 @@ func NewEducationServiceHandler(cfg EducationServiceConfig) EducationHandler {
 		)
 	}
 
+	projectRepo := cfg.ProjectRepo
+	if projectRepo == nil {
+		projectRepo = v1.NewProjectRepository(
+			v1.ProjectRepositoryConfig{
+				DatabaseAPI:  cfg.DatabaseAPI,
+				ProjectTable: "Project",
+			},
+		)
+	}
+
 	return &educationServiceHandler{
 		educationRepo: educationRepo,
+		projectRepo:   projectRepo,
 	}
 }
 
@@ -106,25 +119,25 @@ func (h *educationServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 
 // Create handles HTTP POST requests to create a new education record.
 // It only supports the POST method; other methods receive a 405 Method Not Allowed.
-// The handler decodes a JSON request body into a domain.CreateEducation and
+// The handler decodes a JSON request body into a CreateEducationRequest and
 // defers closing the request body. It maps the decoded payload to a domain.Education
 // (populating MainSchool, SchoolPeriods, Projects and Level) and calls
 // h.educationRepo.Create with the request context. On success it returns a JSON
-// body containing the newly created ID (domain.EducationIDResponse) with
+// body containing the newly created ID (IDResponse) with
 // Content-Type "application/json" and HTTP status 201 Created. If JSON decoding
 // fails the handler responds with 400 Bad Request; if creation or response
 // encoding fails it responds with 500 Internal Server Error.
 //
 // @Security ApiKeyAuth
-// @Summary Create a education
+// @Summary Create an education
 // @Description Creates a new education from the provided JSON payload. Returns the created education with an assigned ID.
 // @Tags education
 // @Accept json
 // @Produce json
-// @Param education body domain.CreateEducation true "Education payload"
-// @Success 201 {string} domain.EducationIDResponse "Education ID"
-// @Failure 400 {object} domain.ErrorResponse
-// @Failure 500 {object} domain.ErrorResponse
+// @Param education body CreateEducationRequest true "Education payload"
+// @Success 201 {string} IDResponse "Education ID"
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
 // @Router /education [post]
 func (h *educationServiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -134,21 +147,44 @@ func (h *educationServiceHandler) Create(w http.ResponseWriter, r *http.Request)
 
 	defer r.Body.Close()
 
-	var createReq domain.CreateEducation
+	var createReq CreateEducationRequest
 	if err := json.NewDecoder(r.Body).Decode(&createReq); err != nil {
 		http.Error(w, "Invalid JSON in request body", http.StatusBadRequest)
 		return
 	}
 
-	// Map to Education and validate BEFORE calling repository
-	education := &domain.Education{
-		MainSchool:    createReq.MainSchool,
-		SchoolPeriods: createReq.SchoolPeriods,
-		Projects:      createReq.Projects,
-		Level:         createReq.Level,
+	// Map school periods
+	schoolPeriods := make([]domain.SchoolPeriod, len(createReq.SchoolPeriods))
+	for i, sp := range createReq.SchoolPeriods {
+		schoolPeriods[i] = domain.SchoolPeriod{
+			Link:        sp.Link,
+			Name:        sp.Name,
+			Description: sp.Description,
+			Logo:        sp.Logo,
+			BlurHash:    sp.BlurHash,
+			Honor:       sp.Honor,
+			StartDate:   sp.StartDate,
+			EndDate:     sp.EndDate,
+		}
 	}
 
-	// Add validation here
+	// Map to Education
+	education := &domain.Education{
+		MainSchool: domain.SchoolPeriod{
+			Link:        createReq.MainSchool.Link,
+			Name:        createReq.MainSchool.Name,
+			Description: createReq.MainSchool.Description,
+			Logo:        createReq.MainSchool.Logo,
+			BlurHash:    createReq.MainSchool.BlurHash,
+			Honor:       createReq.MainSchool.Honor,
+			StartDate:   createReq.MainSchool.StartDate,
+			EndDate:     createReq.MainSchool.EndDate,
+		},
+		SchoolPeriods: schoolPeriods,
+		Level:         domain.EducationLevel(createReq.Level),
+	}
+
+	// Validate before calling repository
 	if err := education.ValidatePayload(); err != nil {
 		http.Error(w, "Invalid education payload: "+err.Error(), http.StatusBadRequest)
 		return
@@ -161,7 +197,7 @@ func (h *educationServiceHandler) Create(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	resp := domain.EducationIDResponse{ID: id}
+	resp := IDResponse{ID: id}
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(resp); err != nil {
@@ -183,16 +219,16 @@ func (h *educationServiceHandler) Create(w http.ResponseWriter, r *http.Request)
 // and writes the payload with StatusOK. Any encoding or write error results in an internal server error response.
 //
 // @Security ApiKeyAuth
-// @Summary Get a education by ID
+// @Summary Get an education by ID
 // @Description Retrieves the details of a specific education using its unique ID.
 // @Tags education
 // @Accept json
 // @Produce json
 // @Param id path string true "Education ID"
-// @Success 200 {object} domain.Education
-// @Failure 400 {object} domain.ErrorResponse
-// @Failure 404 {object} domain.ErrorResponse
-// @Failure 500 {object} domain.ErrorResponse
+// @Success 200 {object} EducationDTO
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
 // @Router /education/{id} [get]
 func (h *educationServiceHandler) Get(w http.ResponseWriter, r *http.Request, id string) {
 	if r.Method != http.MethodGet {
@@ -200,14 +236,30 @@ func (h *educationServiceHandler) Get(w http.ResponseWriter, r *http.Request, id
 		return
 	}
 
-	education, err := h.educationRepo.Get(r.Context(), id)
+	educationRes, err := h.educationRepo.Get(r.Context(), id)
 	if err != nil {
 		http.Error(w, "GET error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if education == nil {
+	if educationRes == nil {
 		http.Error(w, "Education not found", http.StatusNotFound)
 		return
+	}
+
+	education := EducationDTO{
+		Id:         educationRes.Id,
+		MainSchool: SchoolPeriodDTO(educationRes.MainSchool),
+		SchoolPeriods: func() []SchoolPeriodDTO {
+			periods := make([]SchoolPeriodDTO, len(educationRes.SchoolPeriods))
+			for i, p := range educationRes.SchoolPeriods {
+				periods[i] = SchoolPeriodDTO(p)
+			}
+			return periods
+		}(),
+		Projects:  []ProjectDTO{},
+		Level:     string(educationRes.Level),
+		CreatedAt: educationRes.CreatedAt,
+		UpdatedAt: educationRes.UpdatedAt,
 	}
 
 	var buf bytes.Buffer
@@ -225,9 +277,9 @@ func (h *educationServiceHandler) Get(w http.ResponseWriter, r *http.Request, id
 //
 // Behavior:
 //   - Only supports the HTTP PUT method. Returns 405 Method Not Allowed for others.
-//   - Expects a JSON request body representing domain.Education. Typical fields include:
+//   - Expects a JSON request body representing EducationDTO. Typical fields include:
 //     Id, MainSchool, SchoolPeriods, Projects, Level, CreatedAt, UpdatedAt.
-//   - Decodes the JSON payload and maps it to a domain.Education value.
+//   - Decodes the JSON payload and maps it to a EducationDTO value.
 //   - Validates the mapped education payload via Education.ValidatePayload(); returns 400 Bad Request on validation errors.
 //   - Calls h.educationRepo.Update(ctx, education) to perform the persistent update.
 //   - If the repository returns an error, responds with 500 Internal Server Error.
@@ -240,16 +292,16 @@ func (h *educationServiceHandler) Get(w http.ResponseWriter, r *http.Request, id
 // - All error responses include concise diagnostic messages and appropriate HTTP status codes.
 //
 // @Security ApiKeyAuth
-// @Summary Update a education
+// @Summary Update an education
 // @Description Updates an existing education using the ID provided in the request body. Returns the updated education.
 // @Tags education
 // @Accept json
 // @Produce json
-// @Param education body domain.Education true "Education payload with ID"
-// @Success 200 {object} domain.Education
-// @Failure 400 {object} domain.ErrorResponse
-// @Failure 404 {object} domain.ErrorResponse
-// @Failure 500 {object} domain.ErrorResponse
+// @Param education body EducationDTO true "Education payload with ID"
+// @Success 200 {object} EducationDTO
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
 // @Router /education [put]
 func (h *educationServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPut {
@@ -259,25 +311,65 @@ func (h *educationServiceHandler) Update(w http.ResponseWriter, r *http.Request)
 
 	defer r.Body.Close()
 
-	var updateReq domain.Education
+	var updateReq EducationDTO
 	if err := json.NewDecoder(r.Body).Decode(&updateReq); err != nil {
 		http.Error(w, "Invalid JSON in request body", http.StatusBadRequest)
 		return
 	}
 
-	if err := updateReq.ValidatePayload(); err != nil {
+	// Map school periods
+	schoolPeriods := make([]domain.SchoolPeriod, len(updateReq.SchoolPeriods))
+	for i, sp := range updateReq.SchoolPeriods {
+		schoolPeriods[i] = domain.SchoolPeriod{
+			Link:        sp.Link,
+			Name:        sp.Name,
+			Description: sp.Description,
+			Logo:        sp.Logo,
+			BlurHash:    sp.BlurHash,
+			Honor:       sp.Honor,
+			StartDate:   sp.StartDate,
+			EndDate:     sp.EndDate,
+		}
+	}
+
+	education := domain.Education{
+		Id:            updateReq.Id,
+		MainSchool:    domain.SchoolPeriod(updateReq.MainSchool),
+		SchoolPeriods: schoolPeriods,
+		Level:         domain.EducationLevel(updateReq.Level),
+		CreatedAt:     updateReq.CreatedAt,
+		UpdatedAt:     updateReq.UpdatedAt,
+	}
+
+	if err := education.ValidatePayload(); err != nil {
 		http.Error(w, "Invalid education payload: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	updatedEducation, err := h.educationRepo.Update(r.Context(), &updateReq)
+	updatedEducationRes, err := h.educationRepo.Update(r.Context(), &education)
 	if err != nil {
 		http.Error(w, "Failed to update education: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if updatedEducation == nil {
+	if updatedEducationRes == nil {
 		http.Error(w, "Education not found", http.StatusNotFound)
 		return
+	}
+
+	updatedEducation := EducationDTO{
+		Id:         updatedEducationRes.Id,
+		MainSchool: SchoolPeriodDTO(updatedEducationRes.MainSchool),
+		SchoolPeriods: func() []SchoolPeriodDTO {
+			periods := make([]SchoolPeriodDTO, len(updatedEducationRes.SchoolPeriods))
+			for i, p := range updatedEducationRes.SchoolPeriods {
+				periods[i] = SchoolPeriodDTO(p)
+			}
+			return periods
+		}(),
+		Projects:  []ProjectDTO{},
+		Level:     string(updatedEducationRes.Level),
+		CreatedAt: updatedEducationRes.CreatedAt,
+		UpdatedAt: updatedEducationRes.UpdatedAt,
 	}
 
 	var buf bytes.Buffer
@@ -299,14 +391,14 @@ func (h *educationServiceHandler) Update(w http.ResponseWriter, r *http.Request)
 // On successful deletion it writes a 204 No Content response with no body.
 //
 // @Security ApiKeyAuth
-// @Summary Delete a education
+// @Summary Delete an education
 // @Description Deletes an existing education by its unique ID provided in the path.
 // @Tags education
 // @Param id path string true "Education ID"
 // @Success 204 "No Content"
-// @Failure 400 {object} domain.ErrorResponse
-// @Failure 404 {object} domain.ErrorResponse
-// @Failure 500 {object} domain.ErrorResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
 // @Router /education/{id} [delete]
 func (h *educationServiceHandler) Delete(w http.ResponseWriter, r *http.Request, id string) {
 	if r.Method != http.MethodDelete {
@@ -338,7 +430,7 @@ func (h *educationServiceHandler) Delete(w http.ResponseWriter, r *http.Request,
 //
 // If the request method is not GET the handler responds with 405 Method Not Allowed.
 // If "sort_by" is invalid the handler responds with 400 Bad Request.
-// The handler constructs a domain.EducationFilter from the parsed parameters, calls
+// The handler constructs a EducationFilterRequest from the parsed parameters, calls
 // h.educationRepo.List with the request context, and returns the result as JSON with
 // Content-Type "application/json" and HTTP 200 on success. Repository or encoding errors
 // result in a 500 Internal Server Error response.
@@ -350,12 +442,12 @@ func (h *educationServiceHandler) Delete(w http.ResponseWriter, r *http.Request,
 // @Accept json
 // @Produce json
 // @Param page query int false "Page number (default 1)"
-// @Param page_size query int false "Number of items per page (default 20)"
+// @Param page_size query int false "Number of items per page (default 10)"
 // @Param sort_by query string false "Field to sort by" Enums(created_at, updated_at)
 // @Param sort_ascending query bool false "Sort ascending order"
-// @Success 200 {array} domain.Education
-// @Failure 400 {object} domain.ErrorResponse
-// @Failure 500 {object} domain.ErrorResponse
+// @Success 200 {array} EducationDTO
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
 // @Router /educations [get]
 func (h *educationServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -371,9 +463,9 @@ func (h *educationServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filter := domain.EducationFilter{
+	filter := EducationFilterRequest{
 		Page:          utils.GetQueryInt32(q, "page", 1),
-		PageSize:      utils.GetQueryInt32(q, "page_size", 20),
+		PageSize:      utils.GetQueryInt32(q, "page_size", 10),
 		SortBy:        sortBy,
 		SortAscending: utils.GetQueryBool(q, "sort_ascending", false),
 	}
@@ -386,15 +478,40 @@ func (h *educationServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 	// Clamp page_size to valid range
 	const maxPageSize = 100
 	if filter.PageSize < 1 {
-		filter.PageSize = 20 // default
+		filter.PageSize = 10 // default
 	} else if filter.PageSize > maxPageSize {
 		filter.PageSize = maxPageSize
 	}
 
-	educations, err := h.educationRepo.List(r.Context(), filter)
+	domainFilter := domain.EducationFilter{
+		Page:          filter.Page,
+		PageSize:      filter.PageSize,
+		SortBy:        (*domain.SortBy)(&filter.SortBy),
+		SortAscending: filter.SortAscending,
+	}
+
+	educationsRes, err := h.educationRepo.List(r.Context(), domainFilter)
 	if err != nil {
 		http.Error(w, "Failed to list educations: "+err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	educations := make([]EducationDTO, len(educationsRes))
+	for i, e := range educationsRes {
+		educations[i] = EducationDTO{
+			Id:         e.Id,
+			MainSchool: SchoolPeriodDTO(e.MainSchool),
+			SchoolPeriods: func() []SchoolPeriodDTO {
+				periods := make([]SchoolPeriodDTO, len(e.SchoolPeriods))
+				for j, p := range e.SchoolPeriods {
+					periods[j] = SchoolPeriodDTO(p)
+				}
+				return periods
+			}(),
+			Level:     string(e.Level),
+			CreatedAt: e.CreatedAt,
+			UpdatedAt: e.UpdatedAt,
+		}
 	}
 
 	var buf bytes.Buffer

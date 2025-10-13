@@ -131,10 +131,10 @@ func (h *projectServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 // @Tags project
 // @Accept json
 // @Produce json
-// @Param project body domain.CreateProject true "Project payload"
-// @Success 201 {string} domain.ProjectIDResponse "Project ID"
-// @Failure 400 {object} domain.ErrorResponse
-// @Failure 500 {object} domain.ErrorResponse
+// @Param project body CreateProjectRequest true "Project payload"
+// @Success 201 {string} IDResponse "Project ID"
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
 // @Router /project [post]
 func (h *projectServiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -144,31 +144,37 @@ func (h *projectServiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	defer r.Body.Close()
 
-	var project domain.CreateProject
-	if err := json.NewDecoder(r.Body).Decode(&project); err != nil {
+	var createReq CreateProjectRequest
+	if err := json.NewDecoder(r.Body).Decode(&createReq); err != nil {
 		http.Error(w, "Invalid JSON in request body", http.StatusBadRequest)
 		return
 	}
 
-	id, err := h.projectRepo.Create(
-		r.Context(),
-		&domain.Project{
-			Preview:     project.Preview,
-			BlurHash:    project.BlurHash,
-			Title:       project.Title,
-			SubTitle:    project.SubTitle,
-			Description: project.Description,
-			Stack:       project.Stack,
-			Type:        domain.ProjectType(project.Type),
-			Link:        project.Link,
-		},
-	)
+	project := domain.Project{
+		Preview:     createReq.Preview,
+		BlurHash:    createReq.BlurHash,
+		Title:       createReq.Title,
+		SubTitle:    createReq.SubTitle,
+		Description: createReq.Description,
+		Stack:       createReq.Stack,
+		Type:        domain.ProjectType(createReq.Type),
+		Link:        createReq.Link,
+		EducationID: createReq.EducationID,
+	}
+
+	// Validate before calling repository
+	if err := project.ValidatePayload(); err != nil {
+		http.Error(w, "Invalid project payload: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	id, err := h.projectRepo.Create(r.Context(), &project)
 	if err != nil {
 		http.Error(w, "Failed to create project: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	resp := domain.ProjectIDResponse{ID: id}
+	resp := IDResponse{ID: id}
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(resp); err != nil {
@@ -194,10 +200,10 @@ func (h *projectServiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param id path string true "Project ID"
-// @Success 200 {object} domain.Project
-// @Failure 400 {object} domain.ErrorResponse
-// @Failure 404 {object} domain.ErrorResponse
-// @Failure 500 {object} domain.ErrorResponse
+// @Success 200 {object} ProjectDTO
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
 // @Router /project/{id} [get]
 func (h *projectServiceHandler) Get(w http.ResponseWriter, r *http.Request, id string) {
 	if r.Method != http.MethodGet {
@@ -239,11 +245,11 @@ func (h *projectServiceHandler) Get(w http.ResponseWriter, r *http.Request, id s
 // @Tags project
 // @Accept json
 // @Produce json
-// @Param project body domain.Project true "Project payload with ID"
-// @Success 200 {object} domain.Project
-// @Failure 400 {object} domain.ErrorResponse
-// @Failure 404 {object} domain.ErrorResponse
-// @Failure 500 {object} domain.ErrorResponse
+// @Param project body ProjectDTO true "Project payload with ID"
+// @Success 200 {object} ProjectDTO
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
 // @Router /project [put]
 func (h *projectServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPut {
@@ -253,28 +259,33 @@ func (h *projectServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	defer r.Body.Close()
 
-	var project domain.Project
-	if err := json.NewDecoder(r.Body).Decode(&project); err != nil {
+	var updateReq ProjectDTO
+	if err := json.NewDecoder(r.Body).Decode(&updateReq); err != nil {
 		http.Error(w, "Invalid JSON in request body", http.StatusBadRequest)
 		return
 	}
 
-	updatedProject, err := h.projectRepo.Update(
-		r.Context(),
-		&domain.Project{
-			Id:          project.Id,
-			Preview:     project.Preview,
-			BlurHash:    project.BlurHash,
-			Title:       project.Title,
-			SubTitle:    project.SubTitle,
-			Description: project.Description,
-			Stack:       project.Stack,
-			Type:        domain.ProjectType(project.Type),
-			Link:        project.Link,
-			CreatedAt:   project.CreatedAt,
-			UpdatedAt:   project.UpdatedAt,
-		},
-	)
+	project := domain.Project{
+		Id:          updateReq.Id,
+		Preview:     updateReq.Preview,
+		BlurHash:    updateReq.BlurHash,
+		Title:       updateReq.Title,
+		SubTitle:    updateReq.SubTitle,
+		Description: updateReq.Description,
+		Stack:       updateReq.Stack,
+		Type:        domain.ProjectType(updateReq.Type),
+		Link:        updateReq.Link,
+		EducationID: updateReq.EducationID,
+		CreatedAt:   updateReq.CreatedAt,
+		UpdatedAt:   updateReq.UpdatedAt,
+	}
+
+	if err := project.ValidatePayload(); err != nil {
+		http.Error(w, "Invalid education payload: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	updatedProject, err := h.projectRepo.Update(r.Context(), &project)
 	if err != nil {
 		http.Error(w, "Failed to update project: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -307,9 +318,9 @@ func (h *projectServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 // @Tags project
 // @Param id path string true "Project ID"
 // @Success 204 "No Content"
-// @Failure 400 {object} domain.ErrorResponse
-// @Failure 404 {object} domain.ErrorResponse
-// @Failure 500 {object} domain.ErrorResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
 // @Router /project/{id} [delete]
 func (h *projectServiceHandler) Delete(w http.ResponseWriter, r *http.Request, id string) {
 	if r.Method != http.MethodDelete {
@@ -333,7 +344,7 @@ func (h *projectServiceHandler) Delete(w http.ResponseWriter, r *http.Request, i
 }
 
 // List handles HTTP GET requests to retrieve a list of projects based on the provided filter criteria.
-// It expects a JSON-encoded ProjectFilter in the request body, decodes it, and queries the project repository.
+// It expects a JSON-encoded ProjectFilterRequest in the request body, decodes it, and queries the project repository.
 // On success, it responds with a JSON object containing the list of projects and a status message.
 // If the request method is not GET, the JSON is invalid, or an error occurs during processing, it returns an appropriate HTTP error response.
 //
@@ -348,9 +359,9 @@ func (h *projectServiceHandler) Delete(w http.ResponseWriter, r *http.Request, i
 // @Param sort_by query string false "Field to sort by" Enums(created_at, updated_at)
 // @Param sort_ascending query bool false "Sort ascending order"
 // @Param type query string false "Filter by project type" Enums(web, mobile, game)
-// @Success 200 {array} domain.Project
-// @Failure 400 {object} domain.ErrorResponse
-// @Failure 500 {object} domain.ErrorResponse
+// @Success 200 {array} ProjectDTO
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
 // @Router /projects [get]
 func (h *projectServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -360,10 +371,36 @@ func (h *projectServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	q := r.URL.Query()
 
-	typeStr := q.Get("type")
+	sortBy, err := utils.GetQuerySortBy(q, "sort_by")
+	if err != nil {
+		http.Error(w, "invalid sort by", http.StatusBadRequest)
+		return
+	}
+
+	filter := ProjectFilterRequest{
+		Page:          utils.GetQueryInt32(q, "page", 1),
+		PageSize:      utils.GetQueryInt32(q, "page_size", 10),
+		SortBy:        sortBy,
+		SortAscending: utils.GetQueryBool(q, "sort_ascending", false),
+		Type:          q.Get("type"),
+	}
+
+	// Clamp page to minimum of 1
+	if filter.Page < 1 {
+		filter.Page = 1
+	}
+
+	// Clamp page_size to valid range
+	const maxPageSize = 100
+	if filter.PageSize < 1 {
+		filter.PageSize = 10 // default
+	} else if filter.PageSize > maxPageSize {
+		filter.PageSize = maxPageSize
+	}
+
 	var projectType *domain.ProjectType
-	if typeStr != "" {
-		t := domain.ProjectType(typeStr)
+	if filter.Type != "" {
+		t := domain.ProjectType(filter.Type)
 		switch t {
 		case domain.Web, domain.Mobile, domain.Game:
 			projectType = &t
@@ -373,30 +410,15 @@ func (h *projectServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	sortBy, err := utils.GetQuerySortBy(q, "sort_by")
-	if err != nil {
-		http.Error(w, "invalid sort by", http.StatusBadRequest)
-		return
-	}
-
-	filter := domain.ProjectFilter{
-		Page:          utils.GetQueryInt32(q, "page", 1),
-		PageSize:      utils.GetQueryInt32(q, "page_size", 20),
-		SortBy:        sortBy,
-		SortAscending: utils.GetQueryBool(q, "sort_ascending", false),
+	domainFilter := domain.ProjectFilter{
+		Page:          filter.Page,
+		PageSize:      filter.PageSize,
+		SortBy:        (*domain.SortBy)(&filter.SortBy),
+		SortAscending: filter.SortAscending,
 		Type:          projectType,
 	}
 
-	projects, err := h.projectRepo.List(
-		r.Context(),
-		domain.ProjectFilter{
-			Page:          filter.Page,
-			PageSize:      filter.PageSize,
-			SortBy:        filter.SortBy,
-			SortAscending: filter.SortAscending,
-			Type:          filter.Type,
-		},
-	)
+	projects, err := h.projectRepo.List(r.Context(), domainFilter)
 	if err != nil {
 		http.Error(w, "Failed to list project: "+err.Error(), http.StatusInternalServerError)
 		return

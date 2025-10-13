@@ -5,4 +5,4 @@ set -eo pipefail
 cd "$(dirname "$0")/.."
 
 # Generate Swagger docs
-swag init -g cmd/server/main.go
+swag init --dir cmd/server,internal/domain,internal/handler/v1

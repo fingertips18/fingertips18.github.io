@@ -26,7 +26,7 @@ type educationCreateFakeRow struct {
 	scanErr error
 }
 
-func (r *educationCreateFakeRow) Scan(dest ...interface{}) error {
+func (r *educationCreateFakeRow) Scan(dest ...any) error {
 	if r.scanErr != nil {
 		return r.scanErr
 	}
@@ -43,20 +43,19 @@ type educationGetFakeRow struct {
 	id                string
 	mainSchoolJSON    []byte
 	schoolPeriodsJSON []byte
-	projectsJSON      []byte
 	level             domain.EducationLevel
 	createdAt         time.Time
 	updatedAt         time.Time
 	scanErr           error
 }
 
-func (r *educationGetFakeRow) Scan(dest ...interface{}) error {
+func (r *educationGetFakeRow) Scan(dest ...any) error {
 	if r.scanErr != nil {
 		return r.scanErr
 	}
 
-	if len(dest) != 7 {
-		return fmt.Errorf("expected 7 scan destinations, got %d", len(dest))
+	if len(dest) != 6 {
+		return fmt.Errorf("expected 6 scan destinations, got %d", len(dest))
 	}
 
 	if ptr, ok := dest[0].(*string); ok {
@@ -68,16 +67,13 @@ func (r *educationGetFakeRow) Scan(dest ...interface{}) error {
 	if ptr, ok := dest[2].(*[]byte); ok {
 		*ptr = r.schoolPeriodsJSON
 	}
-	if ptr, ok := dest[3].(*[]byte); ok {
-		*ptr = r.projectsJSON
-	}
-	if ptr, ok := dest[4].(*domain.EducationLevel); ok {
+	if ptr, ok := dest[3].(*domain.EducationLevel); ok {
 		*ptr = r.level
 	}
-	if ptr, ok := dest[5].(*time.Time); ok {
+	if ptr, ok := dest[4].(*time.Time); ok {
 		*ptr = r.createdAt
 	}
-	if ptr, ok := dest[6].(*time.Time); ok {
+	if ptr, ok := dest[5].(*time.Time); ok {
 		*ptr = r.updatedAt
 	}
 
@@ -111,7 +107,7 @@ func (r *educationFakeRows) Next() bool {
 	return true
 }
 
-func (r *educationFakeRows) Scan(dest ...interface{}) error {
+func (r *educationFakeRows) Scan(dest ...any) error {
 	row := r.rows[r.index-1]
 	if row.scanErr != nil {
 		return row.scanErr
@@ -120,15 +116,13 @@ func (r *educationFakeRows) Scan(dest ...interface{}) error {
 
 	mainSchoolJSON, _ := json.Marshal(ed.MainSchool)
 	schoolPeriodsJSON, _ := json.Marshal(ed.SchoolPeriods)
-	projectsJSON, _ := json.Marshal(ed.Projects)
 
 	*(dest[0].(*string)) = ed.Id
 	*(dest[1].(*[]byte)) = mainSchoolJSON
 	*(dest[2].(*[]byte)) = schoolPeriodsJSON
-	*(dest[3].(*[]byte)) = projectsJSON
-	*(dest[4].(*domain.EducationLevel)) = ed.Level
-	*(dest[5].(*time.Time)) = ed.CreatedAt
-	*(dest[6].(*time.Time)) = ed.UpdatedAt
+	*(dest[3].(*domain.EducationLevel)) = ed.Level
+	*(dest[4].(*time.Time)) = ed.CreatedAt
+	*(dest[5].(*time.Time)) = ed.UpdatedAt
 
 	return nil
 }
@@ -176,18 +170,6 @@ func TestEducationRepository_Create(t *testing.T) {
 			StartDate:   time.Date(2021, 1, 1, 12, 0, 0, 0, time.UTC),
 			EndDate:     time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC),
 		},
-		Projects: []domain.Project{
-			{
-				Preview:     "test-preview",
-				BlurHash:    "test-blurhash",
-				Title:       "test-title",
-				SubTitle:    "test-subtitle",
-				Description: "test-description",
-				Stack:       []string{"stack1"},
-				Type:        domain.Web,
-				Link:        "http://example.com",
-			},
-		},
 		Level: domain.College,
 	}
 
@@ -234,8 +216,7 @@ func TestEducationRepository_Create(t *testing.T) {
 							EndDate:     time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 						},
 					},
-					Projects: validEducation.Projects,
-					Level:    validEducation.Level,
+					Level: validEducation.Level,
 				},
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.Anything).Return(&educationCreateFakeRow{id: fixedID})
@@ -275,7 +256,6 @@ func TestEducationRepository_Create(t *testing.T) {
 				education: domain.Education{
 					MainSchool:    domain.SchoolPeriod{},
 					SchoolPeriods: validEducation.SchoolPeriods,
-					Projects:      validEducation.Projects,
 					Level:         validEducation.Level,
 				},
 				mockQueryRow: nil,
@@ -296,7 +276,6 @@ func TestEducationRepository_Create(t *testing.T) {
 						EndDate:     validEducation.MainSchool.EndDate,
 					},
 					SchoolPeriods: validEducation.SchoolPeriods,
-					Projects:      validEducation.Projects,
 					Level:         validEducation.Level,
 				},
 				mockQueryRow: nil,
@@ -317,7 +296,6 @@ func TestEducationRepository_Create(t *testing.T) {
 						EndDate:     validEducation.MainSchool.EndDate,
 					},
 					SchoolPeriods: validEducation.SchoolPeriods,
-					Projects:      validEducation.Projects,
 					Level:         validEducation.Level,
 				},
 				mockQueryRow: nil,
@@ -338,7 +316,6 @@ func TestEducationRepository_Create(t *testing.T) {
 						EndDate:     validEducation.MainSchool.EndDate,
 					},
 					SchoolPeriods: validEducation.SchoolPeriods,
-					Projects:      validEducation.Projects,
 					Level:         validEducation.Level,
 				},
 				mockQueryRow: nil,
@@ -359,7 +336,6 @@ func TestEducationRepository_Create(t *testing.T) {
 						EndDate:     validEducation.MainSchool.EndDate,
 					},
 					SchoolPeriods: validEducation.SchoolPeriods,
-					Projects:      validEducation.Projects,
 					Level:         validEducation.Level,
 				},
 				mockQueryRow: nil,
@@ -380,7 +356,6 @@ func TestEducationRepository_Create(t *testing.T) {
 						EndDate:     validEducation.MainSchool.EndDate,
 					},
 					SchoolPeriods: validEducation.SchoolPeriods,
-					Projects:      validEducation.Projects,
 					Level:         validEducation.Level,
 				},
 				mockQueryRow: nil,
@@ -401,7 +376,6 @@ func TestEducationRepository_Create(t *testing.T) {
 						EndDate:     time.Time{},
 					},
 					SchoolPeriods: validEducation.SchoolPeriods,
-					Projects:      validEducation.Projects,
 					Level:         validEducation.Level,
 				},
 				mockQueryRow: nil,
@@ -422,7 +396,6 @@ func TestEducationRepository_Create(t *testing.T) {
 						EndDate:     time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC),
 					},
 					SchoolPeriods: validEducation.SchoolPeriods,
-					Projects:      validEducation.Projects,
 					Level:         validEducation.Level,
 				},
 				mockQueryRow: nil,
@@ -438,8 +411,7 @@ func TestEducationRepository_Create(t *testing.T) {
 					SchoolPeriods: []domain.SchoolPeriod{
 						{},
 					},
-					Projects: validEducation.Projects,
-					Level:    validEducation.Level,
+					Level: validEducation.Level,
 				},
 				mockQueryRow: nil,
 			},
@@ -461,8 +433,7 @@ func TestEducationRepository_Create(t *testing.T) {
 							EndDate:     validEducation.MainSchool.EndDate,
 						},
 					},
-					Projects: validEducation.Projects,
-					Level:    validEducation.Level,
+					Level: validEducation.Level,
 				},
 				mockQueryRow: nil,
 			},
@@ -470,35 +441,10 @@ func TestEducationRepository_Create(t *testing.T) {
 				err: errors.New("failed to validate education: school period[0] name missing"),
 			},
 		},
-		"Missing projects value fails": {
-			given: Given{
-				education: domain.Education{
-					MainSchool: validEducation.MainSchool,
-					Projects: []domain.Project{
-						{
-							Preview:     "",
-							BlurHash:    validEducation.Projects[0].BlurHash,
-							Title:       validEducation.Projects[0].Title,
-							SubTitle:    validEducation.Projects[0].SubTitle,
-							Description: validEducation.Projects[0].Description,
-							Stack:       validEducation.Projects[0].Stack,
-							Type:        validEducation.Projects[0].Type,
-							Link:        validEducation.Projects[0].Link,
-						},
-					},
-					Level: validEducation.Level,
-				},
-				mockQueryRow: nil,
-			},
-			expected: Expected{
-				err: errors.New("failed to validate education: project[0] preview missing"),
-			},
-		},
 		"Missing level fails": {
 			given: Given{
 				education: domain.Education{
 					MainSchool: validEducation.MainSchool,
-					Projects:   validEducation.Projects,
 					Level:      "",
 				},
 				mockQueryRow: nil,
@@ -511,7 +457,6 @@ func TestEducationRepository_Create(t *testing.T) {
 			given: Given{
 				education: domain.Education{
 					MainSchool: validEducation.MainSchool,
-					Projects:   validEducation.Projects,
 					Level:      "invalid",
 				},
 				mockQueryRow: nil,
@@ -563,22 +508,8 @@ func TestEducationRepository_Get(t *testing.T) {
 		EndDate:     time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC),
 	}
 
-	validProjects := []domain.Project{
-		{
-			Preview:     "test-preview",
-			BlurHash:    "test-blurhash",
-			Title:       "test-title",
-			SubTitle:    "test-subtitle",
-			Description: "test-description",
-			Stack:       []string{"stack1"},
-			Type:        domain.Web,
-			Link:        "http://example.com",
-		},
-	}
-
 	mainSchoolJSON, _ := json.Marshal(validMainSchool)
 	schoolPeriodsJSON, _ := json.Marshal([]domain.SchoolPeriod{validMainSchool})
-	projectsJSON, _ := json.Marshal(validProjects)
 
 	type Given struct {
 		id           string
@@ -598,14 +529,13 @@ func TestEducationRepository_Get(t *testing.T) {
 			given: Given{
 				id: fixedID,
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
-					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.MatchedBy(func(args []interface{}) bool {
+					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.MatchedBy(func(args []any) bool {
 						return len(args) == 1 && args[0] == fixedID
 					})).
 						Return(&educationGetFakeRow{
 							id:                fixedID,
 							mainSchoolJSON:    mainSchoolJSON,
 							schoolPeriodsJSON: schoolPeriodsJSON,
-							projectsJSON:      projectsJSON,
 							level:             domain.College,
 							createdAt:         fixedTime,
 							updatedAt:         fixedTime,
@@ -617,7 +547,6 @@ func TestEducationRepository_Get(t *testing.T) {
 					Id:            fixedID,
 					MainSchool:    validMainSchool,
 					SchoolPeriods: []domain.SchoolPeriod{validMainSchool},
-					Projects:      validProjects,
 					Level:         domain.College,
 					CreatedAt:     fixedTime,
 					UpdatedAt:     fixedTime,
@@ -639,7 +568,7 @@ func TestEducationRepository_Get(t *testing.T) {
 			given: Given{
 				id: fixedID,
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
-					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.MatchedBy(func(args []interface{}) bool {
+					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.MatchedBy(func(args []any) bool {
 						return len(args) == 1 && args[0] == fixedID
 					})).
 						Return(&educationGetFakeRow{scanErr: pgx.ErrNoRows})
@@ -654,7 +583,7 @@ func TestEducationRepository_Get(t *testing.T) {
 			given: Given{
 				id: fixedID,
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
-					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.MatchedBy(func(args []interface{}) bool {
+					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.MatchedBy(func(args []any) bool {
 						return len(args) == 1 && args[0] == fixedID
 					})).
 						Return(&educationGetFakeRow{scanErr: scanErr})
@@ -669,7 +598,7 @@ func TestEducationRepository_Get(t *testing.T) {
 			given: Given{
 				id: fixedID,
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
-					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.MatchedBy(func(args []interface{}) bool {
+					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.MatchedBy(func(args []any) bool {
 						return len(args) == 1 && args[0] == fixedID
 					})).
 						Return(&educationGetFakeRow{
@@ -690,7 +619,7 @@ func TestEducationRepository_Get(t *testing.T) {
 			given: Given{
 				id: fixedID,
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
-					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.MatchedBy(func(args []interface{}) bool {
+					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.MatchedBy(func(args []any) bool {
 						return len(args) == 1 && args[0] == fixedID
 					})).
 						Return(&educationGetFakeRow{
@@ -711,7 +640,7 @@ func TestEducationRepository_Get(t *testing.T) {
 			given: Given{
 				id: fixedID,
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
-					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.MatchedBy(func(args []interface{}) bool {
+					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.MatchedBy(func(args []any) bool {
 						return len(args) == 1 && args[0] == fixedID
 					})).
 						Return(&educationGetFakeRow{
@@ -731,7 +660,7 @@ func TestEducationRepository_Get(t *testing.T) {
 			given: Given{
 				id: fixedID,
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
-					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.MatchedBy(func(args []interface{}) bool {
+					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.MatchedBy(func(args []any) bool {
 						return len(args) == 1 && args[0] == fixedID
 					})).
 						Return(&educationGetFakeRow{
@@ -787,25 +716,10 @@ func TestEducationRepository_Update(t *testing.T) {
 		StartDate:   time.Date(2021, 1, 1, 12, 0, 0, 0, time.UTC),
 		EndDate:     time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC),
 	}
-
-	validProjects := []domain.Project{
-		{
-			Preview:     "test-preview",
-			BlurHash:    "test-blurhash",
-			Title:       "test-title",
-			SubTitle:    "test-subtitle",
-			Description: "test-description",
-			Stack:       []string{"stack1"},
-			Type:        domain.Web,
-			Link:        "http://example.com",
-		},
-	}
-
 	validEducation := domain.Education{
 		Id:            fixedID,
 		MainSchool:    validMainSchool,
 		SchoolPeriods: []domain.SchoolPeriod{validMainSchool},
-		Projects:      validProjects,
 		Level:         domain.College,
 		CreatedAt:     fixedTime,
 		UpdatedAt:     fixedTime,
@@ -813,7 +727,6 @@ func TestEducationRepository_Update(t *testing.T) {
 
 	mainSchoolJSON, _ := json.Marshal(validMainSchool)
 	schoolPeriodsJSON, _ := json.Marshal([]domain.SchoolPeriod{validMainSchool})
-	projectsJSON, _ := json.Marshal(validProjects)
 
 	type Given struct {
 		education    domain.Education
@@ -837,8 +750,8 @@ func TestEducationRepository_Update(t *testing.T) {
 						QueryRow(
 							mock.Anything,
 							mock.Anything,
-							mock.MatchedBy(func(args []interface{}) bool {
-								return len(args) == 6 &&
+							mock.MatchedBy(func(args []any) bool {
+								return len(args) == 5 &&
 									args[0] == fixedID &&
 									bytes.Equal(args[1].([]byte), mainSchoolJSON)
 							}),
@@ -847,7 +760,6 @@ func TestEducationRepository_Update(t *testing.T) {
 							id:                fixedID,
 							mainSchoolJSON:    mainSchoolJSON,
 							schoolPeriodsJSON: schoolPeriodsJSON,
-							projectsJSON:      projectsJSON,
 							level:             domain.College,
 							createdAt:         fixedTime,
 							updatedAt:         fixedTime,
@@ -859,7 +771,6 @@ func TestEducationRepository_Update(t *testing.T) {
 					Id:            fixedID,
 					MainSchool:    validMainSchool,
 					SchoolPeriods: []domain.SchoolPeriod{validMainSchool},
-					Projects:      validProjects,
 					Level:         domain.College,
 					CreatedAt:     fixedTime,
 					UpdatedAt:     fixedTime,
@@ -920,7 +831,6 @@ func TestEducationRepository_Update(t *testing.T) {
 				education: domain.Education{
 					MainSchool:    validEducation.MainSchool,
 					SchoolPeriods: validEducation.SchoolPeriods,
-					Projects:      validEducation.Projects,
 					Level:         validEducation.Level,
 				},
 				mockQueryRow: nil,
@@ -935,7 +845,6 @@ func TestEducationRepository_Update(t *testing.T) {
 					Id:            validEducation.Id,
 					MainSchool:    domain.SchoolPeriod{},
 					SchoolPeriods: validEducation.SchoolPeriods,
-					Projects:      validEducation.Projects,
 					Level:         validEducation.Level,
 				},
 				mockQueryRow: nil,
@@ -957,7 +866,6 @@ func TestEducationRepository_Update(t *testing.T) {
 						EndDate:     validEducation.MainSchool.EndDate,
 					},
 					SchoolPeriods: validEducation.SchoolPeriods,
-					Projects:      validEducation.Projects,
 					Level:         validEducation.Level,
 				},
 				mockQueryRow: nil,
@@ -979,7 +887,6 @@ func TestEducationRepository_Update(t *testing.T) {
 						EndDate:     validEducation.MainSchool.EndDate,
 					},
 					SchoolPeriods: validEducation.SchoolPeriods,
-					Projects:      validEducation.Projects,
 					Level:         validEducation.Level,
 				},
 				mockQueryRow: nil,
@@ -1001,7 +908,6 @@ func TestEducationRepository_Update(t *testing.T) {
 						EndDate:     validEducation.MainSchool.EndDate,
 					},
 					SchoolPeriods: validEducation.SchoolPeriods,
-					Projects:      validEducation.Projects,
 					Level:         validEducation.Level,
 				},
 				mockQueryRow: nil,
@@ -1023,7 +929,6 @@ func TestEducationRepository_Update(t *testing.T) {
 						EndDate:     validEducation.MainSchool.EndDate,
 					},
 					SchoolPeriods: validEducation.SchoolPeriods,
-					Projects:      validEducation.Projects,
 					Level:         validEducation.Level,
 				},
 				mockQueryRow: nil,
@@ -1045,7 +950,6 @@ func TestEducationRepository_Update(t *testing.T) {
 						EndDate:     validEducation.MainSchool.EndDate,
 					},
 					SchoolPeriods: validEducation.SchoolPeriods,
-					Projects:      validEducation.Projects,
 					Level:         validEducation.Level,
 				},
 				mockQueryRow: nil,
@@ -1067,7 +971,6 @@ func TestEducationRepository_Update(t *testing.T) {
 						EndDate:     time.Time{},
 					},
 					SchoolPeriods: validEducation.SchoolPeriods,
-					Projects:      validEducation.Projects,
 					Level:         validEducation.Level,
 				},
 				mockQueryRow: nil,
@@ -1089,7 +992,6 @@ func TestEducationRepository_Update(t *testing.T) {
 						EndDate:     time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC),
 					},
 					SchoolPeriods: validEducation.SchoolPeriods,
-					Projects:      validEducation.Projects,
 					Level:         validEducation.Level,
 				},
 				mockQueryRow: nil,
@@ -1106,8 +1008,7 @@ func TestEducationRepository_Update(t *testing.T) {
 					SchoolPeriods: []domain.SchoolPeriod{
 						{},
 					},
-					Projects: validEducation.Projects,
-					Level:    validEducation.Level,
+					Level: validEducation.Level,
 				},
 				mockQueryRow: nil,
 			},
@@ -1130,8 +1031,7 @@ func TestEducationRepository_Update(t *testing.T) {
 							EndDate:     validEducation.MainSchool.EndDate,
 						},
 					},
-					Projects: validEducation.Projects,
-					Level:    validEducation.Level,
+					Level: validEducation.Level,
 				},
 				mockQueryRow: nil,
 			},
@@ -1139,37 +1039,11 @@ func TestEducationRepository_Update(t *testing.T) {
 				err: errors.New("failed to validate education: school period[0] name missing"),
 			},
 		},
-		"Missing projects value fails": {
-			given: Given{
-				education: domain.Education{
-					Id:         validEducation.Id,
-					MainSchool: validEducation.MainSchool,
-					Projects: []domain.Project{
-						{
-							Preview:     "",
-							BlurHash:    validEducation.Projects[0].BlurHash,
-							Title:       validEducation.Projects[0].Title,
-							SubTitle:    validEducation.Projects[0].SubTitle,
-							Description: validEducation.Projects[0].Description,
-							Stack:       validEducation.Projects[0].Stack,
-							Type:        validEducation.Projects[0].Type,
-							Link:        validEducation.Projects[0].Link,
-						},
-					},
-					Level: validEducation.Level,
-				},
-				mockQueryRow: nil,
-			},
-			expected: Expected{
-				err: errors.New("failed to validate education: project[0] preview missing"),
-			},
-		},
 		"Missing level fails": {
 			given: Given{
 				education: domain.Education{
 					Id:         validEducation.Id,
 					MainSchool: validEducation.MainSchool,
-					Projects:   validEducation.Projects,
 					Level:      "",
 				},
 				mockQueryRow: nil,
@@ -1183,7 +1057,6 @@ func TestEducationRepository_Update(t *testing.T) {
 				education: domain.Education{
 					Id:         validEducation.Id,
 					MainSchool: validEducation.MainSchool,
-					Projects:   validEducation.Projects,
 					Level:      "invalid",
 				},
 				mockQueryRow: nil,
@@ -1208,7 +1081,6 @@ func TestEducationRepository_Update(t *testing.T) {
 							id:                fixedID,
 							mainSchoolJSON:    mainSchoolJSON,
 							schoolPeriodsJSON: []byte{},
-							projectsJSON:      []byte{},
 							level:             domain.College,
 							createdAt:         fixedTime,
 							updatedAt:         fixedTime,
@@ -1358,23 +1230,9 @@ func TestEducationRepository_List(t *testing.T) {
 		EndDate:     time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC),
 	}
 
-	validProjects := []domain.Project{
-		{
-			Preview:     "test-preview",
-			BlurHash:    "test-blurhash",
-			Title:       "test-title",
-			SubTitle:    "test-subtitle",
-			Description: "test-description",
-			Stack:       []string{"stack1"},
-			Type:        domain.Web,
-			Link:        "http://example.com",
-		},
-	}
-
 	validEducation := domain.Education{
 		Id:         "edu-001",
 		MainSchool: validMainSchool,
-		Projects:   validProjects,
 		Level:      domain.College,
 		CreatedAt:  fixedTime,
 		UpdatedAt:  fixedTime,
