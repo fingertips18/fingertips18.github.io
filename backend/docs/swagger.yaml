@@ -1,24 +1,45 @@
 definitions:
-  domain.CreateEducation:
+  domain.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  domain.PageView:
+    properties:
+      location:
+        type: string
+      title:
+        type: string
+    type: object
+  domain.SendEmail:
+    properties:
+      email:
+        type: string
+      message:
+        type: string
+      name:
+        type: string
+      subject:
+        type: string
+    type: object
+  v1.CreateEducationRequest:
     properties:
       level:
-        $ref: '#/definitions/domain.EducationLevel'
+        type: string
       main_school:
-        $ref: '#/definitions/domain.SchoolPeriod'
-      projects:
-        items:
-          $ref: '#/definitions/domain.CreateProject'
-        type: array
+        $ref: '#/definitions/v1.SchoolPeriodDTO'
       school_periods:
         items:
-          $ref: '#/definitions/domain.SchoolPeriod'
+          $ref: '#/definitions/v1.SchoolPeriodDTO'
         type: array
     type: object
-  domain.CreateProject:
+  v1.CreateProjectRequest:
     properties:
       blur_hash:
         type: string
       description:
+        type: string
+      education_id:
         type: string
       link:
         type: string
@@ -33,54 +54,35 @@ definitions:
       title:
         type: string
       type:
-        $ref: '#/definitions/domain.ProjectType'
+        type: string
     type: object
-  domain.Education:
+  v1.EducationDTO:
     properties:
       created_at:
         type: string
       id:
         type: string
       level:
-        $ref: '#/definitions/domain.EducationLevel'
+        type: string
       main_school:
-        $ref: '#/definitions/domain.SchoolPeriod'
+        $ref: '#/definitions/v1.SchoolPeriodDTO'
       projects:
         items:
-          $ref: '#/definitions/domain.Project'
+          $ref: '#/definitions/v1.ProjectDTO'
         type: array
       school_periods:
         items:
-          $ref: '#/definitions/domain.SchoolPeriod'
+          $ref: '#/definitions/v1.SchoolPeriodDTO'
         type: array
       updated_at:
         type: string
     type: object
-  domain.EducationLevel:
-    enum:
-    - elementary
-    - junior-high-school
-    - senior-high-school
-    - college
-    type: string
-    x-enum-varnames:
-    - Elementary
-    - JuniorHighSchool
-    - SeniorHighSchool
-    - College
-  domain.ErrorResponse:
+  v1.ErrorResponse:
     properties:
       error:
         type: string
     type: object
-  domain.PageView:
-    properties:
-      location:
-        type: string
-      title:
-        type: string
-    type: object
-  domain.Project:
+  v1.ProjectDTO:
     properties:
       blur_hash:
         type: string
@@ -105,21 +107,11 @@ definitions:
       title:
         type: string
       type:
-        $ref: '#/definitions/domain.ProjectType'
+        type: string
       updated_at:
         type: string
     type: object
-  domain.ProjectType:
-    enum:
-    - web
-    - mobile
-    - game
-    type: string
-    x-enum-varnames:
-    - Web
-    - Mobile
-    - Game
-  domain.SchoolPeriod:
+  v1.SchoolPeriodDTO:
     properties:
       blur_hash:
         type: string
@@ -138,17 +130,6 @@ definitions:
         type: string
       start_date:
         example: "2020-09-01T00:00:00Z"
-        type: string
-    type: object
-  domain.SendEmail:
-    properties:
-      email:
-        type: string
-      message:
-        type: string
-      name:
-        type: string
-      subject:
         type: string
     type: object
 info:
@@ -208,7 +189,7 @@ paths:
         name: education
         required: true
         schema:
-          $ref: '#/definitions/domain.CreateEducation'
+          $ref: '#/definitions/v1.CreateEducationRequest'
       produces:
       - application/json
       responses:
@@ -219,11 +200,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: Create an education
@@ -240,26 +221,26 @@ paths:
         name: education
         required: true
         schema:
-          $ref: '#/definitions/domain.Education'
+          $ref: '#/definitions/v1.EducationDTO'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/domain.Education'
+            $ref: '#/definitions/v1.EducationDTO'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: Update an education
@@ -281,15 +262,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: Delete an education
@@ -312,19 +293,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/domain.Education'
+            $ref: '#/definitions/v1.EducationDTO'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: Get an education by ID
@@ -341,7 +322,7 @@ paths:
         in: query
         name: page
         type: integer
-      - description: Number of items per page (default 20)
+      - description: Number of items per page (default 10)
         in: query
         name: page_size
         type: integer
@@ -363,16 +344,16 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/domain.Education'
+              $ref: '#/definitions/v1.EducationDTO'
             type: array
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: List educations
@@ -425,7 +406,7 @@ paths:
         name: project
         required: true
         schema:
-          $ref: '#/definitions/domain.CreateProject'
+          $ref: '#/definitions/v1.CreateProjectRequest'
       produces:
       - application/json
       responses:
@@ -436,11 +417,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: Create a project
@@ -457,26 +438,26 @@ paths:
         name: project
         required: true
         schema:
-          $ref: '#/definitions/domain.Project'
+          $ref: '#/definitions/v1.ProjectDTO'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/domain.Project'
+            $ref: '#/definitions/v1.ProjectDTO'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: Update a project
@@ -497,15 +478,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: Delete a project
@@ -527,19 +508,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/domain.Project'
+            $ref: '#/definitions/v1.ProjectDTO'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: Get a project by ID
@@ -586,16 +567,16 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/domain.Project'
+              $ref: '#/definitions/v1.ProjectDTO'
             type: array
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/domain.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: List projects

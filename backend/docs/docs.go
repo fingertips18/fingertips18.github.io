@@ -98,7 +98,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/domain.Education"
+                            "$ref": "#/definitions/v1.EducationDTO"
                         }
                     }
                 ],
@@ -106,25 +106,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/domain.Education"
+                            "$ref": "#/definitions/v1.EducationDTO"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     }
                 }
@@ -153,7 +153,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/domain.CreateEducation"
+                            "$ref": "#/definitions/v1.CreateEducationRequest"
                         }
                     }
                 ],
@@ -167,13 +167,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     }
                 }
@@ -210,25 +210,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/domain.Education"
+                            "$ref": "#/definitions/v1.EducationDTO"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     }
                 }
@@ -260,19 +260,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     }
                 }
@@ -305,7 +305,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
-                        "description": "Number of items per page (default 20)",
+                        "description": "Number of items per page (default 10)",
                         "name": "page_size",
                         "in": "query"
                     },
@@ -332,20 +332,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/domain.Education"
+                                "$ref": "#/definitions/v1.EducationDTO"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     }
                 }
@@ -430,7 +430,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/domain.Project"
+                            "$ref": "#/definitions/v1.ProjectDTO"
                         }
                     }
                 ],
@@ -438,25 +438,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/domain.Project"
+                            "$ref": "#/definitions/v1.ProjectDTO"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     }
                 }
@@ -485,7 +485,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/domain.CreateProject"
+                            "$ref": "#/definitions/v1.CreateProjectRequest"
                         }
                     }
                 ],
@@ -499,13 +499,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     }
                 }
@@ -542,25 +542,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/domain.Project"
+                            "$ref": "#/definitions/v1.ProjectDTO"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     }
                 }
@@ -592,19 +592,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     }
                 }
@@ -675,20 +675,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/domain.Project"
+                                "$ref": "#/definitions/v1.ProjectDTO"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     }
                 }
@@ -696,36 +696,69 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "domain.CreateEducation": {
+        "domain.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.PageView": {
+            "type": "object",
+            "properties": {
+                "location": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.SendEmail": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "subject": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.CreateEducationRequest": {
             "type": "object",
             "properties": {
                 "level": {
-                    "$ref": "#/definitions/domain.EducationLevel"
+                    "type": "string"
                 },
                 "main_school": {
-                    "$ref": "#/definitions/domain.SchoolPeriod"
-                },
-                "projects": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/domain.CreateProject"
-                    }
+                    "$ref": "#/definitions/v1.SchoolPeriodDTO"
                 },
                 "school_periods": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/domain.SchoolPeriod"
+                        "$ref": "#/definitions/v1.SchoolPeriodDTO"
                     }
                 }
             }
         },
-        "domain.CreateProject": {
+        "v1.CreateProjectRequest": {
             "type": "object",
             "properties": {
                 "blur_hash": {
                     "type": "string"
                 },
                 "description": {
+                    "type": "string"
+                },
+                "education_id": {
                     "type": "string"
                 },
                 "link": {
@@ -747,11 +780,11 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "type": {
-                    "$ref": "#/definitions/domain.ProjectType"
+                    "type": "string"
                 }
             }
         },
-        "domain.Education": {
+        "v1.EducationDTO": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -761,21 +794,21 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "level": {
-                    "$ref": "#/definitions/domain.EducationLevel"
+                    "type": "string"
                 },
                 "main_school": {
-                    "$ref": "#/definitions/domain.SchoolPeriod"
+                    "$ref": "#/definitions/v1.SchoolPeriodDTO"
                 },
                 "projects": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/domain.Project"
+                        "$ref": "#/definitions/v1.ProjectDTO"
                     }
                 },
                 "school_periods": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/domain.SchoolPeriod"
+                        "$ref": "#/definitions/v1.SchoolPeriodDTO"
                     }
                 },
                 "updated_at": {
@@ -783,22 +816,7 @@ const docTemplate = `{
                 }
             }
         },
-        "domain.EducationLevel": {
-            "type": "string",
-            "enum": [
-                "elementary",
-                "junior-high-school",
-                "senior-high-school",
-                "college"
-            ],
-            "x-enum-varnames": [
-                "Elementary",
-                "JuniorHighSchool",
-                "SeniorHighSchool",
-                "College"
-            ]
-        },
-        "domain.ErrorResponse": {
+        "v1.ErrorResponse": {
             "type": "object",
             "properties": {
                 "error": {
@@ -806,18 +824,7 @@ const docTemplate = `{
                 }
             }
         },
-        "domain.PageView": {
-            "type": "object",
-            "properties": {
-                "location": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                }
-            }
-        },
-        "domain.Project": {
+        "v1.ProjectDTO": {
             "type": "object",
             "properties": {
                 "blur_hash": {
@@ -854,27 +861,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "type": {
-                    "$ref": "#/definitions/domain.ProjectType"
+                    "type": "string"
                 },
                 "updated_at": {
                     "type": "string"
                 }
             }
         },
-        "domain.ProjectType": {
-            "type": "string",
-            "enum": [
-                "web",
-                "mobile",
-                "game"
-            ],
-            "x-enum-varnames": [
-                "Web",
-                "Mobile",
-                "Game"
-            ]
-        },
-        "domain.SchoolPeriod": {
+        "v1.SchoolPeriodDTO": {
             "type": "object",
             "properties": {
                 "blur_hash": {
@@ -902,23 +896,6 @@ const docTemplate = `{
                 "start_date": {
                     "type": "string",
                     "example": "2020-09-01T00:00:00Z"
-                }
-            }
-        },
-        "domain.SendEmail": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "message": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "subject": {
-                    "type": "string"
                 }
             }
         }
