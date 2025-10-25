@@ -355,10 +355,23 @@ func TestEducationServiceHandler_Create_Routing(t *testing.T) {
 
 func TestEducationServiceHandler_Get(t *testing.T) {
 	fixedID := "edu-123"
+	fixedTime := time.Date(2025, 10, 25, 21, 56, 4, 0, time.UTC)
 
 	sampleEducation := &EducationDTO{
-		// ... existing fields ...
-		Projects: []ProjectDTO{}, // Add this if not present
+		Id: fixedID,
+		MainSchool: SchoolPeriodDTO{
+			Name:        "Harvard University",
+			Description: "Top-tier education",
+			Logo:        "logo.png",
+			BlurHash:    "hash123",
+			StartDate:   time.Date(2015, 9, 1, 0, 0, 0, 0, time.UTC),
+			EndDate:     time.Date(2019, 6, 1, 0, 0, 0, 0, time.UTC),
+		},
+		SchoolPeriods: []SchoolPeriodDTO{},
+		Projects:      []ProjectDTO{},
+		Level:         "college",
+		CreatedAt:     fixedTime,
+		UpdatedAt:     fixedTime,
 	}
 
 	validResp, _ := json.Marshal(sampleEducation)
@@ -367,8 +380,9 @@ func TestEducationServiceHandler_Get(t *testing.T) {
 		method       string
 		id           string
 		mockEducRepo func(m *mockRepo.MockEducationRepository)
-		mockProjRepo func(m *mockRepo.MockProjectRepository) // Add this
+		mockProjRepo func(m *mockRepo.MockProjectRepository)
 	}
+
 	type Expected struct {
 		code int
 		body string
@@ -386,14 +400,25 @@ func TestEducationServiceHandler_Get(t *testing.T) {
 					m.EXPECT().
 						Get(mock.Anything, fixedID).
 						Return(&domain.Education{
-							// ... existing education data ...
+							Id: fixedID,
+							MainSchool: domain.SchoolPeriod{
+								Name:        "Harvard University",
+								Description: "Top-tier education",
+								Logo:        "logo.png",
+								BlurHash:    "hash123",
+								StartDate:   time.Date(2015, 9, 1, 0, 0, 0, 0, time.UTC),
+								EndDate:     time.Date(2019, 6, 1, 0, 0, 0, 0, time.UTC),
+							},
+							SchoolPeriods: []domain.SchoolPeriod{},
+							Level:         domain.College,
+							CreatedAt:     fixedTime,
+							UpdatedAt:     fixedTime,
 						}, nil)
 				},
-				// Add this mock for project repo
 				mockProjRepo: func(m *mockRepo.MockProjectRepository) {
 					m.EXPECT().
 						ListByEducationID(mock.Anything, fixedID).
-						Return([]domain.Project{}, nil) // Return empty slice
+						Return([]domain.Project{}, nil)
 				},
 			},
 			expected: Expected{
@@ -406,7 +431,7 @@ func TestEducationServiceHandler_Get(t *testing.T) {
 				method:       http.MethodPost,
 				id:           fixedID,
 				mockEducRepo: nil,
-				mockProjRepo: nil, // No mock needed - fails before repo call
+				mockProjRepo: nil,
 			},
 			expected: Expected{
 				code: http.StatusMethodNotAllowed,
@@ -422,7 +447,6 @@ func TestEducationServiceHandler_Get(t *testing.T) {
 						Get(mock.Anything, "nonexistent").
 						Return(nil, nil)
 				},
-				// No project mock needed - education not found first
 				mockProjRepo: nil,
 			},
 			expected: Expected{
@@ -439,7 +463,6 @@ func TestEducationServiceHandler_Get(t *testing.T) {
 						Get(mock.Anything, fixedID).
 						Return(nil, errors.New("database failure"))
 				},
-				// No project mock needed - education repo fails first
 				mockProjRepo: nil,
 			},
 			expected: Expected{
@@ -456,7 +479,6 @@ func TestEducationServiceHandler_Get(t *testing.T) {
 						Get(mock.Anything, "").
 						Return(nil, nil)
 				},
-				// No project mock needed - education not found
 				mockProjRepo: nil,
 			},
 			expected: Expected{
@@ -473,8 +495,6 @@ func TestEducationServiceHandler_Get(t *testing.T) {
 			if tt.given.mockEducRepo != nil {
 				tt.given.mockEducRepo(f.mockEducationRepo)
 			}
-
-			// Add this block
 			if tt.given.mockProjRepo != nil {
 				tt.given.mockProjRepo(f.mockProjectRepo)
 			}
@@ -497,7 +517,7 @@ func TestEducationServiceHandler_Get(t *testing.T) {
 			}
 
 			f.mockEducationRepo.AssertExpectations(t)
-			f.mockProjectRepo.AssertExpectations(t) // Add this
+			f.mockProjectRepo.AssertExpectations(t)
 		})
 	}
 }

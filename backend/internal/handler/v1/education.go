@@ -254,7 +254,7 @@ func (h *educationServiceHandler) Get(w http.ResponseWriter, r *http.Request, id
 	// Fetch related projects
 	projects, err := h.projectRepo.ListByEducationID(r.Context(), id)
 	if err != nil {
-		log.Printf("Failed to list projects by education ID:%s", id)
+		log.Printf("Failed to list projects by education ID %s: %v", id, err)
 		// Projects are optional, so we can return empty array
 		projects = []domain.Project{}
 	}
