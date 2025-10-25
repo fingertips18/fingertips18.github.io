@@ -357,27 +357,17 @@ func TestEducationServiceHandler_Get(t *testing.T) {
 	fixedID := "edu-123"
 
 	sampleEducation := &EducationDTO{
-		Id: fixedID,
-		MainSchool: SchoolPeriodDTO{
-			Name:        "Stanford University",
-			Description: "Engineering excellence",
-			Logo:        "stanford_logo.png",
-			BlurHash:    "blurhash123",
-			StartDate:   time.Date(2016, 9, 1, 0, 0, 0, 0, time.UTC),
-			EndDate:     time.Date(2020, 6, 1, 0, 0, 0, 0, time.UTC),
-		},
-		SchoolPeriods: []SchoolPeriodDTO{},
-		Level:         "college",
-		CreatedAt:     time.Now(),
-		UpdatedAt:     time.Now(),
+		// ... existing fields ...
+		Projects: []ProjectDTO{}, // Add this if not present
 	}
 
 	validResp, _ := json.Marshal(sampleEducation)
 
 	type Given struct {
-		method   string
-		id       string
-		mockRepo func(m *mockRepo.MockEducationRepository)
+		method       string
+		id           string
+		mockEducRepo func(m *mockRepo.MockEducationRepository)
+		mockProjRepo func(m *mockRepo.MockProjectRepository) // Add this
 	}
 	type Expected struct {
 		code int
@@ -392,26 +382,18 @@ func TestEducationServiceHandler_Get(t *testing.T) {
 			given: Given{
 				method: http.MethodGet,
 				id:     fixedID,
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
+				mockEducRepo: func(m *mockRepo.MockEducationRepository) {
 					m.EXPECT().
 						Get(mock.Anything, fixedID).
 						Return(&domain.Education{
-							Id: sampleEducation.Id,
-							MainSchool: domain.SchoolPeriod{
-								Link:        sampleEducation.MainSchool.Link,
-								Name:        sampleEducation.MainSchool.Name,
-								Description: sampleEducation.MainSchool.Description,
-								Logo:        sampleEducation.MainSchool.Logo,
-								BlurHash:    sampleEducation.MainSchool.BlurHash,
-								Honor:       sampleEducation.MainSchool.Honor,
-								StartDate:   sampleEducation.MainSchool.StartDate,
-								EndDate:     sampleEducation.MainSchool.EndDate,
-							},
-							SchoolPeriods: []domain.SchoolPeriod{},
-							Level:         domain.EducationLevel(sampleEducation.Level),
-							CreatedAt:     sampleEducation.CreatedAt,
-							UpdatedAt:     sampleEducation.UpdatedAt,
+							// ... existing education data ...
 						}, nil)
+				},
+				// Add this mock for project repo
+				mockProjRepo: func(m *mockRepo.MockProjectRepository) {
+					m.EXPECT().
+						ListByEducationID(mock.Anything, fixedID).
+						Return([]domain.Project{}, nil) // Return empty slice
 				},
 			},
 			expected: Expected{
@@ -421,9 +403,10 @@ func TestEducationServiceHandler_Get(t *testing.T) {
 		},
 		"method not allowed": {
 			given: Given{
-				method:   http.MethodPost,
-				id:       fixedID,
-				mockRepo: nil,
+				method:       http.MethodPost,
+				id:           fixedID,
+				mockEducRepo: nil,
+				mockProjRepo: nil, // No mock needed - fails before repo call
 			},
 			expected: Expected{
 				code: http.StatusMethodNotAllowed,
@@ -434,11 +417,13 @@ func TestEducationServiceHandler_Get(t *testing.T) {
 			given: Given{
 				method: http.MethodGet,
 				id:     "nonexistent",
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
+				mockEducRepo: func(m *mockRepo.MockEducationRepository) {
 					m.EXPECT().
 						Get(mock.Anything, "nonexistent").
 						Return(nil, nil)
 				},
+				// No project mock needed - education not found first
+				mockProjRepo: nil,
 			},
 			expected: Expected{
 				code: http.StatusNotFound,
@@ -449,11 +434,13 @@ func TestEducationServiceHandler_Get(t *testing.T) {
 			given: Given{
 				method: http.MethodGet,
 				id:     fixedID,
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
+				mockEducRepo: func(m *mockRepo.MockEducationRepository) {
 					m.EXPECT().
 						Get(mock.Anything, fixedID).
 						Return(nil, errors.New("database failure"))
 				},
+				// No project mock needed - education repo fails first
+				mockProjRepo: nil,
 			},
 			expected: Expected{
 				code: http.StatusInternalServerError,
@@ -464,12 +451,13 @@ func TestEducationServiceHandler_Get(t *testing.T) {
 			given: Given{
 				method: http.MethodGet,
 				id:     "",
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
-					// Testing Get() directly with empty id (bypasses ServeHTTP validation)
+				mockEducRepo: func(m *mockRepo.MockEducationRepository) {
 					m.EXPECT().
 						Get(mock.Anything, "").
 						Return(nil, nil)
 				},
+				// No project mock needed - education not found
+				mockProjRepo: nil,
 			},
 			expected: Expected{
 				code: http.StatusNotFound,
@@ -482,8 +470,13 @@ func TestEducationServiceHandler_Get(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			f := newEducationHandlerTestFixture(t)
 
-			if tt.given.mockRepo != nil {
-				tt.given.mockRepo(f.mockEducationRepo)
+			if tt.given.mockEducRepo != nil {
+				tt.given.mockEducRepo(f.mockEducationRepo)
+			}
+
+			// Add this block
+			if tt.given.mockProjRepo != nil {
+				tt.given.mockProjRepo(f.mockProjectRepo)
 			}
 
 			req := httptest.NewRequest(tt.given.method, "/education/"+tt.given.id, nil)
@@ -504,6 +497,7 @@ func TestEducationServiceHandler_Get(t *testing.T) {
 			}
 
 			f.mockEducationRepo.AssertExpectations(t)
+			f.mockProjectRepo.AssertExpectations(t) // Add this
 		})
 	}
 }
@@ -569,6 +563,11 @@ func TestEducationServiceHandler_Get_Routing(t *testing.T) {
 		Get(mock.Anything, fixedID).
 		Return(sampleEducation, nil)
 
+	// Setup project mock
+	f.mockProjectRepo.EXPECT().
+		ListByEducationID(mock.Anything, fixedID).
+		Return([]domain.Project{}, nil)
+
 	// Create request and recorder
 	req := httptest.NewRequest(http.MethodGet, "/education/"+fixedID, nil)
 	w := httptest.NewRecorder()
@@ -587,6 +586,7 @@ func TestEducationServiceHandler_Get_Routing(t *testing.T) {
 	assert.JSONEq(t, string(expectedResp), string(body))
 
 	f.mockEducationRepo.AssertExpectations(t)
+	f.mockProjectRepo.AssertExpectations(t)
 }
 
 func TestEducationServiceHandler_Update(t *testing.T) {

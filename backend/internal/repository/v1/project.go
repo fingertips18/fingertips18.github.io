@@ -383,12 +383,12 @@ func (r *projectRepository) List(ctx context.Context, filter domain.ProjectFilte
 //     the SQL value is valid; otherwise the field is left zero-valued.
 //   - The function defers closing rows and returns any rows.Err() after iteration.
 func (r *projectRepository) ListByEducationID(ctx context.Context, educationID string) ([]domain.Project, error) {
-	query := `
+	query := fmt.Sprintf(`
         SELECT id, preview, blur_hash, title, sub_title, description, stack, type, link, education_id, created_at, updated_at
-        FROM project
+        FROM %s
         WHERE education_id = $1
         ORDER BY created_at DESC
-    `
+    `, r.projectTable)
 
 	rows, err := r.databaseAPI.Query(ctx, query, educationID)
 	if err != nil {

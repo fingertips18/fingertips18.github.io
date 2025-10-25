@@ -580,12 +580,30 @@ func (h *educationServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 	educations := make([]EducationDTO, len(educationsRes))
 	for i, e := range educationsRes {
 		educations[i] = EducationDTO{
-			Id:         e.Id,
-			MainSchool: SchoolPeriodDTO(e.MainSchool),
+			Id: e.Id,
+			MainSchool: SchoolPeriodDTO{
+				Link:        e.MainSchool.Link,
+				Name:        e.MainSchool.Name,
+				Description: e.MainSchool.Description,
+				Logo:        e.MainSchool.Logo,
+				BlurHash:    e.MainSchool.BlurHash,
+				Honor:       e.MainSchool.Honor,
+				StartDate:   e.MainSchool.StartDate,
+				EndDate:     e.MainSchool.EndDate,
+			},
 			SchoolPeriods: func() []SchoolPeriodDTO {
 				periods := make([]SchoolPeriodDTO, len(e.SchoolPeriods))
 				for j, p := range e.SchoolPeriods {
-					periods[j] = SchoolPeriodDTO(p)
+					periods[j] = SchoolPeriodDTO{
+						Link:        p.Link,
+						Name:        p.Name,
+						Description: p.Description,
+						Logo:        p.Logo,
+						BlurHash:    p.BlurHash,
+						Honor:       p.Honor,
+						StartDate:   p.StartDate,
+						EndDate:     p.EndDate,
+					}
 				}
 				return periods
 			}(),
