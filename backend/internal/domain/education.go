@@ -15,15 +15,6 @@ const (
 	College          EducationLevel = "college"
 )
 
-func (el EducationLevel) isValid() bool {
-	switch el {
-	case Elementary, JuniorHighSchool, SeniorHighSchool, College:
-		return true
-	default:
-		return false
-	}
-}
-
 type SchoolPeriod struct {
 	Link        string    `json:"link,omitempty"`
 	Name        string    `json:"name"`
@@ -36,20 +27,12 @@ type SchoolPeriod struct {
 }
 
 type Education struct {
-	Id            string         `json:"id"`
-	MainSchool    SchoolPeriod   `json:"main_school"`
-	SchoolPeriods []SchoolPeriod `json:"school_periods,omitempty"`
-	Projects      []Project      `json:"projects,omitempty"`
-	Level         EducationLevel `json:"level"`
-	CreatedAt     time.Time      `json:"created_at"`
-	UpdatedAt     time.Time      `json:"updated_at"`
-}
-
-type CreateEducation struct {
-	MainSchool    SchoolPeriod   `json:"main_school"`
-	SchoolPeriods []SchoolPeriod `json:"school_periods,omitempty"`
-	Projects      []Project      `json:"projects,omitempty"`
-	Level         EducationLevel `json:"level"`
+	Id            string
+	MainSchool    SchoolPeriod
+	SchoolPeriods []SchoolPeriod
+	Level         EducationLevel
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
 type EducationFilter struct {
@@ -59,8 +42,13 @@ type EducationFilter struct {
 	SortAscending bool
 }
 
-type EducationIDResponse struct {
-	ID string `json:"id"`
+func (el EducationLevel) isValid() bool {
+	switch el {
+	case Elementary, JuniorHighSchool, SeniorHighSchool, College:
+		return true
+	default:
+		return false
+	}
 }
 
 func (s SchoolPeriod) Validate() error {
@@ -102,12 +90,6 @@ func (e Education) ValidatePayload() error {
 		}
 		if err := sp.Validate(); err != nil {
 			return fmt.Errorf("school period[%d] %w", i, err)
-		}
-	}
-
-	for i, p := range e.Projects {
-		if err := p.ValidatePayload(); err != nil {
-			return fmt.Errorf("project[%d] %w", i, err)
 		}
 	}
 

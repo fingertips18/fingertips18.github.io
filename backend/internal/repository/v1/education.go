@@ -54,14 +54,13 @@ func NewEducationRepository(cfg EducationRepositoryConfig) EducationRepository {
 	}
 }
 
-// Create validates and persists a new Education record in the repository.
-// It performs the following steps:
-//   - Validates the provided domain.Education via education.ValidatePayload() and returns an error if validation fails.
-//   - Generates a new unique ID (via utils.GenerateKey) for the record.
-//   - Sets CreatedAt and UpdatedAt to the current time obtained from the repository's timeProvider.
-//   - Executes an INSERT against the configured education table using the repository's databaseAPI and expects the database to RETURN the inserted id.
-//
-// On success, Create returns the newly created record's ID. It returns an error if validation fails, if the database INSERT or Scan fails, or if the database returns an empty ID.
+// Create creates a new education record in the repository and returns its generated ID.
+// It validates the provided Education payload, generates a unique ID, marshals the main
+// school and school periods to JSON, sets CreatedAt and UpdatedAt timestamps from the
+// repository's time provider, and inserts the record into the configured education table.
+// The function returns the newly created record's ID, or a non-nil error if validation,
+// JSON marshaling, database insertion, or returned-ID verification fails. The provided
+// education object's CreatedAt and UpdatedAt fields are updated when the method succeeds.
 func (r *educationRepository) Create(ctx context.Context, education *domain.Education) (string, error) {
 	if err := education.ValidatePayload(); err != nil {
 		return "", fmt.Errorf("failed to validate education: %w", err)
@@ -78,18 +77,14 @@ func (r *educationRepository) Create(ctx context.Context, education *domain.Educ
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal school periods: %w", err)
 	}
-	projectsJSON, err := json.Marshal(education.Projects)
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal projects: %w", err)
-	}
 
 	education.CreatedAt = now
 	education.UpdatedAt = now
 
 	query := fmt.Sprintf(
 		`INSERT INTO %s
-        (id, main_school, school_periods, projects, level, created_at, updated_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        (id, main_school, school_periods, level, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6)
 		RETURNING id`,
 		r.educationTable,
 	)
@@ -101,7 +96,6 @@ func (r *educationRepository) Create(ctx context.Context, education *domain.Educ
 		id,
 		mainSchoolJSON,
 		schoolPeriodsJSON,
-		projectsJSON,
 		education.Level,
 		education.CreatedAt,
 		education.UpdatedAt,
@@ -118,40 +112,38 @@ func (r *educationRepository) Create(ctx context.Context, education *domain.Educ
 	return returnedID, nil
 }
 
-// Get retrieves an education record by its identifier from the repository.
-// The provided context is used for the database query. If id is empty, Get
-// returns an error immediately.
+// Get retrieves an Education by its id from the repository.
+// It returns a pointer to domain.Education on success.
 //
-// The method queries the underlying table for the columns
-// (id, main_school, school_periods, projects, level, created_at, updated_at),
-// scans the JSON columns (main_school, school_periods, projects) into byte
-// slices and then unmarshals them into the corresponding fields of
-// domain.Education. school_periods and projects are optional and only
-// unmarshaled when non-empty. After unmarshaling, the returned education
-// value is validated via Education.ValidateResponse.
+// Get requires a non-empty id and will return an error if id == "".
+// It uses the provided context for the database query so callers can control
+// cancellation and timeouts.
 //
-// Errors returned include:
-//   - a specific error when the id is empty,
-//   - a not-found error when the row does not exist,
-//   - wrapped errors for database scan failures,
-//   - wrapped JSON unmarshal errors, and
-//   - wrapped validation errors.
+// Expected database columns are: id, main_school, school_periods, level, created_at, updated_at.
+// The main_school and school_periods columns are stored as JSON: main_school is unmarshaled
+// into Education.MainSchool (required), and school_periods is unmarshaled into
+// Education.SchoolPeriods only if present (empty JSON is allowed).
 //
-// On success, a pointer to a fully-populated and validated domain.Education is
-// returned.
+// Possible errors returned include:
+//   - an error indicating the ID is missing when id == "".
+//   - a not-found error (pgx.ErrNoRows) when no matching row exists.
+//   - errors from scanning database row values.
+//   - JSON unmarshal errors for main_school or school_periods.
+//   - an error if the resulting domain.Education fails ValidateResponse().
+//
+// All returned errors are wrapped with contextual messages to aid debugging.
 func (r *educationRepository) Get(ctx context.Context, id string) (*domain.Education, error) {
 	if id == "" {
 		return nil, fmt.Errorf("failed to get education: ID missing")
 	}
 
-	var education domain.Education
-
-	var mainSchoolJSON []byte
-	var schoolPeriodsJSON []byte
-	var projectsJSON []byte
+	var (
+		education                         domain.Education
+		mainSchoolJSON, schoolPeriodsJSON []byte
+	)
 
 	query := fmt.Sprintf(
-		`SELECT id, main_school, school_periods, projects, level, created_at, updated_at
+		`SELECT id, main_school, school_periods, level, created_at, updated_at
 		FROM %s
 		WHERE id = $1`,
 		r.educationTable,
@@ -165,7 +157,6 @@ func (r *educationRepository) Get(ctx context.Context, id string) (*domain.Educa
 		&education.Id,
 		&mainSchoolJSON,
 		&schoolPeriodsJSON,
-		&projectsJSON,
 		&education.Level,
 		&education.CreatedAt,
 		&education.UpdatedAt,
@@ -184,11 +175,6 @@ func (r *educationRepository) Get(ctx context.Context, id string) (*domain.Educa
 	if len(schoolPeriodsJSON) > 0 {
 		if err = json.Unmarshal(schoolPeriodsJSON, &education.SchoolPeriods); err != nil {
 			return nil, fmt.Errorf("failed to unmarshal school periods: %w", err)
-		}
-	}
-	if len(projectsJSON) > 0 {
-		if err = json.Unmarshal(projectsJSON, &education.Projects); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal projects: %w", err)
 		}
 	}
 
@@ -234,15 +220,10 @@ func (r *educationRepository) Update(ctx context.Context, education *domain.Educ
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal school periods: %w", err)
 	}
-	projectsJSON, err := json.Marshal(education.Projects)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal projects: %w", err)
-	}
 
 	var (
 		mainSchoolBytes    []byte
 		schoolPeriodsBytes []byte
-		projectsBytes      []byte
 		updatedEducation   domain.Education
 	)
 
@@ -250,11 +231,10 @@ func (r *educationRepository) Update(ctx context.Context, education *domain.Educ
 		`UPDATE %s
 		SET main_school=$2,
 			school_periods=$3,
-			projects=$4,
-			level=$5,
-			updated_at=$6
+			level=$4,
+			updated_at=$5
 		WHERE id=$1
-		RETURNING id, main_school, school_periods, projects, level, created_at, updated_at`,
+		RETURNING id, main_school, school_periods, level, created_at, updated_at`,
 		r.educationTable,
 	)
 
@@ -264,14 +244,12 @@ func (r *educationRepository) Update(ctx context.Context, education *domain.Educ
 		education.Id,
 		mainSchoolJSON,
 		schoolPeriodsJSON,
-		projectsJSON,
 		education.Level,
 		education.UpdatedAt,
 	).Scan(
 		&updatedEducation.Id,
 		&mainSchoolBytes,
 		&schoolPeriodsBytes,
-		&projectsBytes,
 		&updatedEducation.Level,
 		&updatedEducation.CreatedAt,
 		&updatedEducation.UpdatedAt,
@@ -290,11 +268,6 @@ func (r *educationRepository) Update(ctx context.Context, education *domain.Educ
 	if len(schoolPeriodsBytes) > 0 {
 		if err = json.Unmarshal(schoolPeriodsBytes, &updatedEducation.SchoolPeriods); err != nil {
 			return nil, fmt.Errorf("failed to unmarshal school periods: %w", err)
-		}
-	}
-	if len(projectsBytes) > 0 {
-		if err = json.Unmarshal(projectsBytes, &updatedEducation.Projects); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal projects: %w", err)
 		}
 	}
 
@@ -355,7 +328,7 @@ func (r *educationRepository) List(ctx context.Context, filter domain.EducationF
 	}
 
 	baseQuery := fmt.Sprintf(
-		`SELECT id, main_school, school_periods, projects, level, created_at, updated_at FROM %s`,
+		`SELECT id, main_school, school_periods, level, created_at, updated_at FROM %s`,
 		r.educationTable,
 	)
 
@@ -402,14 +375,12 @@ func (r *educationRepository) List(ctx context.Context, filter domain.EducationF
 			ed                domain.Education
 			mainSchoolJSON    []byte
 			schoolPeriodsJSON []byte
-			projectsJSON      []byte
 		)
 
 		err := rows.Scan(
 			&ed.Id,
 			&mainSchoolJSON,
 			&schoolPeriodsJSON,
-			&projectsJSON,
 			&ed.Level,
 			&ed.CreatedAt,
 			&ed.UpdatedAt,
@@ -424,11 +395,6 @@ func (r *educationRepository) List(ctx context.Context, filter domain.EducationF
 		if len(schoolPeriodsJSON) > 0 {
 			if err = json.Unmarshal(schoolPeriodsJSON, &ed.SchoolPeriods); err != nil {
 				return nil, fmt.Errorf("failed to unmarshal school periods: %w", err)
-			}
-		}
-		if len(projectsJSON) > 0 {
-			if err = json.Unmarshal(projectsJSON, &ed.Projects); err != nil {
-				return nil, fmt.Errorf("failed to unmarshal projects: %w", err)
 			}
 		}
 

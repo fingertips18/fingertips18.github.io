@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
-
-	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
 )
 
 // GetQueryInt32 retrieves the value associated with the given key from the provided url.Values,
@@ -24,22 +22,21 @@ func GetQueryInt32(q url.Values, key string, def int32) int32 {
 }
 
 // GetQuerySortBy retrieves and validates a sort-by parameter from the provided URL query values.
-// It expects the value associated with the given key to match one of the allowed domain.SortBy values
-// (e.g., domain.CreatedAt, domain.UpdatedAt). If the key is not present or the value is empty, it returns nil.
-// If the value is valid, it returns a pointer to the corresponding domain.SortBy value.
-// Otherwise, it returns an error indicating an invalid sort-by value.
-func GetQuerySortBy(q url.Values, key string) (*domain.SortBy, error) {
+// It expects the value associated with the given key to match one of the allowed values
+// ("created_at", "updated_at"). If the key is not present or the value is empty, it returns an empty string.
+// If the value is valid, it returns the string itself.
+// Otherwise, it returns an empty string and an error indicating an invalid sort-by value.
+func GetQuerySortBy(q url.Values, key string) (string, error) {
 	v := q.Get(key)
 	if v == "" {
-		return nil, nil
+		return "", nil
 	}
 
-	s := domain.SortBy(v)
-	switch s {
-	case domain.CreatedAt, domain.UpdatedAt:
-		return &s, nil
+	switch v {
+	case "created_at", "updated_at":
+		return v, nil
 	default:
-		return nil, fmt.Errorf("invalid sort by value: %q", v)
+		return "", fmt.Errorf("invalid sort by value: %q", v)
 	}
 }
 

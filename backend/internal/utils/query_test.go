@@ -81,37 +81,37 @@ func TestGetQuerySortBy(t *testing.T) {
 	tests := map[string]struct {
 		q      url.Values
 		key    string
-		want   *domain.SortBy
+		want   string
 		hasErr bool
 	}{
-		"missing key returns nil": {
+		"missing key returns empty": {
 			q:      url.Values{},
 			key:    "sort_by",
-			want:   nil,
+			want:   "",
 			hasErr: false,
 		},
 		"valid CreatedAt": {
-			q:      url.Values{"sort_by": {string(domain.CreatedAt)}},
+			q:      url.Values{"sort_by": {"created_at"}},
 			key:    "sort_by",
-			want:   ptr(domain.CreatedAt),
+			want:   "created_at",
 			hasErr: false,
 		},
 		"valid UpdatedAt": {
-			q:      url.Values{"sort_by": {string(domain.UpdatedAt)}},
+			q:      url.Values{"sort_by": {"updated_at"}},
 			key:    "sort_by",
-			want:   ptr(domain.UpdatedAt),
+			want:   "updated_at",
 			hasErr: false,
 		},
 		"invalid value": {
 			q:      url.Values{"sort_by": {"invalid"}},
 			key:    "sort_by",
-			want:   nil,
+			want:   "",
 			hasErr: true,
 		},
-		"empty string returns nil": {
+		"empty string returns empty": {
 			q:      url.Values{"sort_by": {""}},
 			key:    "sort_by",
-			want:   nil,
+			want:   "",
 			hasErr: false,
 		},
 	}
