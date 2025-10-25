@@ -66,10 +66,6 @@ definitions:
         type: string
       main_school:
         $ref: '#/definitions/v1.SchoolPeriodDTO'
-      projects:
-        items:
-          $ref: '#/definitions/v1.ProjectDTO'
-        type: array
       school_periods:
         items:
           $ref: '#/definitions/v1.SchoolPeriodDTO'
@@ -80,6 +76,11 @@ definitions:
   v1.ErrorResponse:
     properties:
       error:
+        type: string
+    type: object
+  v1.IDResponse:
+    properties:
+      id:
         type: string
     type: object
   v1.ProjectDTO:
@@ -196,7 +197,7 @@ paths:
         "201":
           description: Education ID
           schema:
-            type: string
+            $ref: '#/definitions/v1.IDResponse'
         "400":
           description: Bad Request
           schema:
@@ -413,7 +414,7 @@ paths:
         "201":
           description: Project ID
           schema:
-            type: string
+            $ref: '#/definitions/v1.IDResponse'
         "400":
           description: Bad Request
           schema:

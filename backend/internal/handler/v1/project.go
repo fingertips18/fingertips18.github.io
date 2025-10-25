@@ -95,6 +95,7 @@ func (h *projectServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		id := strings.TrimPrefix(path, "/project/")
 
 		if r.Method != http.MethodGet && r.Method != http.MethodDelete {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
 
@@ -132,7 +133,7 @@ func (h *projectServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 // @Accept json
 // @Produce json
 // @Param project body CreateProjectRequest true "Project payload"
-// @Success 201 {string} IDResponse "Project ID"
+// @Success 201 {object} IDResponse "Project ID"
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /project [post]
@@ -174,7 +175,7 @@ func (h *projectServiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := IDResponse{ID: id}
+	resp := IDResponse{Id: id}
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(resp); err != nil {
@@ -213,6 +214,10 @@ func (h *projectServiceHandler) Get(w http.ResponseWriter, r *http.Request, id s
 
 	project, err := h.projectRepo.Get(r.Context(), id)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			http.Error(w, "Project not found", http.StatusNotFound)
+			return
+		}
 		http.Error(w, "GET error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -281,7 +286,7 @@ func (h *projectServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := project.ValidatePayload(); err != nil {
-		http.Error(w, "Invalid education payload: "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid project payload: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -410,10 +415,15 @@ func (h *projectServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	var sortByPtr *domain.SortBy
+	if filter.SortBy != "" {
+		sb := domain.SortBy(filter.SortBy)
+		sortByPtr = &sb
+	}
 	domainFilter := domain.ProjectFilter{
 		Page:          filter.Page,
 		PageSize:      filter.PageSize,
-		SortBy:        (*domain.SortBy)(&filter.SortBy),
+		SortBy:        sortByPtr,
 		SortAscending: filter.SortAscending,
 		Type:          projectType,
 	}

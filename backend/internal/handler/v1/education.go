@@ -135,7 +135,7 @@ func (h *educationServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 // @Accept json
 // @Produce json
 // @Param education body CreateEducationRequest true "Education payload"
-// @Success 201 {string} IDResponse "Education ID"
+// @Success 201 {object} IDResponse "Education ID"
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /education [post]
@@ -197,7 +197,7 @@ func (h *educationServiceHandler) Create(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	resp := IDResponse{ID: id}
+	resp := IDResponse{Id: id}
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(resp); err != nil {
@@ -238,6 +238,10 @@ func (h *educationServiceHandler) Get(w http.ResponseWriter, r *http.Request, id
 
 	educationRes, err := h.educationRepo.Get(r.Context(), id)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			http.Error(w, "Education not found", http.StatusNotFound)
+			return
+		}
 		http.Error(w, "GET error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -247,16 +251,33 @@ func (h *educationServiceHandler) Get(w http.ResponseWriter, r *http.Request, id
 	}
 
 	education := EducationDTO{
-		Id:         educationRes.Id,
-		MainSchool: SchoolPeriodDTO(educationRes.MainSchool),
+		Id: educationRes.Id,
+		MainSchool: SchoolPeriodDTO{
+			Link:        educationRes.MainSchool.Link,
+			Name:        educationRes.MainSchool.Name,
+			Description: educationRes.MainSchool.Description,
+			Logo:        educationRes.MainSchool.Logo,
+			BlurHash:    educationRes.MainSchool.BlurHash,
+			Honor:       educationRes.MainSchool.Honor,
+			StartDate:   educationRes.MainSchool.StartDate,
+			EndDate:     educationRes.MainSchool.EndDate,
+		},
 		SchoolPeriods: func() []SchoolPeriodDTO {
 			periods := make([]SchoolPeriodDTO, len(educationRes.SchoolPeriods))
 			for i, p := range educationRes.SchoolPeriods {
-				periods[i] = SchoolPeriodDTO(p)
+				periods[i] = SchoolPeriodDTO{
+					Link:        p.Link,
+					Name:        p.Name,
+					Description: p.Description,
+					Logo:        p.Logo,
+					BlurHash:    p.BlurHash,
+					Honor:       p.Honor,
+					StartDate:   p.StartDate,
+					EndDate:     p.EndDate,
+				}
 			}
 			return periods
 		}(),
-		Projects:  []ProjectDTO{},
 		Level:     string(educationRes.Level),
 		CreatedAt: educationRes.CreatedAt,
 		UpdatedAt: educationRes.UpdatedAt,
@@ -333,8 +354,17 @@ func (h *educationServiceHandler) Update(w http.ResponseWriter, r *http.Request)
 	}
 
 	education := domain.Education{
-		Id:            updateReq.Id,
-		MainSchool:    domain.SchoolPeriod(updateReq.MainSchool),
+		Id: updateReq.Id,
+		MainSchool: domain.SchoolPeriod{
+			Link:        updateReq.MainSchool.Link,
+			Name:        updateReq.MainSchool.Name,
+			Description: updateReq.MainSchool.Description,
+			Logo:        updateReq.MainSchool.Logo,
+			BlurHash:    updateReq.MainSchool.BlurHash,
+			Honor:       updateReq.MainSchool.Honor,
+			StartDate:   updateReq.MainSchool.StartDate,
+			EndDate:     updateReq.MainSchool.EndDate,
+		},
 		SchoolPeriods: schoolPeriods,
 		Level:         domain.EducationLevel(updateReq.Level),
 		CreatedAt:     updateReq.CreatedAt,
@@ -357,16 +387,33 @@ func (h *educationServiceHandler) Update(w http.ResponseWriter, r *http.Request)
 	}
 
 	updatedEducation := EducationDTO{
-		Id:         updatedEducationRes.Id,
-		MainSchool: SchoolPeriodDTO(updatedEducationRes.MainSchool),
+		Id: updatedEducationRes.Id,
+		MainSchool: SchoolPeriodDTO{
+			Link:        updatedEducationRes.MainSchool.Link,
+			Name:        updatedEducationRes.MainSchool.Name,
+			Description: updatedEducationRes.MainSchool.Description,
+			Logo:        updatedEducationRes.MainSchool.Logo,
+			BlurHash:    updatedEducationRes.MainSchool.BlurHash,
+			Honor:       updatedEducationRes.MainSchool.Honor,
+			StartDate:   updatedEducationRes.MainSchool.StartDate,
+			EndDate:     updatedEducationRes.MainSchool.EndDate,
+		},
 		SchoolPeriods: func() []SchoolPeriodDTO {
 			periods := make([]SchoolPeriodDTO, len(updatedEducationRes.SchoolPeriods))
 			for i, p := range updatedEducationRes.SchoolPeriods {
-				periods[i] = SchoolPeriodDTO(p)
+				periods[i] = SchoolPeriodDTO{
+					Link:        p.Link,
+					Name:        p.Name,
+					Description: p.Description,
+					Logo:        p.Logo,
+					BlurHash:    p.BlurHash,
+					Honor:       p.Honor,
+					StartDate:   p.StartDate,
+					EndDate:     p.EndDate,
+				}
 			}
 			return periods
 		}(),
-		Projects:  []ProjectDTO{},
 		Level:     string(updatedEducationRes.Level),
 		CreatedAt: updatedEducationRes.CreatedAt,
 		UpdatedAt: updatedEducationRes.UpdatedAt,
@@ -483,10 +530,15 @@ func (h *educationServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 		filter.PageSize = maxPageSize
 	}
 
+	var sortByPtr *domain.SortBy
+	if filter.SortBy != "" {
+		sb := domain.SortBy(filter.SortBy)
+		sortByPtr = &sb
+	}
 	domainFilter := domain.EducationFilter{
 		Page:          filter.Page,
 		PageSize:      filter.PageSize,
-		SortBy:        (*domain.SortBy)(&filter.SortBy),
+		SortBy:        sortByPtr,
 		SortAscending: filter.SortAscending,
 	}
 

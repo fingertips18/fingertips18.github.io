@@ -161,7 +161,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Education ID",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/v1.IDResponse"
                         }
                     },
                     "400": {
@@ -493,7 +493,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Project ID",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/v1.IDResponse"
                         }
                     },
                     "400": {
@@ -799,12 +799,6 @@ const docTemplate = `{
                 "main_school": {
                     "$ref": "#/definitions/v1.SchoolPeriodDTO"
                 },
-                "projects": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/v1.ProjectDTO"
-                    }
-                },
                 "school_periods": {
                     "type": "array",
                     "items": {
@@ -820,6 +814,14 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.IDResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
                     "type": "string"
                 }
             }

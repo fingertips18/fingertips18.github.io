@@ -16,14 +16,14 @@ const (
 )
 
 type SchoolPeriod struct {
-	Link        string
-	Name        string
-	Description string
-	Logo        string
-	BlurHash    string
-	Honor       string
-	StartDate   time.Time
-	EndDate     time.Time
+	Link        string    `json:"link,omitempty"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	Logo        string    `json:"logo"`
+	BlurHash    string    `json:"blur_hash"`
+	Honor       string    `json:"honor,omitempty"`
+	StartDate   time.Time `json:"start_date"`
+	EndDate     time.Time `json:"end_date"`
 }
 
 type Education struct {

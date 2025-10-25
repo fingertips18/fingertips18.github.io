@@ -57,7 +57,7 @@ func TestEducationServiceHandler_Create(t *testing.T) {
 		Level:         "college",
 	}
 	validBody, _ := json.Marshal(validCreateReq)
-	validResp, _ := json.Marshal(IDResponse{ID: fixedID})
+	validResp, _ := json.Marshal(IDResponse{Id: fixedID})
 
 	type Given struct {
 		method   string
@@ -316,7 +316,7 @@ func TestEducationServiceHandler_Create_Routing(t *testing.T) {
 		Level:         "college",
 	}
 	validBody, _ := json.Marshal(validCreateReq)
-	expectedResp, _ := json.Marshal(IDResponse{ID: fixedID})
+	expectedResp, _ := json.Marshal(IDResponse{Id: fixedID})
 
 	f := newEducationHandlerTestFixture(t)
 
@@ -530,7 +530,6 @@ func TestEducationServiceHandler_Get_Routing(t *testing.T) {
 			}
 			return periods
 		}(),
-		Projects:  []ProjectDTO{},
 		Level:     string(sampleEducation.Level),
 		CreatedAt: sampleEducation.CreatedAt,
 		UpdatedAt: sampleEducation.UpdatedAt,
@@ -596,7 +595,6 @@ func TestEducationServiceHandler_Update(t *testing.T) {
 			}
 			return periods
 		}(),
-		Projects:  []ProjectDTO{},
 		Level:     string(existingEducation.Level),
 		CreatedAt: existingEducation.CreatedAt,
 		UpdatedAt: existingEducation.UpdatedAt,
@@ -810,7 +808,6 @@ func TestEducationServiceHandler_Update_Routing(t *testing.T) {
 			}
 			return periods
 		}(),
-		Projects:  []ProjectDTO{},
 		Level:     string(existingEducation.Level),
 		CreatedAt: existingEducation.CreatedAt,
 		UpdatedAt: existingEducation.UpdatedAt,
@@ -1034,8 +1031,6 @@ func TestEducationServiceHandler_List(t *testing.T) {
 
 	validJSON, _ := json.Marshal(educations)
 
-	emptySortBy := domain.SortBy("")
-
 	type Given struct {
 		method   string
 		query    string
@@ -1058,7 +1053,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 					expectedFilter := domain.EducationFilter{
 						Page:          1,
 						PageSize:      10,
-						SortBy:        &emptySortBy, // default: no sort
+						SortBy:        nil, // default: no sort
 						SortAscending: false,
 					}
 					m.EXPECT().
@@ -1168,7 +1163,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 					expectedFilter := domain.EducationFilter{
 						Page:          1,
 						PageSize:      10,
-						SortBy:        &emptySortBy,
+						SortBy:        nil,
 						SortAscending: false,
 					}
 					m.EXPECT().
@@ -1190,7 +1185,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 					expectedFilter := domain.EducationFilter{
 						Page:          1,
 						PageSize:      10, // Should default to 10
-						SortBy:        &emptySortBy,
+						SortBy:        nil,
 						SortAscending: false,
 					}
 					m.EXPECT().
@@ -1212,7 +1207,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 					expectedFilter := domain.EducationFilter{
 						Page:          1,
 						PageSize:      100, // Should be clamped to max (adjust based on your handler logic)
-						SortBy:        &emptySortBy,
+						SortBy:        nil,
 						SortAscending: false,
 					}
 					m.EXPECT().
@@ -1234,7 +1229,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 					expectedFilter := domain.EducationFilter{
 						Page:          1,
 						PageSize:      10,
-						SortBy:        &emptySortBy,
+						SortBy:        nil,
 						SortAscending: false,
 					}
 					m.EXPECT().
@@ -1256,7 +1251,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 					expectedFilter := domain.EducationFilter{
 						Page:          1,
 						PageSize:      10,
-						SortBy:        &emptySortBy,
+						SortBy:        nil,
 						SortAscending: false,
 					}
 					m.EXPECT().
@@ -1339,15 +1334,13 @@ func TestEducationServiceHandler_List_Routing(t *testing.T) {
 
 	validJSON, _ := json.Marshal(educations)
 
-	emptySortBy := domain.SortBy("")
-
 	f := newEducationHandlerTestFixture(t)
 
 	// Setup mock expectation
 	expectedFilter := domain.EducationFilter{
 		Page:          1,
 		PageSize:      10,
-		SortBy:        &emptySortBy,
+		SortBy:        nil,
 		SortAscending: false,
 	}
 	f.mockEducationRepo.EXPECT().

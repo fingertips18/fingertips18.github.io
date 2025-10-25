@@ -153,7 +153,7 @@
                     "201": {
                         "description": "Education ID",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/v1.IDResponse"
                         }
                     },
                     "400": {
@@ -485,7 +485,7 @@
                     "201": {
                         "description": "Project ID",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/v1.IDResponse"
                         }
                     },
                     "400": {
@@ -791,12 +791,6 @@
                 "main_school": {
                     "$ref": "#/definitions/v1.SchoolPeriodDTO"
                 },
-                "projects": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/v1.ProjectDTO"
-                    }
-                },
                 "school_periods": {
                     "type": "array",
                     "items": {
@@ -812,6 +806,14 @@
             "type": "object",
             "properties": {
                 "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.IDResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
                     "type": "string"
                 }
             }
