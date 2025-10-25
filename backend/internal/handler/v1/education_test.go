@@ -20,21 +20,25 @@ import (
 type educationHandlerTestFixture struct {
 	t                 *testing.T
 	mockEducationRepo *mockRepo.MockEducationRepository
+	mockProjectRepo   *mockRepo.MockProjectRepository
 	educationHandler  EducationHandler
 }
 
 func newEducationHandlerTestFixture(t *testing.T) *educationHandlerTestFixture {
 	mockEducationRepo := new(mockRepo.MockEducationRepository)
+	mockProjectRepo := new(mockRepo.MockProjectRepository)
 
 	educationHandler := NewEducationServiceHandler(
 		EducationServiceConfig{
 			educationRepo: mockEducationRepo,
+			ProjectRepo:   mockProjectRepo,
 		},
 	)
 
 	return &educationHandlerTestFixture{
 		t:                 t,
 		mockEducationRepo: mockEducationRepo,
+		mockProjectRepo:   mockProjectRepo,
 		educationHandler:  educationHandler,
 	}
 }
@@ -1322,7 +1326,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 				method: http.MethodGet,
 				query:  "?page_size=invalid",
 				mockRepo: func(m *mockRepo.MockEducationRepository) {
-					// Invalid page_size should default to 20
+					// Invalid page_size should default to 10
 					expectedFilter := domain.EducationFilter{
 						Page:          1,
 						PageSize:      10,
