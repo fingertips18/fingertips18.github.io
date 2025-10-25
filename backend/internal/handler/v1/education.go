@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strings"
 
@@ -250,6 +251,33 @@ func (h *educationServiceHandler) Get(w http.ResponseWriter, r *http.Request, id
 		return
 	}
 
+	// Fetch related projects
+	projects, err := h.projectRepo.ListByEducationID(r.Context(), id)
+	if err != nil {
+		log.Printf("Failed to list projects by education ID:%s", id)
+		// Projects are optional, so we can return empty array
+		projects = []domain.Project{}
+	}
+
+	// Convert to DTOs
+	projectDTOs := make([]ProjectDTO, len(projects))
+	for i, p := range projects {
+		projectDTOs[i] = ProjectDTO{
+			Id:          p.Id,
+			Preview:     p.Preview,
+			BlurHash:    p.BlurHash,
+			Title:       p.Title,
+			SubTitle:    p.SubTitle,
+			Description: p.Description,
+			Stack:       p.Stack,
+			Type:        string(p.Type),
+			Link:        p.Link,
+			EducationID: p.EducationID,
+			CreatedAt:   p.CreatedAt,
+			UpdatedAt:   p.UpdatedAt,
+		}
+	}
+
 	education := EducationDTO{
 		Id: educationRes.Id,
 		MainSchool: SchoolPeriodDTO{
@@ -278,6 +306,7 @@ func (h *educationServiceHandler) Get(w http.ResponseWriter, r *http.Request, id
 			}
 			return periods
 		}(),
+		Projects:  projectDTOs,
 		Level:     string(educationRes.Level),
 		CreatedAt: educationRes.CreatedAt,
 		UpdatedAt: educationRes.UpdatedAt,

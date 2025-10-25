@@ -2,6 +2,7 @@ package v1
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"strings"
@@ -19,6 +20,7 @@ type ProjectRepository interface {
 	Update(ctx context.Context, project *domain.Project) (*domain.Project, error)
 	Delete(ctx context.Context, id string) error
 	List(ctx context.Context, filter domain.ProjectFilter) ([]domain.Project, error)
+	ListByEducationID(ctx context.Context, educationID string) ([]domain.Project, error)
 }
 
 type ProjectRepositoryConfig struct {
@@ -356,4 +358,64 @@ func (r *projectRepository) List(ctx context.Context, filter domain.ProjectFilte
 	}
 
 	return projects, nil
+}
+
+// ListProjectsByEducationID queries the database for all projects that belong to the
+// provided educationID and returns them as a slice of domain.Project.
+//
+// Behavior:
+//   - Executes a SELECT for id, preview, blur_hash, title, sub_title, description,
+//     stack, type, link, education_id, created_at, updated_at from the project table
+//     where education_id = $1.
+//   - Results are ordered by created_at DESC.
+//
+// Parameters:
+// - ctx: context for tracing/cancellation/timeout of the database operation.
+// - educationID: the education identifier used as the single query parameter.
+//
+// Returns:
+//   - ([]domain.Project, error): the slice of projects (possibly empty) and an error.
+//     Errors are returned if the query fails, if scanning a row fails, or if rows
+//     iteration reports an error. Errors are wrapped for context.
+//
+// Notes:
+//   - The nullable education_id column is mapped into Project.EducationID only when
+//     the SQL value is valid; otherwise the field is left zero-valued.
+//   - The function defers closing rows and returns any rows.Err() after iteration.
+func (r *projectRepository) ListByEducationID(ctx context.Context, educationID string) ([]domain.Project, error) {
+	query := `
+        SELECT id, preview, blur_hash, title, sub_title, description, stack, type, link, education_id, created_at, updated_at
+        FROM project
+        WHERE education_id = $1
+        ORDER BY created_at DESC
+    `
+
+	rows, err := r.databaseAPI.Query(ctx, query, educationID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query projects by education_id: %w", err)
+	}
+	defer rows.Close()
+
+	var projects []domain.Project
+	for rows.Next() {
+		var p domain.Project
+		var educationID sql.NullString
+
+		err := rows.Scan(
+			&p.Id, &p.Preview, &p.BlurHash, &p.Title, &p.SubTitle,
+			&p.Description, &p.Stack, &p.Type, &p.Link,
+			&educationID, &p.CreatedAt, &p.UpdatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan project: %w", err)
+		}
+
+		if educationID.Valid {
+			p.EducationID = educationID.String
+		}
+
+		projects = append(projects, p)
+	}
+
+	return projects, rows.Err()
 }

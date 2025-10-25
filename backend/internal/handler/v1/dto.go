@@ -58,6 +58,7 @@ type EducationDTO struct {
 	Id            string            `json:"id"`
 	MainSchool    SchoolPeriodDTO   `json:"main_school"`
 	SchoolPeriods []SchoolPeriodDTO `json:"school_periods,omitempty"`
+	Projects      []ProjectDTO      `json:"projects,omitempty"`
 	Level         string            `json:"level"`
 	CreatedAt     time.Time         `json:"created_at"`
 	UpdatedAt     time.Time         `json:"updated_at"`

@@ -297,6 +297,74 @@ func (_c *MockProjectRepository_List_Call) RunAndReturn(run func(ctx context.Con
 	return _c
 }
 
+// ListByEducationID provides a mock function for the type MockProjectRepository
+func (_mock *MockProjectRepository) ListByEducationID(ctx context.Context, educationID string) ([]domain.Project, error) {
+	ret := _mock.Called(ctx, educationID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListByEducationID")
+	}
+
+	var r0 []domain.Project
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) ([]domain.Project, error)); ok {
+		return returnFunc(ctx, educationID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) []domain.Project); ok {
+		r0 = returnFunc(ctx, educationID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]domain.Project)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, educationID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockProjectRepository_ListByEducationID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListByEducationID'
+type MockProjectRepository_ListByEducationID_Call struct {
+	*mock.Call
+}
+
+// ListByEducationID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - educationID string
+func (_e *MockProjectRepository_Expecter) ListByEducationID(ctx interface{}, educationID interface{}) *MockProjectRepository_ListByEducationID_Call {
+	return &MockProjectRepository_ListByEducationID_Call{Call: _e.mock.On("ListByEducationID", ctx, educationID)}
+}
+
+func (_c *MockProjectRepository_ListByEducationID_Call) Run(run func(ctx context.Context, educationID string)) *MockProjectRepository_ListByEducationID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockProjectRepository_ListByEducationID_Call) Return(projects []domain.Project, err error) *MockProjectRepository_ListByEducationID_Call {
+	_c.Call.Return(projects, err)
+	return _c
+}
+
+func (_c *MockProjectRepository_ListByEducationID_Call) RunAndReturn(run func(ctx context.Context, educationID string) ([]domain.Project, error)) *MockProjectRepository_ListByEducationID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Update provides a mock function for the type MockProjectRepository
 func (_mock *MockProjectRepository) Update(ctx context.Context, project *domain.Project) (*domain.Project, error) {
 	ret := _mock.Called(ctx, project)
