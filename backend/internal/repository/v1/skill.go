@@ -349,7 +349,7 @@ func (r *skillRepository) List(ctx context.Context, filter domain.SkillFilter) (
 
 	// Add pagination
 	offset := (filter.Page - 1) * filter.PageSize
-	baseQuery = fmt.Sprintf(" LIMIT $%d OFFSET $%d", argIdx, argIdx+1)
+	baseQuery += fmt.Sprintf(" LIMIT $%d OFFSET $%d", argIdx, argIdx+1)
 	args = append(args, filter.PageSize, offset)
 
 	// Execute query

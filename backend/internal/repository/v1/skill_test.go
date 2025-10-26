@@ -714,11 +714,19 @@ func TestSkillRepository_List(t *testing.T) {
 							mock.Anything,
 							mock.Anything,
 							mock.MatchedBy(func(args []any) bool {
-								if len(args) != 1 {
+								// With category filter: args = [category, pageSize, offset]
+								if len(args) != 3 {
 									return false
 								}
-								cat, ok := args[0].(domain.SkillCategory)
-								return ok && cat == category
+								// Check first arg is the category
+								switch v := args[0].(type) {
+								case domain.SkillCategory:
+									return v == category
+								case string:
+									return v == string(category)
+								default:
+									return false
+								}
 							}),
 						).
 						Return(&skillFakeRows{
@@ -809,7 +817,10 @@ func TestSkillRepository_List(t *testing.T) {
 							mock.MatchedBy(func(q string) bool {
 								return strings.Contains(q, "ORDER BY created_at DESC")
 							}),
-							mock.Anything,
+							mock.MatchedBy(func(args []any) bool {
+								// When no category filter, args contains [pageSize, offset]
+								return len(args) == 2
+							}),
 						).
 						Return(&skillFakeRows{
 							rows: []*skillFakeRow{{skill: &mockSkill}},
