@@ -44,7 +44,7 @@ func (f *skillFakeRow) Scan(dest ...any) error {
 		*dest[1].(*string) = f.skill.Icon
 		*dest[2].(*string) = f.skill.HexColor
 		*dest[3].(*string) = f.skill.Label
-		*dest[4].(*string) = f.skill.Category
+		*dest[4].(*domain.SkillCategory) = f.skill.Category
 		*dest[5].(*time.Time) = f.skill.CreatedAt
 		*dest[6].(*time.Time) = f.skill.UpdatedAt
 		return nil
@@ -62,6 +62,26 @@ type skillFakeCommandTag struct {
 func (f *skillFakeCommandTag) RowsAffected() int64 {
 	return f.rows
 }
+
+type skillFakeRows struct {
+	rows   []*skillFakeRow
+	index  int
+	rowErr error
+}
+
+func (r *skillFakeRows) Next() bool {
+	return r.index < len(r.rows)
+}
+
+func (r *skillFakeRows) Scan(dest ...any) error {
+	err := r.rows[r.index].Scan(dest...)
+	r.index++
+	return err
+}
+
+func (r *skillFakeRows) Err() error { return r.rowErr }
+
+func (r *skillFakeRows) Close() {}
 
 type skillRepositoryTestFixture struct {
 	t               *testing.T
@@ -93,7 +113,7 @@ func TestSkillRepository_Create(t *testing.T) {
 		Icon:     "🔥",
 		HexColor: "#FF0000",
 		Label:    "Go",
-		Category: "Backend",
+		Category: domain.Backend,
 	}
 
 	type Given struct {
@@ -245,7 +265,7 @@ func TestSkillRepository_Get(t *testing.T) {
 		Icon:      "🔥",
 		HexColor:  "#FF0000",
 		Label:     "Go",
-		Category:  "Backend",
+		Category:  domain.Backend,
 		CreatedAt: fixedTime,
 		UpdatedAt: fixedTime,
 	}
@@ -380,7 +400,7 @@ func TestSkillRepository_Update(t *testing.T) {
 		Icon:      "🔥",
 		HexColor:  "#FF0000",
 		Label:     "Go",
-		Category:  "Backend",
+		Category:  domain.Backend,
 		CreatedAt: fixedTime.Add(-time.Hour),
 	}
 	updatedSkill := originalSkill
@@ -628,6 +648,224 @@ func TestSkillRepository_Delete(t *testing.T) {
 				assert.EqualError(t, err, test.expected.err.Error())
 			} else {
 				assert.NoError(t, err)
+			}
+
+			f.databaseAPI.AssertExpectations(t)
+		})
+	}
+}
+
+func TestSkillRepository_List(t *testing.T) {
+	fixedTime := time.Date(2025, 1, 1, 12, 0, 0, 0, time.UTC)
+	dbErr := errors.New("db error")
+	scanErr := errors.New("scan error")
+	iterErr := errors.New("row iteration error")
+
+	category := domain.Backend
+
+	mockSkill := domain.Skill{
+		Id:        "skill-123",
+		Icon:      "🔥",
+		HexColor:  "#FF0000",
+		Label:     "Go",
+		Category:  domain.Backend,
+		CreatedAt: fixedTime,
+		UpdatedAt: fixedTime,
+	}
+
+	type Given struct {
+		filter   domain.SkillFilter
+		mockRows func(m *database.MockDatabaseAPI)
+	}
+
+	type Expected struct {
+		result []domain.Skill
+		err    error
+	}
+
+	tests := map[string]struct {
+		given    Given
+		expected Expected
+	}{
+		"Successful list without filters": {
+			given: Given{
+				filter: domain.SkillFilter{},
+				mockRows: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().
+						Query(mock.Anything, mock.Anything, mock.Anything).
+						Return(&skillFakeRows{
+							rows: []*skillFakeRow{{skill: &mockSkill}},
+						}, nil)
+				},
+			},
+			expected: Expected{
+				result: []domain.Skill{mockSkill},
+				err:    nil,
+			},
+		},
+		"Successful list with category filter": {
+			given: Given{
+				filter: domain.SkillFilter{
+					Category: &category,
+				},
+				mockRows: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().
+						Query(
+							mock.Anything,
+							mock.Anything,
+							mock.MatchedBy(func(args []any) bool {
+								// With category filter: args = [category, pageSize, offset]
+								if len(args) != 3 {
+									return false
+								}
+								// Check first arg is the category
+								switch v := args[0].(type) {
+								case domain.SkillCategory:
+									return v == category
+								case string:
+									return v == string(category)
+								default:
+									return false
+								}
+							}),
+						).
+						Return(&skillFakeRows{
+							rows: []*skillFakeRow{{skill: &mockSkill}},
+						}, nil)
+				},
+			},
+			expected: Expected{
+				result: []domain.Skill{mockSkill},
+				err:    nil,
+			},
+		},
+		"Database query error": {
+			given: Given{
+				filter: domain.SkillFilter{},
+				mockRows: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().
+						Query(mock.Anything, mock.Anything, mock.Anything).
+						Return(nil, dbErr)
+				},
+			},
+			expected: Expected{
+				result: nil,
+				err:    fmt.Errorf("failed to list skills: %w", dbErr),
+			},
+		},
+		"Scan failure during iteration": {
+			given: Given{
+				filter: domain.SkillFilter{},
+				mockRows: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().
+						Query(mock.Anything, mock.Anything, mock.Anything).
+						Return(&skillFakeRows{
+							rows: []*skillFakeRow{{scanErr: scanErr}},
+						}, nil)
+				},
+			},
+			expected: Expected{
+				result: nil,
+				err:    fmt.Errorf("failed to scan skill: %w", scanErr),
+			},
+		},
+		"Row iteration error": {
+			given: Given{
+				filter: domain.SkillFilter{},
+				mockRows: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().
+						Query(mock.Anything, mock.Anything, mock.Anything).
+						Return(&skillFakeRows{
+							rows:   []*skillFakeRow{{skill: &mockSkill}},
+							rowErr: iterErr,
+						}, nil)
+				},
+			},
+			expected: Expected{
+				result: nil,
+				err:    fmt.Errorf("row iteration error: %w", iterErr),
+			},
+		},
+		"Pagination with boundaries": {
+			given: Given{
+				filter: domain.SkillFilter{
+					Page:     -5,
+					PageSize: 999,
+				},
+				mockRows: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().
+						Query(mock.Anything, mock.Anything, mock.Anything).
+						Return(&skillFakeRows{
+							rows: []*skillFakeRow{{skill: &mockSkill}},
+						}, nil)
+				},
+			},
+			expected: Expected{
+				result: []domain.Skill{mockSkill},
+				err:    nil,
+			},
+		},
+		"Sorting applied correctly": {
+			given: Given{
+				filter: domain.SkillFilter{
+					SortAscending: false,
+				},
+				mockRows: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().
+						Query(
+							mock.Anything,
+							mock.MatchedBy(func(q string) bool {
+								return strings.Contains(q, "ORDER BY created_at DESC")
+							}),
+							mock.MatchedBy(func(args []any) bool {
+								// When no category filter, args contains [pageSize, offset]
+								return len(args) == 2
+							}),
+						).
+						Return(&skillFakeRows{
+							rows: []*skillFakeRow{{skill: &mockSkill}},
+						}, nil)
+				},
+			},
+			expected: Expected{
+				result: []domain.Skill{mockSkill},
+				err:    nil,
+			},
+		},
+		"Empty result set": {
+			given: Given{
+				filter: domain.SkillFilter{},
+				mockRows: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().
+						Query(mock.Anything, mock.Anything, mock.Anything).
+						Return(&skillFakeRows{
+							rows: []*skillFakeRow{}, // empty rows
+						}, nil)
+				},
+			},
+			expected: Expected{
+				result: nil,
+				err:    nil,
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			f := newSkillRepositoryTestFixture(t, func() time.Time { return fixedTime })
+
+			if test.given.mockRows != nil {
+				test.given.mockRows(f.databaseAPI)
+			}
+
+			result, err := f.skillRepository.List(context.Background(), test.given.filter)
+
+			if test.expected.err != nil {
+				assert.EqualError(t, err, test.expected.err.Error())
+				assert.Nil(t, result)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, test.expected.result, result)
 			}
 
 			f.databaseAPI.AssertExpectations(t)
