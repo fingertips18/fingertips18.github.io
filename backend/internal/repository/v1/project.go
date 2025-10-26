@@ -235,6 +235,7 @@ func (r *projectRepository) Update(ctx context.Context, project *domain.Project)
 		&updatedProject.Stack,
 		&updatedProject.Type,
 		&updatedProject.Link,
+		&updatedProject.CreatedAt,
 		&updatedProject.UpdatedAt,
 	)
 
