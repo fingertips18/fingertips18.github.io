@@ -334,7 +334,7 @@ func TestSkillRepository_Get(t *testing.T) {
 			},
 			expected: Expected{
 				result: nil,
-				err:    fmt.Errorf("invalid project returned: %w", errors.New("label missing")),
+				err:    fmt.Errorf("invalid skill returned: %w", errors.New("label missing")),
 			},
 		},
 	}
