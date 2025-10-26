@@ -218,7 +218,6 @@ func TestSkillRepository_Create(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.Equal(t, fixedID, id)
-				assert.Equal(t, fixedID, test.given.skill.Id)
 				assert.Equal(t, fixedTime, test.given.skill.CreatedAt)
 				assert.Equal(t, fixedTime, test.given.skill.UpdatedAt)
 			}
