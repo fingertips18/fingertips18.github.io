@@ -243,7 +243,8 @@ func (r *skillRepository) Delete(ctx context.Context, id string) error {
 		return fmt.Errorf("failed to delete skill: ID missing")
 	}
 
-	query := fmt.Sprintf("DELETE FROM %s WHERE id=$1", r.skillTable)
+	tableIdent := pgx.Identifier{r.skillTable}.Sanitize()
+	query := fmt.Sprintf("DELETE FROM %s WHERE id=$1", tableIdent)
 
 	cmdTag, err := r.databaseAPI.Exec(
 		ctx,
