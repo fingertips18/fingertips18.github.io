@@ -16,6 +16,8 @@ type Skill struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+var hexColorRegex = regexp.MustCompile(`^#[0-9A-Fa-f]{3}([0-9A-Fa-f]{3})?$`)
+
 func (s Skill) ValidatePayload() error {
 	if s.Icon == "" {
 		return errors.New("icon missing")
@@ -23,7 +25,7 @@ func (s Skill) ValidatePayload() error {
 	if s.HexColor == "" {
 		return errors.New("hex color missing")
 	} else {
-		if !regexp.MustCompile(`^#[0-9A-Fa-f]{3}([0-9A-Fa-f]{3})?$`).MatchString(s.HexColor) {
+		if !hexColorRegex.MatchString(s.HexColor) {
 			return errors.New("hex color must be in format #RGB or #RRGGBB")
 		}
 	}

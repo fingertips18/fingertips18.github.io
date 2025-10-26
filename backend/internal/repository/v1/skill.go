@@ -51,7 +51,7 @@ func NewSkillRepository(cfg SkillRepositoryConfig) SkillRepository {
 // Create inserts a new skill record into the repository and returns the generated ID.
 //
 // It performs the following steps:
-//  1. Validates the provided CreateSkill payload via skill.ValidatePayload().
+//  1. Validates the provided Skill payload via skill.ValidatePayload().
 //  2. Generates a new ID using utils.GenerateKey().
 //  3. Sets skill.CreatedAt and skill.UpdatedAt using the repository's timeProvider.
 //  4. Executes an INSERT ... RETURNING id against the repository's skillTable and
@@ -59,7 +59,7 @@ func NewSkillRepository(cfg SkillRepositoryConfig) SkillRepository {
 //
 // Parameters:
 //   - ctx: context for cancellation and timeouts propagated to the database call.
-//   - skill: pointer to domain.CreateSkill to persist. This method mutates
+//   - skill: pointer to domain.Skill to persist. This method mutates
 //     skill.CreatedAt and skill.UpdatedAt; callers should provide a non-nil payload.
 //
 // Returns:
@@ -153,7 +153,7 @@ func (r *skillRepository) Get(ctx context.Context, id string) (*domain.Skill, er
 	}
 
 	if err := skill.ValidateResponse(); err != nil {
-		return nil, fmt.Errorf("invalid project returned: %w", err)
+		return nil, fmt.Errorf("invalid skill returned: %w", err)
 	}
 
 	return &skill, nil
