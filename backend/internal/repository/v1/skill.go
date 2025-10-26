@@ -280,8 +280,8 @@ func (r *skillRepository) Delete(ctx context.Context, id string) error {
 //   - The query selects columns: id, icon, hex_color, label, category, created_at, updated_at
 //     from the repository's skill table.
 //   - Category filtering is applied via a parameterized WHERE clause (uses $1, $2, ... placeholders).
-//   - ORDER BY uses the value of filter.SortBy verbatim as the column to sort on; callers must
-//     ensure it is a valid column name to avoid SQL errors.
+//   - ORDER BY maps filter.SortBy to an allowlisted column name (created_at or updated_at)
+//     to prevent SQL injection; invalid values default to created_at.
 //   - LIMIT and OFFSET are applied for pagination (OFFSET = (Page-1) * PageSize).
 //
 // Execution and errors:
@@ -317,6 +317,9 @@ func (r *skillRepository) List(ctx context.Context, filter domain.SkillFilter) (
 
 	// Add optional category filter
 	if filter.Category != nil {
+		if *filter.Category == "" {
+			return nil, fmt.Errorf("failed to list skills: invalid empty category")
+		}
 		conditions = append(conditions, fmt.Sprintf("category = $%d", argIdx))
 		args = append(args, *filter.Category)
 		argIdx++
@@ -346,7 +349,8 @@ func (r *skillRepository) List(ctx context.Context, filter domain.SkillFilter) (
 
 	// Add pagination
 	offset := (filter.Page - 1) * filter.PageSize
-	baseQuery += fmt.Sprintf(" LIMIT %d OFFSET %d", filter.PageSize, offset)
+	baseQuery = fmt.Sprintf(" LIMIT $%d OFFSET $%d", argIdx, argIdx+1)
+	args = append(args, filter.PageSize, offset)
 
 	// Execute query
 	rows, err := r.databaseAPI.Query(ctx, baseQuery, args...)
@@ -370,6 +374,10 @@ func (r *skillRepository) List(ctx context.Context, filter domain.SkillFilter) (
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan skill: %w", err)
+		}
+
+		if err := skill.ValidateResponse(); err != nil {
+			return nil, fmt.Errorf("invalid skill returned: %w", err)
 		}
 
 		skills = append(skills, skill)
