@@ -48,24 +48,18 @@ func NewSkillRepository(cfg SkillRepositoryConfig) SkillRepository {
 	}
 }
 
-// Create inserts a new skill record into the repository and returns the generated ID.
+// Create inserts a new skill row into the configured skill table and returns its ID.
 //
-// It performs the following steps:
-//  1. Validates the provided Skill payload via skill.ValidatePayload().
-//  2. Generates a new ID using utils.GenerateKey().
-//  3. Sets skill.CreatedAt and skill.UpdatedAt using the repository's timeProvider.
-//  4. Executes an INSERT ... RETURNING id against the repository's skillTable and
-//     scans the returned id.
+// The method performs the following steps:
+//  1. Validates the provided Skill payload via skill.ValidatePayload().  // Changed from CreateSkill
+//  2. Sets created_at and updated_at timestamps using the configured timeProvider.
+//  3. Executes the INSERT and captures the RETURNING id clause.
+//  4. Validates the returned ID to ensure it is non-empty.
 //
 // Parameters:
-//   - ctx: context for cancellation and timeouts propagated to the database call.
-//   - skill: pointer to domain.Skill to persist. This method mutates
-//     skill.CreatedAt and skill.UpdatedAt; callers should provide a non-nil payload.
-//
-// Returns:
-//   - (string, error): the newly created skill ID on success, or a non-nil error on failure.
-//     Error cases include payload validation failure, database query/scan errors, or an
-//     unexpected empty ID returned by the database.
+//   - ctx: the context for the database operation.
+//   - skill: pointer to domain.Skill to persist. This method mutates  // Changed from CreateSkill
+//     skill.CreatedAt and skill.UpdatedAt.
 func (r *skillRepository) Create(ctx context.Context, skill *domain.Skill) (string, error) {
 	if skill == nil {
 		return "", errors.New("failed to validate skill: payload is nil")

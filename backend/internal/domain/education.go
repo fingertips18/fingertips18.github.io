@@ -120,5 +120,9 @@ func (e Education) ValidateResponse() error {
 		return errors.New("updatedAt missing")
 	}
 
+	if e.UpdatedAt.Before(e.CreatedAt) {
+		return errors.New("updatedAt before createdAt")
+	}
+
 	return nil
 }

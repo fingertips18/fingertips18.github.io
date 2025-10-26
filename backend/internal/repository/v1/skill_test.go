@@ -218,6 +218,7 @@ func TestSkillRepository_Create(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.Equal(t, fixedID, id)
+				assert.Equal(t, fixedID, test.given.skill.Id)
 				assert.Equal(t, fixedTime, test.given.skill.CreatedAt)
 				assert.Equal(t, fixedTime, test.given.skill.UpdatedAt)
 			}
@@ -262,7 +263,7 @@ func TestSkillRepository_Get(t *testing.T) {
 					m.EXPECT().QueryRow(
 						mock.Anything,
 						mock.MatchedBy(func(q string) bool { return strings.Contains(q, "SELECT") }),
-						mock.MatchedBy(func(args []interface{}) bool {
+						mock.MatchedBy(func(args []any) bool {
 							return len(args) == 1 && args[0] == existingSkill.Id
 						}),
 					).Return(&skillFakeRow{skill: &existingSkill})
@@ -290,7 +291,7 @@ func TestSkillRepository_Get(t *testing.T) {
 					m.EXPECT().QueryRow(
 						mock.Anything,
 						mock.MatchedBy(func(q string) bool { return strings.Contains(q, "SELECT") }),
-						mock.MatchedBy(func(args []interface{}) bool {
+						mock.MatchedBy(func(args []any) bool {
 							return len(args) == 1 && args[0] == existingSkill.Id
 						}),
 					).Return(&skillFakeRow{scanErr: pgx.ErrNoRows})
@@ -326,7 +327,7 @@ func TestSkillRepository_Get(t *testing.T) {
 					m.EXPECT().QueryRow(
 						mock.Anything,
 						mock.Anything,
-						mock.MatchedBy(func(args []interface{}) bool {
+						mock.MatchedBy(func(args []any) bool {
 							return len(args) == 1 && args[0] == existingSkill.Id
 						}),
 					).Return(&skillFakeRow{skill: &invalid})

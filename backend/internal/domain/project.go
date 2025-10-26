@@ -104,5 +104,9 @@ func (p Project) ValidateResponse() error {
 		return errors.New("updatedAt missing")
 	}
 
+	if p.UpdatedAt.Before(p.CreatedAt) {
+		return errors.New("updatedAt before createdAt")
+	}
+
 	return nil
 }

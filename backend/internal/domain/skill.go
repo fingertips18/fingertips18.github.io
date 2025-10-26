@@ -55,5 +55,9 @@ func (s Skill) ValidateResponse() error {
 		return errors.New("updatedAt missing")
 	}
 
+	if s.UpdatedAt.Before(s.CreatedAt) {
+		return errors.New("updatedAt before createdAt")
+	}
+
 	return nil
 }
