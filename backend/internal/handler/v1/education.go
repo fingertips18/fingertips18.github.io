@@ -413,7 +413,7 @@ func (h *educationServiceHandler) Update(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	updatedEducation := UpdateEducationRequest{
+	updatedEducation := UpdateEducationResponse{
 		Id: updatedEducationRes.Id,
 		MainSchool: SchoolPeriodDTO{
 			Link:        updatedEducationRes.MainSchool.Link,
