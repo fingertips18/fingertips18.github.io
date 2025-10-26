@@ -14,6 +14,7 @@ packages:
       EmailRepository: {}
       ProjectRepository: {}
       EducationRepository: {}
+      SkillRepository: {}
   github.com/fingertips18/fingertips18.github.io/backend/internal/handler/v1:
     interfaces:
       AnalyticsHandler: {}
