@@ -911,9 +911,6 @@ const docTemplate = `{
         "v1.UpdateEducationRequest": {
             "type": "object",
             "properties": {
-                "created_at": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "string"
                 },
@@ -929,9 +926,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/v1.SchoolPeriodDTO"
                     }
-                },
-                "updated_at": {
-                    "type": "string"
                 }
             }
         }

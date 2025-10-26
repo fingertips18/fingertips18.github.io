@@ -140,8 +140,6 @@ definitions:
     type: object
   v1.UpdateEducationRequest:
     properties:
-      created_at:
-        type: string
       id:
         type: string
       level:
@@ -153,8 +151,6 @@ definitions:
         items:
           $ref: '#/definitions/v1.SchoolPeriodDTO'
         type: array
-      updated_at:
-        type: string
     type: object
 info:
   contact: {}

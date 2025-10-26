@@ -397,7 +397,6 @@ func (h *educationServiceHandler) Update(w http.ResponseWriter, r *http.Request)
 		},
 		SchoolPeriods: schoolPeriods,
 		Level:         domain.EducationLevel(updateReq.Level),
-		CreatedAt:     updateReq.CreatedAt,
 		UpdatedAt:     time.Now(),
 	}
 
@@ -416,7 +415,7 @@ func (h *educationServiceHandler) Update(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	updatedEducation := EducationDTO{
+	updatedEducation := UpdateEducationRequest{
 		Id: updatedEducationRes.Id,
 		MainSchool: SchoolPeriodDTO{
 			Link:        updatedEducationRes.MainSchool.Link,
@@ -444,9 +443,7 @@ func (h *educationServiceHandler) Update(w http.ResponseWriter, r *http.Request)
 			}
 			return periods
 		}(),
-		Level:     string(updatedEducationRes.Level),
-		CreatedAt: updatedEducationRes.CreatedAt,
-		UpdatedAt: updatedEducationRes.UpdatedAt,
+		Level: string(updatedEducationRes.Level),
 	}
 
 	var buf bytes.Buffer

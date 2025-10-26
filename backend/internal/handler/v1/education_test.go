@@ -1122,6 +1122,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 				}
 				return periods
 			}(),
+			Projects:  []ProjectDTO{}, // Empty projects array
 			Level:     string(e.Level),
 			CreatedAt: e.CreatedAt,
 			UpdatedAt: e.UpdatedAt,
@@ -1131,9 +1132,10 @@ func TestEducationServiceHandler_List(t *testing.T) {
 	validJSON, _ := json.Marshal(educations)
 
 	type Given struct {
-		method   string
-		query    string
-		mockRepo func(m *mockRepo.MockEducationRepository)
+		method       string
+		query        string
+		mockEducRepo func(m *mockRepo.MockEducationRepository)
+		mockProjRepo func(m *mockRepo.MockProjectRepository)
 	}
 	type Expected struct {
 		code int
@@ -1148,16 +1150,21 @@ func TestEducationServiceHandler_List(t *testing.T) {
 			given: Given{
 				method: http.MethodGet,
 				query:  "",
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
+				mockEducRepo: func(m *mockRepo.MockEducationRepository) {
 					expectedFilter := domain.EducationFilter{
 						Page:          1,
 						PageSize:      10,
-						SortBy:        nil, // default: no sort
+						SortBy:        nil,
 						SortAscending: false,
 					}
 					m.EXPECT().
 						List(mock.Anything, expectedFilter).
 						Return(listResp, nil)
+				},
+				mockProjRepo: func(m *mockRepo.MockProjectRepository) {
+					m.EXPECT().
+						ListByEducationID(mock.Anything, "edu-123").
+						Return([]domain.Project{}, nil)
 				},
 			},
 			expected: Expected{
@@ -1167,9 +1174,10 @@ func TestEducationServiceHandler_List(t *testing.T) {
 		},
 		"method not allowed": {
 			given: Given{
-				method:   http.MethodPost,
-				query:    "",
-				mockRepo: nil,
+				method:       http.MethodPost,
+				query:        "",
+				mockEducRepo: nil,
+				mockProjRepo: nil,
 			},
 			expected: Expected{
 				code: http.StatusMethodNotAllowed,
@@ -1178,9 +1186,10 @@ func TestEducationServiceHandler_List(t *testing.T) {
 		},
 		"invalid sort_by": {
 			given: Given{
-				method:   http.MethodGet,
-				query:    "?sort_by=!!invalid",
-				mockRepo: nil,
+				method:       http.MethodGet,
+				query:        "?sort_by=!!invalid",
+				mockEducRepo: nil,
+				mockProjRepo: nil,
 			},
 			expected: Expected{
 				code: http.StatusBadRequest,
@@ -1191,7 +1200,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 			given: Given{
 				method: http.MethodGet,
 				query:  "?page=1&page_size=10&sort_by=created_at",
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
+				mockEducRepo: func(m *mockRepo.MockEducationRepository) {
 					sortBy := domain.CreatedAt
 					expectedFilter := domain.EducationFilter{
 						Page:          1,
@@ -1203,6 +1212,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 						List(mock.Anything, expectedFilter).
 						Return(nil, errors.New("database failure"))
 				},
+				mockProjRepo: nil, // No project repo call when education repo fails
 			},
 			expected: Expected{
 				code: http.StatusInternalServerError,
@@ -1213,7 +1223,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 			given: Given{
 				method: http.MethodGet,
 				query:  "?page=2&page_size=5&sort_by=updated_at&sort_ascending=true",
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
+				mockEducRepo: func(m *mockRepo.MockEducationRepository) {
 					sortBy := domain.UpdatedAt
 					expectedFilter := domain.EducationFilter{
 						Page:          2,
@@ -1225,6 +1235,11 @@ func TestEducationServiceHandler_List(t *testing.T) {
 						List(mock.Anything, expectedFilter).
 						Return(listResp, nil)
 				},
+				mockProjRepo: func(m *mockRepo.MockProjectRepository) {
+					m.EXPECT().
+						ListByEducationID(mock.Anything, "edu-123").
+						Return([]domain.Project{}, nil)
+				},
 			},
 			expected: Expected{
 				code: http.StatusOK,
@@ -1235,7 +1250,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 			given: Given{
 				method: http.MethodGet,
 				query:  "?sort_by=created_at",
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
+				mockEducRepo: func(m *mockRepo.MockEducationRepository) {
 					sortBy := domain.CreatedAt
 					expectedFilter := domain.EducationFilter{
 						Page:          1,
@@ -1247,6 +1262,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 						List(mock.Anything, expectedFilter).
 						Return([]domain.Education{}, nil)
 				},
+				mockProjRepo: nil, // No project repo call when list is empty
 			},
 			expected: Expected{
 				code: http.StatusOK,
@@ -1257,8 +1273,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 			given: Given{
 				method: http.MethodGet,
 				query:  "?page=0",
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
-					// When page=0 is provided, it should default to page=1
+				mockEducRepo: func(m *mockRepo.MockEducationRepository) {
 					expectedFilter := domain.EducationFilter{
 						Page:          1,
 						PageSize:      10,
@@ -1268,6 +1283,11 @@ func TestEducationServiceHandler_List(t *testing.T) {
 					m.EXPECT().
 						List(mock.Anything, expectedFilter).
 						Return(listResp, nil)
+				},
+				mockProjRepo: func(m *mockRepo.MockProjectRepository) {
+					m.EXPECT().
+						ListByEducationID(mock.Anything, "edu-123").
+						Return([]domain.Project{}, nil)
 				},
 			},
 			expected: Expected{
@@ -1279,17 +1299,21 @@ func TestEducationServiceHandler_List(t *testing.T) {
 			given: Given{
 				method: http.MethodGet,
 				query:  "?page_size=-1",
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
-					// Negative page_size should be handled gracefully (default to 10 or error)
+				mockEducRepo: func(m *mockRepo.MockEducationRepository) {
 					expectedFilter := domain.EducationFilter{
 						Page:          1,
-						PageSize:      10, // Should default to 10
+						PageSize:      10,
 						SortBy:        nil,
 						SortAscending: false,
 					}
 					m.EXPECT().
 						List(mock.Anything, expectedFilter).
 						Return(listResp, nil)
+				},
+				mockProjRepo: func(m *mockRepo.MockProjectRepository) {
+					m.EXPECT().
+						ListByEducationID(mock.Anything, "edu-123").
+						Return([]domain.Project{}, nil)
 				},
 			},
 			expected: Expected{
@@ -1301,17 +1325,21 @@ func TestEducationServiceHandler_List(t *testing.T) {
 			given: Given{
 				method: http.MethodGet,
 				query:  "?page_size=1000",
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
-					// Assuming max page_size is 100, it should be clamped
+				mockEducRepo: func(m *mockRepo.MockEducationRepository) {
 					expectedFilter := domain.EducationFilter{
 						Page:          1,
-						PageSize:      100, // Should be clamped to max (adjust based on your handler logic)
+						PageSize:      100,
 						SortBy:        nil,
 						SortAscending: false,
 					}
 					m.EXPECT().
 						List(mock.Anything, expectedFilter).
 						Return(listResp, nil)
+				},
+				mockProjRepo: func(m *mockRepo.MockProjectRepository) {
+					m.EXPECT().
+						ListByEducationID(mock.Anything, "edu-123").
+						Return([]domain.Project{}, nil)
 				},
 			},
 			expected: Expected{
@@ -1323,8 +1351,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 			given: Given{
 				method: http.MethodGet,
 				query:  "?page=invalid",
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
-					// Invalid page should default to 1
+				mockEducRepo: func(m *mockRepo.MockEducationRepository) {
 					expectedFilter := domain.EducationFilter{
 						Page:          1,
 						PageSize:      10,
@@ -1334,6 +1361,11 @@ func TestEducationServiceHandler_List(t *testing.T) {
 					m.EXPECT().
 						List(mock.Anything, expectedFilter).
 						Return(listResp, nil)
+				},
+				mockProjRepo: func(m *mockRepo.MockProjectRepository) {
+					m.EXPECT().
+						ListByEducationID(mock.Anything, "edu-123").
+						Return([]domain.Project{}, nil)
 				},
 			},
 			expected: Expected{
@@ -1345,8 +1377,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 			given: Given{
 				method: http.MethodGet,
 				query:  "?page_size=invalid",
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
-					// Invalid page_size should default to 10
+				mockEducRepo: func(m *mockRepo.MockEducationRepository) {
 					expectedFilter := domain.EducationFilter{
 						Page:          1,
 						PageSize:      10,
@@ -1356,6 +1387,11 @@ func TestEducationServiceHandler_List(t *testing.T) {
 					m.EXPECT().
 						List(mock.Anything, expectedFilter).
 						Return(listResp, nil)
+				},
+				mockProjRepo: func(m *mockRepo.MockProjectRepository) {
+					m.EXPECT().
+						ListByEducationID(mock.Anything, "edu-123").
+						Return([]domain.Project{}, nil)
 				},
 			},
 			expected: Expected{
@@ -1368,8 +1404,11 @@ func TestEducationServiceHandler_List(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			f := newEducationHandlerTestFixture(t)
-			if tt.given.mockRepo != nil {
-				tt.given.mockRepo(f.mockEducationRepo)
+			if tt.given.mockEducRepo != nil {
+				tt.given.mockEducRepo(f.mockEducationRepo)
+			}
+			if tt.given.mockProjRepo != nil {
+				tt.given.mockProjRepo(f.mockProjectRepo)
 			}
 
 			req := httptest.NewRequest(tt.given.method, "/educations"+tt.given.query, nil)
@@ -1390,6 +1429,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 			}
 
 			f.mockEducationRepo.AssertExpectations(t)
+			f.mockProjectRepo.AssertExpectations(t)
 		})
 	}
 }
@@ -1443,6 +1483,7 @@ func TestEducationServiceHandler_List_Routing(t *testing.T) {
 				}
 				return periods
 			}(),
+			Projects:  []ProjectDTO{}, // Add this field
 			Level:     string(e.Level),
 			CreatedAt: e.CreatedAt,
 			UpdatedAt: e.UpdatedAt,
@@ -1453,7 +1494,7 @@ func TestEducationServiceHandler_List_Routing(t *testing.T) {
 
 	f := newEducationHandlerTestFixture(t)
 
-	// Setup mock expectation
+	// Setup mock expectation for education repository
 	expectedFilter := domain.EducationFilter{
 		Page:          1,
 		PageSize:      10,
@@ -1463,6 +1504,11 @@ func TestEducationServiceHandler_List_Routing(t *testing.T) {
 	f.mockEducationRepo.EXPECT().
 		List(mock.Anything, expectedFilter).
 		Return(listResp, nil)
+
+	// Setup mock expectation for project repository
+	f.mockProjectRepo.EXPECT().
+		ListByEducationID(mock.Anything, "edu-123").
+		Return([]domain.Project{}, nil)
 
 	// Create request and recorder
 	req := httptest.NewRequest(http.MethodGet, "/educations", nil)
@@ -1482,4 +1528,5 @@ func TestEducationServiceHandler_List_Routing(t *testing.T) {
 	assert.JSONEq(t, string(validJSON), string(body))
 
 	f.mockEducationRepo.AssertExpectations(t)
+	f.mockProjectRepo.AssertExpectations(t) // Add this assertion
 }

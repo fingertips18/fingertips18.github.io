@@ -59,8 +59,6 @@ type UpdateEducationRequest struct {
 	MainSchool    SchoolPeriodDTO   `json:"main_school"`
 	SchoolPeriods []SchoolPeriodDTO `json:"school_periods,omitempty"`
 	Level         string            `json:"level" example:"elementary"`
-	CreatedAt     time.Time         `json:"created_at"`
-	UpdatedAt     time.Time         `json:"updated_at"`
 }
 
 type EducationDTO struct {
