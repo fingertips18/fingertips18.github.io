@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/database"
@@ -17,6 +18,7 @@ type SkillRepository interface {
 	Get(ctx context.Context, id string) (*domain.Skill, error)
 	Update(ctx context.Context, skill *domain.Skill) (*domain.Skill, error)
 	Delete(ctx context.Context, id string) error
+	List(ctx context.Context, filter domain.SkillFilter) ([]domain.Skill, error)
 }
 
 type SkillRepositoryConfig struct {
@@ -263,4 +265,108 @@ func (r *skillRepository) Delete(ctx context.Context, id string) error {
 	}
 
 	return nil
+}
+
+// List retrieves a slice of domain.Skill from the repository using the provided filter.
+//
+// Behavior and defaults:
+//   - If filter.Page <= 0 it defaults to 1.
+//   - If filter.PageSize <= 0 or > 20 it defaults to 20 (maximum page size is 20).
+//   - If filter.SortBy is nil it defaults to domain.CreatedAt.
+//   - Sort direction is ascending by default; set filter.SortAscending = false for DESC.
+//   - If filter.Category is non-nil, results are filtered by the given category.
+//
+// Query details:
+//   - The query selects columns: id, icon, hex_color, label, category, created_at, updated_at
+//     from the repository's skill table.
+//   - Category filtering is applied via a parameterized WHERE clause (uses $1, $2, ... placeholders).
+//   - ORDER BY uses the value of filter.SortBy verbatim as the column to sort on; callers must
+//     ensure it is a valid column name to avoid SQL errors.
+//   - LIMIT and OFFSET are applied for pagination (OFFSET = (Page-1) * PageSize).
+//
+// Execution and errors:
+//   - The method executes the constructed query using r.databaseAPI.Query with the accumulated args.
+//   - Rows are scanned into domain.Skill values and returned as a slice.
+//   - On query, scan, or row iteration failures the method returns a wrapped error with context
+//     ("failed to list skills", "failed to scan skill", or "row iteration error").
+//
+// Returns:
+//   - ([]domain.Skill, nil) on success.
+//   - (nil, error) on failure.
+func (r *skillRepository) List(ctx context.Context, filter domain.SkillFilter) ([]domain.Skill, error) {
+	// Set defaults if not provided
+	if filter.Page <= 0 {
+		filter.Page = 1
+	}
+	if filter.PageSize <= 0 || filter.PageSize > 20 {
+		filter.PageSize = 20
+	}
+	if filter.SortBy == nil {
+		defaultSort := domain.CreatedAt
+		filter.SortBy = &defaultSort
+	}
+
+	baseQuery := fmt.Sprintf(
+		`SELECT id, icon, hex_color, label, category, created_at, updated_at FROM %s`,
+		r.skillTable,
+	)
+	var conditions []string
+	var args []any
+	argIdx := 1
+
+	// Add optional category filter
+	if filter.Category != nil {
+		conditions = append(conditions, fmt.Sprintf("category = $%d", argIdx))
+		args = append(args, *filter.Category)
+		argIdx++
+	}
+
+	// Append WHERE clause if any filters exist
+	if len(conditions) > 0 {
+		baseQuery += " WHERE " + strings.Join(conditions, " AND ")
+	}
+
+	// Add sorting
+	sortOrder := "ASC"
+	if !filter.SortAscending {
+		sortOrder = "DESC"
+	}
+	baseQuery += fmt.Sprintf(" ORDER BY %s %s", *filter.SortBy, sortOrder)
+
+	// Add pagination
+	offset := (filter.Page - 1) * filter.PageSize
+	baseQuery += fmt.Sprintf(" LIMIT %d OFFSET %d", filter.PageSize, offset)
+
+	// Execute query
+	rows, err := r.databaseAPI.Query(ctx, baseQuery, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list skills: %w", err)
+	}
+	defer rows.Close()
+
+	var skills []domain.Skill
+	for rows.Next() {
+		var skill domain.Skill
+
+		err := rows.Scan(
+			&skill.Id,
+			&skill.Icon,
+			&skill.HexColor,
+			&skill.Label,
+			&skill.Category,
+			&skill.CreatedAt,
+			&skill.UpdatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan skill: %w", err)
+		}
+
+		skills = append(skills, skill)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("row iteration error: %w", err)
+	}
+
+	return skills, nil
 }
