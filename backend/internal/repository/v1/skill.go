@@ -9,10 +9,12 @@ import (
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/database"
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/utils"
+	"github.com/jackc/pgx/v5"
 )
 
 type SkillRepository interface {
-	Create(ctx context.Context, skill *domain.CreateSkill) (string, error)
+	Create(ctx context.Context, skill *domain.Skill) (string, error)
+	Get(ctx context.Context, id string) (*domain.Skill, error)
 }
 
 type SkillRepositoryConfig struct {
@@ -46,25 +48,23 @@ func NewSkillRepository(cfg SkillRepositoryConfig) SkillRepository {
 	}
 }
 
-// Create inserts a new skill record into the repository and returns the generated ID.
+// Create inserts a new skill row into the configured skill table and returns its ID.
 //
-// It performs the following steps:
-//  1. Validates the provided CreateSkill payload via skill.ValidatePayload().
-//  2. Generates a new ID using utils.GenerateKey().
-//  3. Sets skill.CreatedAt and skill.UpdatedAt using the repository's timeProvider.
-//  4. Executes an INSERT ... RETURNING id against the repository's skillTable and
-//     scans the returned id.
+// The method performs the following steps:
+//  1. Validates the provided Skill payload via skill.ValidatePayload().
+//  2. Sets created_at and updated_at timestamps using the configured timeProvider.
+//  3. Executes the INSERT and captures the RETURNING id clause.
+//  4. Validates the returned ID to ensure it is non-empty.
 //
 // Parameters:
-//   - ctx: context for cancellation and timeouts propagated to the database call.
-//   - skill: pointer to domain.CreateSkill to persist. This method mutates
-//     skill.CreatedAt and skill.UpdatedAt; callers should provide a non-nil payload.
-//
-// Returns:
-//   - (string, error): the newly created skill ID on success, or a non-nil error on failure.
-//     Error cases include payload validation failure, database query/scan errors, or an
-//     unexpected empty ID returned by the database.
-func (r *skillRepository) Create(ctx context.Context, skill *domain.CreateSkill) (string, error) {
+//   - ctx: the context for the database operation.
+//   - skill: pointer to domain.Skill to persist. This method mutates
+//     skill.CreatedAt and skill.UpdatedAt.
+func (r *skillRepository) Create(ctx context.Context, skill *domain.Skill) (string, error) {
+	if skill == nil {
+		return "", errors.New("failed to validate skill: payload is nil")
+	}
+
 	if err := skill.ValidatePayload(); err != nil {
 		return "", fmt.Errorf("failed to validate skill: %w", err)
 	}
@@ -105,4 +105,54 @@ func (r *skillRepository) Create(ctx context.Context, skill *domain.CreateSkill)
 	}
 
 	return returnedID, nil
+}
+
+// Get retrieves the Skill with the given id from the repository.
+// It returns a pointer to domain.Skill on success.
+// If the provided id is empty, Get returns an error indicating a missing ID.
+// If no row matches the id, the underlying pgx.ErrNoRows is wrapped and returned.
+// After scanning the database row, the returned skill is validated via
+// skill.ValidateResponse(); an error is returned if validation fails.
+// The query selects id, icon, hex_color, label, category, created_at and updated_at
+// from the repository's skill table.
+func (r *skillRepository) Get(ctx context.Context, id string) (*domain.Skill, error) {
+	if id == "" {
+		return nil, fmt.Errorf("failed to get skill: ID missing")
+	}
+
+	var skill domain.Skill
+
+	query := fmt.Sprintf(
+		`SELECT id, icon, hex_color, label, category, created_at, updated_at
+		FROM %s
+		WHERE id = $1`,
+		r.skillTable,
+	)
+
+	err := r.databaseAPI.QueryRow(
+		ctx,
+		query,
+		id,
+	).Scan(
+		&skill.Id,
+		&skill.Icon,
+		&skill.HexColor,
+		&skill.Label,
+		&skill.Category,
+		&skill.CreatedAt,
+		&skill.UpdatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("failed to get skill: %w", err)
+		}
+		return nil, fmt.Errorf("failed to scan skill: %w", err)
+	}
+
+	if err := skill.ValidateResponse(); err != nil {
+		return nil, fmt.Errorf("invalid skill returned: %w", err)
+	}
+
+	return &skill, nil
 }
