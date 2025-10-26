@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/database"
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
@@ -347,8 +348,8 @@ func (h *educationServiceHandler) Get(w http.ResponseWriter, r *http.Request, id
 // @Tags education
 // @Accept json
 // @Produce json
-// @Param education body EducationDTO true "Education payload with ID"
-// @Success 200 {object} EducationDTO
+// @Param education body UpdateEducationRequest true "Education payload with ID"
+// @Success 200 {object} UpdateEducationRequest
 // @Failure 400 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
@@ -361,7 +362,7 @@ func (h *educationServiceHandler) Update(w http.ResponseWriter, r *http.Request)
 
 	defer r.Body.Close()
 
-	var updateReq EducationDTO
+	var updateReq UpdateEducationRequest
 	if err := json.NewDecoder(r.Body).Decode(&updateReq); err != nil {
 		http.Error(w, "Invalid JSON in request body", http.StatusBadRequest)
 		return
@@ -397,7 +398,7 @@ func (h *educationServiceHandler) Update(w http.ResponseWriter, r *http.Request)
 		SchoolPeriods: schoolPeriods,
 		Level:         domain.EducationLevel(updateReq.Level),
 		CreatedAt:     updateReq.CreatedAt,
-		UpdatedAt:     updateReq.UpdatedAt,
+		UpdatedAt:     time.Now(),
 	}
 
 	if err := education.ValidatePayload(); err != nil {
@@ -579,6 +580,34 @@ func (h *educationServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	educations := make([]EducationDTO, len(educationsRes))
 	for i, e := range educationsRes {
+
+		// Fetch related projects
+		projects, err := h.projectRepo.ListByEducationID(r.Context(), e.Id)
+		if err != nil {
+			log.Printf("Failed to list projects by education ID %s: %v", e.Id, err)
+			// Projects are optional, so we can return empty array
+			projects = []domain.Project{}
+		}
+
+		// Convert to DTOs
+		projectDTOs := make([]ProjectDTO, len(projects))
+		for i, p := range projects {
+			projectDTOs[i] = ProjectDTO{
+				Id:          p.Id,
+				Preview:     p.Preview,
+				BlurHash:    p.BlurHash,
+				Title:       p.Title,
+				SubTitle:    p.SubTitle,
+				Description: p.Description,
+				Stack:       p.Stack,
+				Type:        string(p.Type),
+				Link:        p.Link,
+				EducationID: p.EducationID,
+				CreatedAt:   p.CreatedAt,
+				UpdatedAt:   p.UpdatedAt,
+			}
+		}
+
 		educations[i] = EducationDTO{
 			Id: e.Id,
 			MainSchool: SchoolPeriodDTO{
@@ -607,6 +636,7 @@ func (h *educationServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 				}
 				return periods
 			}(),
+			Projects:  projectDTOs,
 			Level:     string(e.Level),
 			CreatedAt: e.CreatedAt,
 			UpdatedAt: e.UpdatedAt,

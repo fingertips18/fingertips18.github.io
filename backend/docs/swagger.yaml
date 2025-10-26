@@ -25,6 +25,7 @@ definitions:
   v1.CreateEducationRequest:
     properties:
       level:
+        example: elementary
         type: string
       main_school:
         $ref: '#/definitions/v1.SchoolPeriodDTO'
@@ -66,6 +67,10 @@ definitions:
         type: string
       main_school:
         $ref: '#/definitions/v1.SchoolPeriodDTO'
+      projects:
+        items:
+          $ref: '#/definitions/v1.ProjectDTO'
+        type: array
       school_periods:
         items:
           $ref: '#/definitions/v1.SchoolPeriodDTO'
@@ -131,6 +136,24 @@ definitions:
         type: string
       start_date:
         example: "2020-09-01T00:00:00Z"
+        type: string
+    type: object
+  v1.UpdateEducationRequest:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      level:
+        example: elementary
+        type: string
+      main_school:
+        $ref: '#/definitions/v1.SchoolPeriodDTO'
+      school_periods:
+        items:
+          $ref: '#/definitions/v1.SchoolPeriodDTO'
+        type: array
+      updated_at:
         type: string
     type: object
 info:
@@ -222,14 +245,14 @@ paths:
         name: education
         required: true
         schema:
-          $ref: '#/definitions/v1.EducationDTO'
+          $ref: '#/definitions/v1.UpdateEducationRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/v1.EducationDTO'
+            $ref: '#/definitions/v1.UpdateEducationRequest'
         "400":
           description: Bad Request
           schema:

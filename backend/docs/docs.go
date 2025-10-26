@@ -98,7 +98,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/v1.EducationDTO"
+                            "$ref": "#/definitions/v1.UpdateEducationRequest"
                         }
                     }
                 ],
@@ -106,7 +106,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/v1.EducationDTO"
+                            "$ref": "#/definitions/v1.UpdateEducationRequest"
                         }
                     },
                     "400": {
@@ -736,7 +736,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "level": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "elementary"
                 },
                 "main_school": {
                     "$ref": "#/definitions/v1.SchoolPeriodDTO"
@@ -798,6 +799,12 @@ const docTemplate = `{
                 },
                 "main_school": {
                     "$ref": "#/definitions/v1.SchoolPeriodDTO"
+                },
+                "projects": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/v1.ProjectDTO"
+                    }
                 },
                 "school_periods": {
                     "type": "array",
@@ -898,6 +905,33 @@ const docTemplate = `{
                 "start_date": {
                     "type": "string",
                     "example": "2020-09-01T00:00:00Z"
+                }
+            }
+        },
+        "v1.UpdateEducationRequest": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "level": {
+                    "type": "string",
+                    "example": "elementary"
+                },
+                "main_school": {
+                    "$ref": "#/definitions/v1.SchoolPeriodDTO"
+                },
+                "school_periods": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/v1.SchoolPeriodDTO"
+                    }
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         }
