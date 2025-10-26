@@ -179,6 +179,13 @@ func (r *projectRepository) Get(ctx context.Context, id string) (*domain.Project
 // Validation errors or other database errors are returned (wrapped) to the
 // caller. The provided context is used for database cancellation and timeouts.
 func (r *projectRepository) Update(ctx context.Context, project *domain.Project) (*domain.Project, error) {
+	if project == nil {
+		return nil, errors.New("failed to validate project: payload is nil")
+	}
+	if project.Id == "" {
+		return nil, fmt.Errorf("failed to update project: ID missing")
+	}
+
 	if err := project.ValidatePayload(); err != nil {
 		return nil, fmt.Errorf("failed to validate project: %w", err)
 	}
@@ -198,8 +205,7 @@ func (r *projectRepository) Update(ctx context.Context, project *domain.Project)
 			stack=$7,
 			type=$8,
 			link=$9,
-			created_at=$10,
-			updated_at=$11
+			updated_at=$10
 		WHERE id=$1
 		RETURNING id, preview, blur_hash, title, sub_title, description, stack, type, link, created_at, updated_at`,
 		r.projectTable,
@@ -229,7 +235,6 @@ func (r *projectRepository) Update(ctx context.Context, project *domain.Project)
 		&updatedProject.Stack,
 		&updatedProject.Type,
 		&updatedProject.Link,
-		&updatedProject.CreatedAt,
 		&updatedProject.UpdatedAt,
 	)
 

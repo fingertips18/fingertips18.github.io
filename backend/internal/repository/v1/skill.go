@@ -51,14 +51,14 @@ func NewSkillRepository(cfg SkillRepositoryConfig) SkillRepository {
 // Create inserts a new skill row into the configured skill table and returns its ID.
 //
 // The method performs the following steps:
-//  1. Validates the provided Skill payload via skill.ValidatePayload().  // Changed from CreateSkill
+//  1. Validates the provided Skill payload via skill.ValidatePayload().
 //  2. Sets created_at and updated_at timestamps using the configured timeProvider.
 //  3. Executes the INSERT and captures the RETURNING id clause.
 //  4. Validates the returned ID to ensure it is non-empty.
 //
 // Parameters:
 //   - ctx: the context for the database operation.
-//   - skill: pointer to domain.Skill to persist. This method mutates  // Changed from CreateSkill
+//   - skill: pointer to domain.Skill to persist. This method mutates
 //     skill.CreatedAt and skill.UpdatedAt.
 func (r *skillRepository) Create(ctx context.Context, skill *domain.Skill) (string, error) {
 	if skill == nil {

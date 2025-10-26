@@ -205,6 +205,10 @@ func (r *educationRepository) Get(ctx context.Context, id string) (*domain.Educa
 // - (nil, nil) if no row with the given id was found.
 // - (nil, error) on validation, marshaling, database, or unmarshaling errors.
 func (r *educationRepository) Update(ctx context.Context, education *domain.Education) (*domain.Education, error) {
+	if education == nil {
+		return nil, errors.New("failed to validate education: payload is nil")
+	}
+
 	if education.Id == "" {
 		return nil, fmt.Errorf("failed to update education: ID missing")
 	}
