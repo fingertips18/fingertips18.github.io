@@ -717,7 +717,7 @@ func TestSkillRepository_List(t *testing.T) {
 						Query(
 							mock.Anything,
 							mock.Anything,
-							mock.MatchedBy(func(args ...any) bool {
+							mock.MatchedBy(func(args []any) bool {
 								if len(args) != 1 {
 									return false
 								}
