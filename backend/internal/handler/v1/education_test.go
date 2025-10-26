@@ -638,8 +638,8 @@ func TestEducationServiceHandler_Update(t *testing.T) {
 		UpdatedAt: time.Now(),
 	}
 
-	// Use UpdateEducationRequest instead of EducationDTO (no timestamps)
-	dto := UpdateEducationRequest{
+	// Use UpdateEducationRequest for input (no timestamps)
+	requestDTO := UpdateEducationRequest{
 		Id: existingEducation.Id,
 		MainSchool: SchoolPeriodDTO{
 			Name:        existingEducation.MainSchool.Name,
@@ -668,11 +668,44 @@ func TestEducationServiceHandler_Update(t *testing.T) {
 			return periods
 		}(),
 		Level: string(existingEducation.Level),
-		// Note: No CreatedAt or UpdatedAt fields
 	}
 
-	validBody, _ := json.Marshal(dto)
-	validResp, _ := json.Marshal(dto)
+	// Use UpdateEducationResponse for expected response (includes timestamps)
+	responseDTO := UpdateEducationResponse{
+		Id: existingEducation.Id,
+		MainSchool: SchoolPeriodDTO{
+			Name:        existingEducation.MainSchool.Name,
+			Description: existingEducation.MainSchool.Description,
+			Logo:        existingEducation.MainSchool.Logo,
+			BlurHash:    existingEducation.MainSchool.BlurHash,
+			Link:        existingEducation.MainSchool.Link,
+			Honor:       existingEducation.MainSchool.Honor,
+			StartDate:   existingEducation.MainSchool.StartDate,
+			EndDate:     existingEducation.MainSchool.EndDate,
+		},
+		SchoolPeriods: func() []SchoolPeriodDTO {
+			periods := make([]SchoolPeriodDTO, len(existingEducation.SchoolPeriods))
+			for i, p := range existingEducation.SchoolPeriods {
+				periods[i] = SchoolPeriodDTO{
+					Name:        p.Name,
+					Description: p.Description,
+					Logo:        p.Logo,
+					BlurHash:    p.BlurHash,
+					Link:        p.Link,
+					Honor:       p.Honor,
+					StartDate:   p.StartDate,
+					EndDate:     p.EndDate,
+				}
+			}
+			return periods
+		}(),
+		Level:     string(existingEducation.Level),
+		CreatedAt: existingEducation.CreatedAt,
+		UpdatedAt: existingEducation.UpdatedAt,
+	}
+
+	validBody, _ := json.Marshal(requestDTO)
+	validResp, _ := json.Marshal(responseDTO)
 
 	type Given struct {
 		method   string
@@ -731,8 +764,8 @@ func TestEducationServiceHandler_Update(t *testing.T) {
 			given: Given{
 				method: http.MethodPut,
 				body: func() string {
-					bad := dto
-					bad.MainSchool = SchoolPeriodDTO{} // fails ValidatePayload()
+					bad := requestDTO
+					bad.MainSchool = SchoolPeriodDTO{}
 					b, _ := json.Marshal(bad)
 					return string(b)
 				}(),
@@ -777,7 +810,7 @@ func TestEducationServiceHandler_Update(t *testing.T) {
 			given: Given{
 				method: http.MethodPut,
 				body: func() string {
-					large := dto
+					large := requestDTO
 					large.MainSchool.Description = strings.Repeat("A", 10_000)
 					b, _ := json.Marshal(large)
 					return string(b)
@@ -797,7 +830,7 @@ func TestEducationServiceHandler_Update(t *testing.T) {
 			given: Given{
 				method: http.MethodPut,
 				body: func() string {
-					unicode := dto
+					unicode := requestDTO
 					unicode.MainSchool.Name = "東京大学 🏫"
 					unicode.MainSchool.Description = "研究 excellence"
 					b, _ := json.Marshal(unicode)
@@ -869,8 +902,8 @@ func TestEducationServiceHandler_Update_Routing(t *testing.T) {
 		UpdatedAt:     time.Now(),
 	}
 
-	// Use UpdateEducationRequest instead of EducationDTO (no timestamps)
-	dto := UpdateEducationRequest{
+	// Request uses UpdateEducationRequest (no timestamps)
+	requestDTO := UpdateEducationRequest{
 		Id: existingEducation.Id,
 		MainSchool: SchoolPeriodDTO{
 			Name:        existingEducation.MainSchool.Name,
@@ -899,11 +932,44 @@ func TestEducationServiceHandler_Update_Routing(t *testing.T) {
 			return periods
 		}(),
 		Level: string(existingEducation.Level),
-		// Note: No CreatedAt or UpdatedAt fields
 	}
 
-	validBody, _ := json.Marshal(dto)
-	expectedResp, _ := json.Marshal(dto)
+	// Response uses UpdateEducationResponse (with timestamps)
+	responseDTO := UpdateEducationResponse{
+		Id: existingEducation.Id,
+		MainSchool: SchoolPeriodDTO{
+			Name:        existingEducation.MainSchool.Name,
+			Description: existingEducation.MainSchool.Description,
+			Logo:        existingEducation.MainSchool.Logo,
+			BlurHash:    existingEducation.MainSchool.BlurHash,
+			Link:        existingEducation.MainSchool.Link,
+			Honor:       existingEducation.MainSchool.Honor,
+			StartDate:   existingEducation.MainSchool.StartDate,
+			EndDate:     existingEducation.MainSchool.EndDate,
+		},
+		SchoolPeriods: func() []SchoolPeriodDTO {
+			periods := make([]SchoolPeriodDTO, len(existingEducation.SchoolPeriods))
+			for i, p := range existingEducation.SchoolPeriods {
+				periods[i] = SchoolPeriodDTO{
+					Name:        p.Name,
+					Description: p.Description,
+					Logo:        p.Logo,
+					BlurHash:    p.BlurHash,
+					Link:        p.Link,
+					Honor:       p.Honor,
+					StartDate:   p.StartDate,
+					EndDate:     p.EndDate,
+				}
+			}
+			return periods
+		}(),
+		Level:     string(existingEducation.Level),
+		CreatedAt: existingEducation.CreatedAt,
+		UpdatedAt: existingEducation.UpdatedAt,
+	}
+
+	validBody, _ := json.Marshal(requestDTO)
+	expectedResp, _ := json.Marshal(responseDTO)
 
 	f := newEducationHandlerTestFixture(t)
 

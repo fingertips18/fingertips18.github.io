@@ -441,7 +441,9 @@ func (h *educationServiceHandler) Update(w http.ResponseWriter, r *http.Request)
 			}
 			return periods
 		}(),
-		Level: string(updatedEducationRes.Level),
+		Level:     string(updatedEducationRes.Level),
+		CreatedAt: updatedEducationRes.CreatedAt,
+		UpdatedAt: updatedEducationRes.UpdatedAt,
 	}
 
 	var buf bytes.Buffer
