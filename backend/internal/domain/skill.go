@@ -6,7 +6,8 @@ import (
 	"time"
 )
 
-type CreateSkill struct {
+type Skill struct {
+	Id        string    `json:"id"`
 	Icon      string    `json:"icon"`
 	HexColor  string    `json:"hex_color"`
 	Label     string    `json:"label"`
@@ -15,7 +16,7 @@ type CreateSkill struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func (s CreateSkill) ValidatePayload() error {
+func (s Skill) ValidatePayload() error {
 	if s.Icon == "" {
 		return errors.New("icon missing")
 	}
@@ -31,6 +32,26 @@ func (s CreateSkill) ValidatePayload() error {
 	}
 	if s.Category == "" {
 		return errors.New("category missing")
+	}
+
+	return nil
+}
+
+func (s Skill) ValidateResponse() error {
+	if s.Id == "" {
+		return errors.New("ID missing")
+	}
+
+	if err := s.ValidatePayload(); err != nil {
+		return err
+	}
+
+	if s.CreatedAt.IsZero() {
+		return errors.New("createdAt missing")
+	}
+
+	if s.UpdatedAt.IsZero() {
+		return errors.New("updatedAt missing")
 	}
 
 	return nil

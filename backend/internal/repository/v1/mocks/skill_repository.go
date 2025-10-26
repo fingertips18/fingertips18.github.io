@@ -39,7 +39,7 @@ func (_m *MockSkillRepository) EXPECT() *MockSkillRepository_Expecter {
 }
 
 // Create provides a mock function for the type MockSkillRepository
-func (_mock *MockSkillRepository) Create(ctx context.Context, skill *domain.CreateSkill) (string, error) {
+func (_mock *MockSkillRepository) Create(ctx context.Context, skill *domain.Skill) (string, error) {
 	ret := _mock.Called(ctx, skill)
 
 	if len(ret) == 0 {
@@ -48,15 +48,15 @@ func (_mock *MockSkillRepository) Create(ctx context.Context, skill *domain.Crea
 
 	var r0 string
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.CreateSkill) (string, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.Skill) (string, error)); ok {
 		return returnFunc(ctx, skill)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.CreateSkill) string); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.Skill) string); ok {
 		r0 = returnFunc(ctx, skill)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *domain.CreateSkill) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *domain.Skill) error); ok {
 		r1 = returnFunc(ctx, skill)
 	} else {
 		r1 = ret.Error(1)
@@ -71,20 +71,20 @@ type MockSkillRepository_Create_Call struct {
 
 // Create is a helper method to define mock.On call
 //   - ctx context.Context
-//   - skill *domain.CreateSkill
+//   - skill *domain.Skill
 func (_e *MockSkillRepository_Expecter) Create(ctx interface{}, skill interface{}) *MockSkillRepository_Create_Call {
 	return &MockSkillRepository_Create_Call{Call: _e.mock.On("Create", ctx, skill)}
 }
 
-func (_c *MockSkillRepository_Create_Call) Run(run func(ctx context.Context, skill *domain.CreateSkill)) *MockSkillRepository_Create_Call {
+func (_c *MockSkillRepository_Create_Call) Run(run func(ctx context.Context, skill *domain.Skill)) *MockSkillRepository_Create_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 *domain.CreateSkill
+		var arg1 *domain.Skill
 		if args[1] != nil {
-			arg1 = args[1].(*domain.CreateSkill)
+			arg1 = args[1].(*domain.Skill)
 		}
 		run(
 			arg0,
@@ -99,7 +99,75 @@ func (_c *MockSkillRepository_Create_Call) Return(s string, err error) *MockSkil
 	return _c
 }
 
-func (_c *MockSkillRepository_Create_Call) RunAndReturn(run func(ctx context.Context, skill *domain.CreateSkill) (string, error)) *MockSkillRepository_Create_Call {
+func (_c *MockSkillRepository_Create_Call) RunAndReturn(run func(ctx context.Context, skill *domain.Skill) (string, error)) *MockSkillRepository_Create_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Get provides a mock function for the type MockSkillRepository
+func (_mock *MockSkillRepository) Get(ctx context.Context, id string) (*domain.Skill, error) {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Get")
+	}
+
+	var r0 *domain.Skill
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*domain.Skill, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *domain.Skill); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.Skill)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockSkillRepository_Get_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Get'
+type MockSkillRepository_Get_Call struct {
+	*mock.Call
+}
+
+// Get is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *MockSkillRepository_Expecter) Get(ctx interface{}, id interface{}) *MockSkillRepository_Get_Call {
+	return &MockSkillRepository_Get_Call{Call: _e.mock.On("Get", ctx, id)}
+}
+
+func (_c *MockSkillRepository_Get_Call) Run(run func(ctx context.Context, id string)) *MockSkillRepository_Get_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockSkillRepository_Get_Call) Return(skill *domain.Skill, err error) *MockSkillRepository_Get_Call {
+	_c.Call.Return(skill, err)
+	return _c
+}
+
+func (_c *MockSkillRepository_Get_Call) RunAndReturn(run func(ctx context.Context, id string) (*domain.Skill, error)) *MockSkillRepository_Get_Call {
 	_c.Call.Return(run)
 	return _c
 }
