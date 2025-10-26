@@ -123,7 +123,7 @@ func (h *educationServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 // It only supports the POST method; other methods receive a 405 Method Not Allowed.
 // The handler decodes a JSON request body into a CreateEducationRequest and
 // defers closing the request body. It maps the decoded payload to a domain.Education
-// (populating MainSchool, SchoolPeriods, Projects and Level) and calls
+// (populating MainSchool, SchoolPeriods and Level) and calls
 // h.educationRepo.Create with the request context. On success it returns a JSON
 // body containing the newly created ID (IDResponse) with
 // Content-Type "application/json" and HTTP status 201 Created. If JSON decoding
@@ -498,7 +498,7 @@ func (h *educationServiceHandler) Delete(w http.ResponseWriter, r *http.Request,
 // List handles HTTP GET requests to list education records.
 // It accepts query parameters:
 //   - "page" (int, default 1)
-//   - "page_size" (int, default 20)
+//   - "page_size" (int, default 10)
 //   - "sort_by" (validated by utils.GetQuerySortBy)
 //   - "sort_ascending" (bool, default false)
 //
@@ -575,16 +575,26 @@ func (h *educationServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Batch fetch projects for all educations
+	educationIDs := make([]string, len(educationsRes))
+	for i, e := range educationsRes {
+		educationIDs[i] = e.Id
+	}
+
+	projectsByEducation := make(map[string][]domain.Project)
+	if len(educationIDs) > 0 {
+		projectsByEducation, err = h.projectRepo.ListByEducationIDs(r.Context(), educationIDs)
+		if err != nil {
+			log.Printf("Failed to batch list projects: %v", err)
+			projectsByEducation = make(map[string][]domain.Project)
+		}
+	}
+
 	educations := make([]EducationDTO, len(educationsRes))
 	for i, e := range educationsRes {
 
-		// Fetch related projects
-		projects, err := h.projectRepo.ListByEducationID(r.Context(), e.Id)
-		if err != nil {
-			log.Printf("Failed to list projects by education ID %s: %v", e.Id, err)
-			// Projects are optional, so we can return empty array
-			projects = []domain.Project{}
-		}
+		// Get projects for this education from the batch result
+		projects := projectsByEducation[e.Id]
 
 		// Convert to DTOs
 		projectDTOs := make([]ProjectDTO, len(projects))

@@ -21,6 +21,7 @@ type ProjectRepository interface {
 	Delete(ctx context.Context, id string) error
 	List(ctx context.Context, filter domain.ProjectFilter) ([]domain.Project, error)
 	ListByEducationID(ctx context.Context, educationID string) ([]domain.Project, error)
+	ListByEducationIDs(ctx context.Context, educationIDs []string) (map[string][]domain.Project, error)
 }
 
 type ProjectRepositoryConfig struct {
@@ -418,4 +419,58 @@ func (r *projectRepository) ListByEducationID(ctx context.Context, educationID s
 	}
 
 	return projects, rows.Err()
+}
+
+// ListByEducationIDs fetches projects for multiple education IDs in a single query.
+// Returns a map where the key is the education ID and the value is a slice of projects.
+func (r *projectRepository) ListByEducationIDs(ctx context.Context, educationIDs []string) (map[string][]domain.Project, error) {
+	if len(educationIDs) == 0 {
+		return make(map[string][]domain.Project), nil
+	}
+
+	placeholders := make([]string, len(educationIDs))
+	args := make([]interface{}, len(educationIDs))
+	for i, id := range educationIDs {
+		placeholders[i] = fmt.Sprintf("$%d", i+1)
+		args[i] = id
+	}
+
+	query := fmt.Sprintf(`
+		SELECT id, preview, blur_hash, title, sub_title, description, stack, type, link, education_id, created_at, updated_at
+		FROM %s
+		WHERE education_id IN (%s)
+		ORDER BY education_id, created_at DESC
+	`, r.projectTable, strings.Join(placeholders, ", "))
+
+	rows, err := r.databaseAPI.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to batch query projects: %w", err)
+	}
+	defer rows.Close()
+
+	projectsByEducation := make(map[string][]domain.Project)
+	for _, eduID := range educationIDs {
+		projectsByEducation[eduID] = []domain.Project{}
+	}
+
+	for rows.Next() {
+		var p domain.Project
+		var educationID sql.NullString
+
+		err := rows.Scan(
+			&p.Id, &p.Preview, &p.BlurHash, &p.Title, &p.SubTitle,
+			&p.Description, &p.Stack, &p.Type, &p.Link,
+			&educationID, &p.CreatedAt, &p.UpdatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan project: %w", err)
+		}
+
+		if educationID.Valid {
+			p.EducationID = educationID.String
+			projectsByEducation[educationID.String] = append(projectsByEducation[educationID.String], p)
+		}
+	}
+
+	return projectsByEducation, rows.Err()
 }

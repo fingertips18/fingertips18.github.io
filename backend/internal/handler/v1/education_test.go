@@ -612,32 +612,40 @@ func TestEducationServiceHandler_Get_Routing(t *testing.T) {
 func TestEducationServiceHandler_Update(t *testing.T) {
 	fixedID := "edu-123"
 
-	validSchool := domain.SchoolPeriod{
-		Name:        "Harvard University",
-		Description: "Top-tier education",
-		Logo:        "logo.png",
-		BlurHash:    "hash123",
-		StartDate:   time.Date(2015, 9, 1, 0, 0, 0, 0, time.UTC),
-		EndDate:     time.Date(2019, 6, 1, 0, 0, 0, 0, time.UTC),
-	}
-
 	existingEducation := &domain.Education{
-		Id:            fixedID,
-		MainSchool:    validSchool,
-		SchoolPeriods: []domain.SchoolPeriod{validSchool},
-		Level:         domain.College,
-		CreatedAt:     time.Now().Add(-time.Hour * 24),
-		UpdatedAt:     time.Now(),
+		Id: fixedID,
+		MainSchool: domain.SchoolPeriod{
+			Name:        "Harvard University",
+			Description: "Top-tier education",
+			Logo:        "logo.png",
+			BlurHash:    "hash123",
+			StartDate:   time.Date(2015, 9, 1, 0, 0, 0, 0, time.UTC),
+			EndDate:     time.Date(2019, 6, 1, 0, 0, 0, 0, time.UTC),
+		},
+		SchoolPeriods: []domain.SchoolPeriod{
+			{
+				Name:        "Harvard University",
+				Description: "Top-tier education",
+				Logo:        "logo.png",
+				BlurHash:    "hash123",
+				StartDate:   time.Date(2015, 9, 1, 0, 0, 0, 0, time.UTC),
+				EndDate:     time.Date(2019, 6, 1, 0, 0, 0, 0, time.UTC),
+			},
+		},
+		Level:     domain.College,
+		CreatedAt: time.Now().Add(-24 * time.Hour),
+		UpdatedAt: time.Now(),
 	}
 
-	dto := EducationDTO{
+	// Use UpdateEducationRequest instead of EducationDTO (no timestamps)
+	dto := UpdateEducationRequest{
 		Id: existingEducation.Id,
 		MainSchool: SchoolPeriodDTO{
-			Link:        existingEducation.MainSchool.Link,
 			Name:        existingEducation.MainSchool.Name,
 			Description: existingEducation.MainSchool.Description,
 			Logo:        existingEducation.MainSchool.Logo,
 			BlurHash:    existingEducation.MainSchool.BlurHash,
+			Link:        existingEducation.MainSchool.Link,
 			Honor:       existingEducation.MainSchool.Honor,
 			StartDate:   existingEducation.MainSchool.StartDate,
 			EndDate:     existingEducation.MainSchool.EndDate,
@@ -646,11 +654,11 @@ func TestEducationServiceHandler_Update(t *testing.T) {
 			periods := make([]SchoolPeriodDTO, len(existingEducation.SchoolPeriods))
 			for i, p := range existingEducation.SchoolPeriods {
 				periods[i] = SchoolPeriodDTO{
-					Link:        p.Link,
 					Name:        p.Name,
 					Description: p.Description,
 					Logo:        p.Logo,
 					BlurHash:    p.BlurHash,
+					Link:        p.Link,
 					Honor:       p.Honor,
 					StartDate:   p.StartDate,
 					EndDate:     p.EndDate,
@@ -658,9 +666,8 @@ func TestEducationServiceHandler_Update(t *testing.T) {
 			}
 			return periods
 		}(),
-		Level:     string(existingEducation.Level),
-		CreatedAt: existingEducation.CreatedAt,
-		UpdatedAt: existingEducation.UpdatedAt,
+		Level: string(existingEducation.Level),
+		// Note: No CreatedAt or UpdatedAt fields
 	}
 
 	validBody, _ := json.Marshal(dto)
@@ -723,8 +730,8 @@ func TestEducationServiceHandler_Update(t *testing.T) {
 			given: Given{
 				method: http.MethodPut,
 				body: func() string {
-					bad := *existingEducation
-					bad.MainSchool = domain.SchoolPeriod{} // fails ValidatePayload()
+					bad := dto
+					bad.MainSchool = SchoolPeriodDTO{} // fails ValidatePayload()
 					b, _ := json.Marshal(bad)
 					return string(b)
 				}(),
@@ -857,11 +864,12 @@ func TestEducationServiceHandler_Update_Routing(t *testing.T) {
 		MainSchool:    validSchool,
 		SchoolPeriods: []domain.SchoolPeriod{validSchool},
 		Level:         domain.College,
-		CreatedAt:     time.Now().Add(-time.Hour * 24),
+		CreatedAt:     time.Now().Add(-24 * time.Hour),
 		UpdatedAt:     time.Now(),
 	}
 
-	dto := EducationDTO{
+	// Use UpdateEducationRequest instead of EducationDTO (no timestamps)
+	dto := UpdateEducationRequest{
 		Id: existingEducation.Id,
 		MainSchool: SchoolPeriodDTO{
 			Name:        existingEducation.MainSchool.Name,
@@ -889,9 +897,8 @@ func TestEducationServiceHandler_Update_Routing(t *testing.T) {
 			}
 			return periods
 		}(),
-		Level:     string(existingEducation.Level),
-		CreatedAt: existingEducation.CreatedAt,
-		UpdatedAt: existingEducation.UpdatedAt,
+		Level: string(existingEducation.Level),
+		// Note: No CreatedAt or UpdatedAt fields
 	}
 
 	validBody, _ := json.Marshal(dto)
@@ -1122,7 +1129,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 				}
 				return periods
 			}(),
-			Projects:  []ProjectDTO{}, // Empty projects array
+			Projects:  []ProjectDTO{},
 			Level:     string(e.Level),
 			CreatedAt: e.CreatedAt,
 			UpdatedAt: e.UpdatedAt,
@@ -1163,8 +1170,10 @@ func TestEducationServiceHandler_List(t *testing.T) {
 				},
 				mockProjRepo: func(m *mockRepo.MockProjectRepository) {
 					m.EXPECT().
-						ListByEducationID(mock.Anything, "edu-123").
-						Return([]domain.Project{}, nil)
+						ListByEducationIDs(mock.Anything, []string{"edu-123"}).
+						Return(map[string][]domain.Project{
+							"edu-123": {},
+						}, nil)
 				},
 			},
 			expected: Expected{
@@ -1212,7 +1221,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 						List(mock.Anything, expectedFilter).
 						Return(nil, errors.New("database failure"))
 				},
-				mockProjRepo: nil, // No project repo call when education repo fails
+				mockProjRepo: nil,
 			},
 			expected: Expected{
 				code: http.StatusInternalServerError,
@@ -1237,8 +1246,10 @@ func TestEducationServiceHandler_List(t *testing.T) {
 				},
 				mockProjRepo: func(m *mockRepo.MockProjectRepository) {
 					m.EXPECT().
-						ListByEducationID(mock.Anything, "edu-123").
-						Return([]domain.Project{}, nil)
+						ListByEducationIDs(mock.Anything, []string{"edu-123"}).
+						Return(map[string][]domain.Project{
+							"edu-123": {},
+						}, nil)
 				},
 			},
 			expected: Expected{
@@ -1262,7 +1273,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 						List(mock.Anything, expectedFilter).
 						Return([]domain.Education{}, nil)
 				},
-				mockProjRepo: nil, // No project repo call when list is empty
+				mockProjRepo: nil,
 			},
 			expected: Expected{
 				code: http.StatusOK,
@@ -1286,8 +1297,10 @@ func TestEducationServiceHandler_List(t *testing.T) {
 				},
 				mockProjRepo: func(m *mockRepo.MockProjectRepository) {
 					m.EXPECT().
-						ListByEducationID(mock.Anything, "edu-123").
-						Return([]domain.Project{}, nil)
+						ListByEducationIDs(mock.Anything, []string{"edu-123"}).
+						Return(map[string][]domain.Project{
+							"edu-123": {},
+						}, nil)
 				},
 			},
 			expected: Expected{
@@ -1312,8 +1325,10 @@ func TestEducationServiceHandler_List(t *testing.T) {
 				},
 				mockProjRepo: func(m *mockRepo.MockProjectRepository) {
 					m.EXPECT().
-						ListByEducationID(mock.Anything, "edu-123").
-						Return([]domain.Project{}, nil)
+						ListByEducationIDs(mock.Anything, []string{"edu-123"}).
+						Return(map[string][]domain.Project{
+							"edu-123": {},
+						}, nil)
 				},
 			},
 			expected: Expected{
@@ -1338,8 +1353,10 @@ func TestEducationServiceHandler_List(t *testing.T) {
 				},
 				mockProjRepo: func(m *mockRepo.MockProjectRepository) {
 					m.EXPECT().
-						ListByEducationID(mock.Anything, "edu-123").
-						Return([]domain.Project{}, nil)
+						ListByEducationIDs(mock.Anything, []string{"edu-123"}).
+						Return(map[string][]domain.Project{
+							"edu-123": {},
+						}, nil)
 				},
 			},
 			expected: Expected{
@@ -1364,8 +1381,10 @@ func TestEducationServiceHandler_List(t *testing.T) {
 				},
 				mockProjRepo: func(m *mockRepo.MockProjectRepository) {
 					m.EXPECT().
-						ListByEducationID(mock.Anything, "edu-123").
-						Return([]domain.Project{}, nil)
+						ListByEducationIDs(mock.Anything, []string{"edu-123"}).
+						Return(map[string][]domain.Project{
+							"edu-123": {},
+						}, nil)
 				},
 			},
 			expected: Expected{
@@ -1390,8 +1409,10 @@ func TestEducationServiceHandler_List(t *testing.T) {
 				},
 				mockProjRepo: func(m *mockRepo.MockProjectRepository) {
 					m.EXPECT().
-						ListByEducationID(mock.Anything, "edu-123").
-						Return([]domain.Project{}, nil)
+						ListByEducationIDs(mock.Anything, []string{"edu-123"}).
+						Return(map[string][]domain.Project{
+							"edu-123": {},
+						}, nil)
 				},
 			},
 			expected: Expected{
@@ -1483,7 +1504,7 @@ func TestEducationServiceHandler_List_Routing(t *testing.T) {
 				}
 				return periods
 			}(),
-			Projects:  []ProjectDTO{}, // Add this field
+			Projects:  []ProjectDTO{},
 			Level:     string(e.Level),
 			CreatedAt: e.CreatedAt,
 			UpdatedAt: e.UpdatedAt,
@@ -1505,10 +1526,12 @@ func TestEducationServiceHandler_List_Routing(t *testing.T) {
 		List(mock.Anything, expectedFilter).
 		Return(listResp, nil)
 
-	// Setup mock expectation for project repository
+		// Setup mock expectation for project repository (batch)
 	f.mockProjectRepo.EXPECT().
-		ListByEducationID(mock.Anything, "edu-123").
-		Return([]domain.Project{}, nil)
+		ListByEducationIDs(mock.Anything, []string{"edu-123"}).
+		Return(map[string][]domain.Project{
+			"edu-123": {},
+		}, nil)
 
 	// Create request and recorder
 	req := httptest.NewRequest(http.MethodGet, "/educations", nil)
@@ -1528,5 +1551,5 @@ func TestEducationServiceHandler_List_Routing(t *testing.T) {
 	assert.JSONEq(t, string(validJSON), string(body))
 
 	f.mockEducationRepo.AssertExpectations(t)
-	f.mockProjectRepo.AssertExpectations(t) // Add this assertion
+	f.mockProjectRepo.AssertExpectations(t)
 }
