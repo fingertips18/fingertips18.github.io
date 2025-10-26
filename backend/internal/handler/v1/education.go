@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/database"
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
@@ -397,7 +396,6 @@ func (h *educationServiceHandler) Update(w http.ResponseWriter, r *http.Request)
 		},
 		SchoolPeriods: schoolPeriods,
 		Level:         domain.EducationLevel(updateReq.Level),
-		UpdatedAt:     time.Now(),
 	}
 
 	if err := education.ValidatePayload(); err != nil {

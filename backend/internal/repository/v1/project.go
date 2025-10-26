@@ -429,7 +429,7 @@ func (r *projectRepository) ListByEducationIDs(ctx context.Context, educationIDs
 	}
 
 	placeholders := make([]string, len(educationIDs))
-	args := make([]interface{}, len(educationIDs))
+	args := make([]any, len(educationIDs))
 	for i, id := range educationIDs {
 		placeholders[i] = fmt.Sprintf("$%d", i+1)
 		args[i] = id
@@ -467,8 +467,10 @@ func (r *projectRepository) ListByEducationIDs(ctx context.Context, educationIDs
 		}
 
 		if educationID.Valid {
-			p.EducationID = educationID.String
-			projectsByEducation[educationID.String] = append(projectsByEducation[educationID.String], p)
+			if _, ok := projectsByEducation[educationID.String]; ok {
+				p.EducationID = educationID.String
+				projectsByEducation[educationID.String] = append(projectsByEducation[educationID.String], p)
+			}
 		}
 	}
 

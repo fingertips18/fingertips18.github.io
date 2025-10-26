@@ -314,7 +314,7 @@ func TestEducationServiceHandler_Create_Routing(t *testing.T) {
 		EndDate:     time.Date(2019, 6, 1, 0, 0, 0, 0, time.UTC),
 	}
 
-	validCreateReq := EducationDTO{
+	validCreateReq := CreateEducationRequest{
 		MainSchool:    validSchool,
 		SchoolPeriods: []SchoolPeriodDTO{validSchool},
 		Level:         "college",
@@ -569,6 +569,7 @@ func TestEducationServiceHandler_Get_Routing(t *testing.T) {
 			}
 			return periods
 		}(),
+		Projects:  []ProjectDTO{},
 		Level:     string(sampleEducation.Level),
 		CreatedAt: sampleEducation.CreatedAt,
 		UpdatedAt: sampleEducation.UpdatedAt,
