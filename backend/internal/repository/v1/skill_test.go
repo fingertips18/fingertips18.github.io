@@ -54,6 +54,15 @@ func (f *skillFakeRow) Scan(dest ...any) error {
 	}
 }
 
+// skillFakeCommandTag satisfies the CommandTag interface for Exec mocking
+type skillFakeCommandTag struct {
+	rows int64
+}
+
+func (f *skillFakeCommandTag) RowsAffected() int64 {
+	return f.rows
+}
+
 type skillRepositoryTestFixture struct {
 	t               *testing.T
 	databaseAPI     *database.MockDatabaseAPI
@@ -530,6 +539,95 @@ func TestSkillRepository_Update(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.Equal(t, test.expected.result, result)
+			}
+
+			f.databaseAPI.AssertExpectations(t)
+		})
+	}
+}
+
+func TestSkillRepository_Delete(t *testing.T) {
+	dbErr := errors.New("db exec error")
+	fixedID := "skill-123"
+
+	type Given struct {
+		id       string
+		mockExec func(m *database.MockDatabaseAPI)
+	}
+
+	type Expected struct {
+		err error
+	}
+
+	tests := map[string]struct {
+		given    Given
+		expected Expected
+	}{
+		"Successful delete": {
+			given: Given{
+				id: fixedID,
+				mockExec: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().
+						Exec(
+							mock.Anything,
+							mock.MatchedBy(func(q string) bool {
+								return strings.Contains(q, fmt.Sprintf("DELETE FROM %s", pgx.Identifier{testSkillTable}.Sanitize()))
+							}),
+							mock.Anything,
+						).
+						Return(&skillFakeCommandTag{rows: 1}, nil)
+				},
+			},
+			expected: Expected{err: nil},
+		},
+		"Database error during delete": {
+			given: Given{
+				id: fixedID,
+				mockExec: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().
+						Exec(mock.Anything, mock.Anything, mock.Anything).
+						Return(nil, dbErr)
+				},
+			},
+			expected: Expected{
+				err: fmt.Errorf("failed to delete skill: %w", dbErr),
+			},
+		},
+		"No rows affected": {
+			given: Given{
+				id: fixedID,
+				mockExec: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().
+						Exec(mock.Anything, mock.Anything, mock.Anything).
+						Return(&skillFakeCommandTag{rows: 0}, nil)
+				},
+			},
+			expected: Expected{
+				err: pgx.ErrNoRows,
+			},
+		},
+		"Delete with empty ID": {
+			given: Given{id: ""},
+			expected: Expected{
+				err: fmt.Errorf("failed to delete skill: ID missing"),
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			f := newSkillRepositoryTestFixture(t, time.Now)
+
+			if test.given.mockExec != nil {
+				test.given.mockExec(f.databaseAPI)
+			}
+
+			err := f.skillRepository.Delete(context.Background(), test.given.id)
+
+			if test.expected.err != nil {
+				assert.EqualError(t, err, test.expected.err.Error())
+			} else {
+				assert.NoError(t, err)
 			}
 
 			f.databaseAPI.AssertExpectations(t)

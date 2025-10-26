@@ -16,6 +16,7 @@ type SkillRepository interface {
 	Create(ctx context.Context, skill *domain.Skill) (string, error)
 	Get(ctx context.Context, id string) (*domain.Skill, error)
 	Update(ctx context.Context, skill *domain.Skill) (*domain.Skill, error)
+	Delete(ctx context.Context, id string) error
 }
 
 type SkillRepositoryConfig struct {
@@ -229,4 +230,37 @@ func (r *skillRepository) Update(ctx context.Context, skill *domain.Skill) (*dom
 	}
 
 	return &updatedSkill, nil
+}
+
+// Delete removes the skill with the given id from the repository's skill table.
+// It requires a non-empty id and uses the provided context for cancellation and timeouts.
+// If id is empty, Delete returns an error indicating the missing ID.
+// The method executes a DELETE statement via the repository's database API and
+// wraps any execution error. If no rows are affected by the DELETE, it returns
+// pgx.ErrNoRows to indicate that no matching record was found.
+func (r *skillRepository) Delete(ctx context.Context, id string) error {
+	if id == "" {
+		return fmt.Errorf("failed to delete skill: ID missing")
+	}
+
+	tableIdent := pgx.Identifier{r.skillTable}.Sanitize()
+	query := fmt.Sprintf("DELETE FROM %s WHERE id=$1", tableIdent)
+
+	cmdTag, err := r.databaseAPI.Exec(
+		ctx,
+		query,
+		id,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to delete skill: %w", err)
+	}
+	if cmdTag == nil {
+		return fmt.Errorf("failed to delete skill: nil command tag")
+	}
+
+	if cmdTag.RowsAffected() == 0 {
+		return pgx.ErrNoRows
+	}
+
+	return nil
 }

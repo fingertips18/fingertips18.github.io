@@ -104,6 +104,63 @@ func (_c *MockSkillRepository_Create_Call) RunAndReturn(run func(ctx context.Con
 	return _c
 }
 
+// Delete provides a mock function for the type MockSkillRepository
+func (_mock *MockSkillRepository) Delete(ctx context.Context, id string) error {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockSkillRepository_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
+type MockSkillRepository_Delete_Call struct {
+	*mock.Call
+}
+
+// Delete is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *MockSkillRepository_Expecter) Delete(ctx interface{}, id interface{}) *MockSkillRepository_Delete_Call {
+	return &MockSkillRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, id)}
+}
+
+func (_c *MockSkillRepository_Delete_Call) Run(run func(ctx context.Context, id string)) *MockSkillRepository_Delete_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockSkillRepository_Delete_Call) Return(err error) *MockSkillRepository_Delete_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockSkillRepository_Delete_Call) RunAndReturn(run func(ctx context.Context, id string) error) *MockSkillRepository_Delete_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Get provides a mock function for the type MockSkillRepository
 func (_mock *MockSkillRepository) Get(ctx context.Context, id string) (*domain.Skill, error) {
 	ret := _mock.Called(ctx, id)
@@ -168,6 +225,74 @@ func (_c *MockSkillRepository_Get_Call) Return(skill *domain.Skill, err error) *
 }
 
 func (_c *MockSkillRepository_Get_Call) RunAndReturn(run func(ctx context.Context, id string) (*domain.Skill, error)) *MockSkillRepository_Get_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Update provides a mock function for the type MockSkillRepository
+func (_mock *MockSkillRepository) Update(ctx context.Context, skill *domain.Skill) (*domain.Skill, error) {
+	ret := _mock.Called(ctx, skill)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Update")
+	}
+
+	var r0 *domain.Skill
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.Skill) (*domain.Skill, error)); ok {
+		return returnFunc(ctx, skill)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.Skill) *domain.Skill); ok {
+		r0 = returnFunc(ctx, skill)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.Skill)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *domain.Skill) error); ok {
+		r1 = returnFunc(ctx, skill)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockSkillRepository_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
+type MockSkillRepository_Update_Call struct {
+	*mock.Call
+}
+
+// Update is a helper method to define mock.On call
+//   - ctx context.Context
+//   - skill *domain.Skill
+func (_e *MockSkillRepository_Expecter) Update(ctx interface{}, skill interface{}) *MockSkillRepository_Update_Call {
+	return &MockSkillRepository_Update_Call{Call: _e.mock.On("Update", ctx, skill)}
+}
+
+func (_c *MockSkillRepository_Update_Call) Run(run func(ctx context.Context, skill *domain.Skill)) *MockSkillRepository_Update_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *domain.Skill
+		if args[1] != nil {
+			arg1 = args[1].(*domain.Skill)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockSkillRepository_Update_Call) Return(skill1 *domain.Skill, err error) *MockSkillRepository_Update_Call {
+	_c.Call.Return(skill1, err)
+	return _c
+}
+
+func (_c *MockSkillRepository_Update_Call) RunAndReturn(run func(ctx context.Context, skill *domain.Skill) (*domain.Skill, error)) *MockSkillRepository_Update_Call {
 	_c.Call.Return(run)
 	return _c
 }
