@@ -254,6 +254,9 @@ func (r *skillRepository) Delete(ctx context.Context, id string) error {
 	if err != nil {
 		return fmt.Errorf("failed to delete skill: %w", err)
 	}
+	if cmdTag == nil {
+		return fmt.Errorf("failed to delete skill: nil command tag")
+	}
 
 	if cmdTag.RowsAffected() == 0 {
 		return pgx.ErrNoRows

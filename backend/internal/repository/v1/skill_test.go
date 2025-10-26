@@ -568,7 +568,13 @@ func TestSkillRepository_Delete(t *testing.T) {
 				id: fixedID,
 				mockExec: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
-						Exec(mock.Anything, mock.Anything, mock.Anything).
+						Exec(
+							mock.Anything,
+							mock.MatchedBy(func(q string) bool {
+								return strings.Contains(q, fmt.Sprintf("DELETE FROM %s", pgx.Identifier{testSkillTable}.Sanitize()))
+							}),
+							mock.Anything,
+						).
 						Return(&skillFakeCommandTag{rows: 1}, nil)
 				},
 			},
