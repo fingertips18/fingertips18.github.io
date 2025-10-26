@@ -152,6 +152,23 @@ definitions:
           $ref: '#/definitions/v1.SchoolPeriodDTO'
         type: array
     type: object
+  v1.UpdateEducationResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      level:
+        type: string
+      main_school:
+        $ref: '#/definitions/v1.SchoolPeriodDTO'
+      school_periods:
+        items:
+          $ref: '#/definitions/v1.SchoolPeriodDTO'
+        type: array
+      updated_at:
+        type: string
+    type: object
 info:
   contact: {}
   description: This API powers the portfolio platform, offering endpoints to manage
@@ -248,7 +265,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/v1.UpdateEducationRequest'
+            $ref: '#/definitions/v1.UpdateEducationResponse'
         "400":
           description: Bad Request
           schema:

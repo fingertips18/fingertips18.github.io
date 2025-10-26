@@ -349,7 +349,7 @@ func (h *educationServiceHandler) Get(w http.ResponseWriter, r *http.Request, id
 // @Accept json
 // @Produce json
 // @Param education body UpdateEducationRequest true "Education payload with ID"
-// @Success 200 {object} UpdateEducationRequest
+// @Success 200 {object} UpdateEducationResponse
 // @Failure 400 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse

@@ -98,7 +98,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/v1.UpdateEducationRequest"
+                            "$ref": "#/definitions/v1.UpdateEducationResponse"
                         }
                     },
                     "400": {
@@ -918,6 +918,32 @@
                     "items": {
                         "$ref": "#/definitions/v1.SchoolPeriodDTO"
                     }
+                }
+            }
+        },
+        "v1.UpdateEducationResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "level": {
+                    "type": "string"
+                },
+                "main_school": {
+                    "$ref": "#/definitions/v1.SchoolPeriodDTO"
+                },
+                "school_periods": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/v1.SchoolPeriodDTO"
+                    }
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         }
