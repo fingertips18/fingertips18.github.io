@@ -12,7 +12,7 @@ import (
 )
 
 type SkillRepository interface {
-	Create(ctx context.Context, education *domain.CreateSkill) (string, error)
+	Create(ctx context.Context, skill *domain.CreateSkill) (string, error)
 }
 
 type SkillRepositoryConfig struct {
