@@ -15,6 +15,7 @@ import (
 type SkillRepository interface {
 	Create(ctx context.Context, skill *domain.Skill) (string, error)
 	Get(ctx context.Context, id string) (*domain.Skill, error)
+	Update(ctx context.Context, skill *domain.Skill) (*domain.Skill, error)
 }
 
 type SkillRepositoryConfig struct {
@@ -75,12 +76,13 @@ func (r *skillRepository) Create(ctx context.Context, skill *domain.Skill) (stri
 	skill.CreatedAt = now
 	skill.UpdatedAt = now
 
+	tableIdent := pgx.Identifier{r.skillTable}.Sanitize()
 	query := fmt.Sprintf(
 		`INSERT INTO %s
 		(id, icon, hex_color, label, category, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
 		RETURNING id`,
-		r.skillTable,
+		tableIdent,
 	)
 
 	var returnedID string
@@ -122,11 +124,12 @@ func (r *skillRepository) Get(ctx context.Context, id string) (*domain.Skill, er
 
 	var skill domain.Skill
 
+	tableIdent := pgx.Identifier{r.skillTable}.Sanitize()
 	query := fmt.Sprintf(
 		`SELECT id, icon, hex_color, label, category, created_at, updated_at
 		FROM %s
 		WHERE id = $1`,
-		r.skillTable,
+		tableIdent,
 	)
 
 	err := r.databaseAPI.QueryRow(
@@ -155,4 +158,75 @@ func (r *skillRepository) Get(ctx context.Context, id string) (*domain.Skill, er
 	}
 
 	return &skill, nil
+}
+
+// Update updates an existing Skill in the repository. It validates the provided
+// skill (ensuring the payload is non-nil, the Id is present, and ValidatePayload
+// succeeds), sets the UpdatedAt timestamp using the repository's timeProvider,
+// and performs an SQL UPDATE of the icon, hex_color, label, category and
+// updated_at columns. The updated row is returned as a domain.Skill populated
+// from the database (including created_at and updated_at). If no row matches
+// the given Id, (nil, nil) is returned to indicate "not found". Any validation
+// or database error is returned wrapped. The provided context is used for the
+// database operation.
+func (r *skillRepository) Update(ctx context.Context, skill *domain.Skill) (*domain.Skill, error) {
+	if skill == nil {
+		return nil, errors.New("failed to validate skill: payload is nil")
+	}
+	if skill.Id == "" {
+		return nil, fmt.Errorf("failed to update skill: ID missing")
+	}
+
+	if err := skill.ValidatePayload(); err != nil {
+		return nil, fmt.Errorf("failed to validate skill: %w", err)
+	}
+
+	updatedAt := r.timeProvider()
+
+	var updatedSkill domain.Skill
+
+	tableIdent := pgx.Identifier{r.skillTable}.Sanitize()
+	query := fmt.Sprintf(
+		`UPDATE %s
+		SET icon=$2,
+			hex_color=$3,
+			label=$4,
+			category=$5,
+			updated_at=$6
+		WHERE id=$1
+		RETURNING id, icon, hex_color, label, category, created_at, updated_at`,
+		tableIdent,
+	)
+
+	err := r.databaseAPI.QueryRow(
+		ctx,
+		query,
+		skill.Id,
+		skill.Icon,
+		skill.HexColor,
+		skill.Label,
+		skill.Category,
+		updatedAt,
+	).Scan(
+		&updatedSkill.Id,
+		&updatedSkill.Icon,
+		&updatedSkill.HexColor,
+		&updatedSkill.Label,
+		&updatedSkill.Category,
+		&updatedSkill.CreatedAt,
+		&updatedSkill.UpdatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to update skill: %w", err)
+	}
+
+	if err := updatedSkill.ValidateResponse(); err != nil {
+		return nil, fmt.Errorf("invalid skill returned: %w", err)
+	}
+
+	return &updatedSkill, nil
 }
