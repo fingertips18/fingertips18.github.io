@@ -24,10 +24,9 @@ func (s Skill) ValidatePayload() error {
 	}
 	if s.HexColor == "" {
 		return errors.New("hex color missing")
-	} else {
-		if !hexColorRegex.MatchString(s.HexColor) {
-			return errors.New("hex color must be in format #RGB or #RRGGBB")
-		}
+	}
+	if !hexColorRegex.MatchString(s.HexColor) {
+		return errors.New("hex color must be in format #RGB or #RRGGBB")
 	}
 	if s.Label == "" {
 		return errors.New("label missing")

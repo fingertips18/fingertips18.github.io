@@ -67,6 +67,10 @@ func NewSkillRepository(cfg SkillRepositoryConfig) SkillRepository {
 //     Error cases include payload validation failure, database query/scan errors, or an
 //     unexpected empty ID returned by the database.
 func (r *skillRepository) Create(ctx context.Context, skill *domain.Skill) (string, error) {
+	if skill == nil {
+		return "", errors.New("failed to validate skill: payload is nil")
+	}
+
 	if err := skill.ValidatePayload(); err != nil {
 		return "", fmt.Errorf("failed to validate skill: %w", err)
 	}

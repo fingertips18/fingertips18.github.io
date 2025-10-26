@@ -69,6 +69,10 @@ func NewProjectRepository(cfg ProjectRepositoryConfig) ProjectRepository {
 // Returns the new project ID on success. Returns an error if validation fails, the database query fails,
 // or the database returns an empty/missing ID.
 func (r *projectRepository) Create(ctx context.Context, project *domain.Project) (string, error) {
+	if project == nil {
+		return "", errors.New("failed to validate project: payload is nil")
+	}
+
 	if err := project.ValidatePayload(); err != nil {
 		return "", fmt.Errorf("failed to validate project: %w", err)
 	}

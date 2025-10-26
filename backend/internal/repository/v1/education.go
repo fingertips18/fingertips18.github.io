@@ -62,6 +62,10 @@ func NewEducationRepository(cfg EducationRepositoryConfig) EducationRepository {
 // JSON marshaling, database insertion, or returned-ID verification fails. The provided
 // education object's CreatedAt and UpdatedAt fields are updated when the method succeeds.
 func (r *educationRepository) Create(ctx context.Context, education *domain.Education) (string, error) {
+	if education == nil {
+		return "", errors.New("failed to validate education: payload is nil")
+	}
+
 	if err := education.ValidatePayload(); err != nil {
 		return "", fmt.Errorf("failed to validate education: %w", err)
 	}
