@@ -122,7 +122,7 @@ func (h *educationServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 // It only supports the POST method; other methods receive a 405 Method Not Allowed.
 // The handler decodes a JSON request body into a CreateEducationRequest and
 // defers closing the request body. It maps the decoded payload to a domain.Education
-// (populating MainSchool, SchoolPeriods, Projects and Level) and calls
+// (populating MainSchool, SchoolPeriods and Level) and calls
 // h.educationRepo.Create with the request context. On success it returns a JSON
 // body containing the newly created ID (IDResponse) with
 // Content-Type "application/json" and HTTP status 201 Created. If JSON decoding
@@ -347,8 +347,8 @@ func (h *educationServiceHandler) Get(w http.ResponseWriter, r *http.Request, id
 // @Tags education
 // @Accept json
 // @Produce json
-// @Param education body EducationDTO true "Education payload with ID"
-// @Success 200 {object} EducationDTO
+// @Param education body UpdateEducationRequest true "Education payload with ID"
+// @Success 200 {object} UpdateEducationResponse
 // @Failure 400 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
@@ -361,7 +361,7 @@ func (h *educationServiceHandler) Update(w http.ResponseWriter, r *http.Request)
 
 	defer r.Body.Close()
 
-	var updateReq EducationDTO
+	var updateReq UpdateEducationRequest
 	if err := json.NewDecoder(r.Body).Decode(&updateReq); err != nil {
 		http.Error(w, "Invalid JSON in request body", http.StatusBadRequest)
 		return
@@ -396,8 +396,6 @@ func (h *educationServiceHandler) Update(w http.ResponseWriter, r *http.Request)
 		},
 		SchoolPeriods: schoolPeriods,
 		Level:         domain.EducationLevel(updateReq.Level),
-		CreatedAt:     updateReq.CreatedAt,
-		UpdatedAt:     updateReq.UpdatedAt,
 	}
 
 	if err := education.ValidatePayload(); err != nil {
@@ -415,7 +413,7 @@ func (h *educationServiceHandler) Update(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	updatedEducation := EducationDTO{
+	updatedEducation := UpdateEducationResponse{
 		Id: updatedEducationRes.Id,
 		MainSchool: SchoolPeriodDTO{
 			Link:        updatedEducationRes.MainSchool.Link,
@@ -500,7 +498,7 @@ func (h *educationServiceHandler) Delete(w http.ResponseWriter, r *http.Request,
 // List handles HTTP GET requests to list education records.
 // It accepts query parameters:
 //   - "page" (int, default 1)
-//   - "page_size" (int, default 20)
+//   - "page_size" (int, default 10)
 //   - "sort_by" (validated by utils.GetQuerySortBy)
 //   - "sort_ascending" (bool, default false)
 //
@@ -577,8 +575,46 @@ func (h *educationServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Batch fetch projects for all educations
+	educationIDs := make([]string, len(educationsRes))
+	for i, e := range educationsRes {
+		educationIDs[i] = e.Id
+	}
+
+	projectsByEducation := make(map[string][]domain.Project)
+	if len(educationIDs) > 0 {
+		projectsByEducation, err = h.projectRepo.ListByEducationIDs(r.Context(), educationIDs)
+		if err != nil {
+			log.Printf("Failed to batch list projects: %v", err)
+			projectsByEducation = make(map[string][]domain.Project)
+		}
+	}
+
 	educations := make([]EducationDTO, len(educationsRes))
 	for i, e := range educationsRes {
+
+		// Get projects for this education from the batch result
+		projects := projectsByEducation[e.Id]
+
+		// Convert to DTOs
+		projectDTOs := make([]ProjectDTO, len(projects))
+		for i, p := range projects {
+			projectDTOs[i] = ProjectDTO{
+				Id:          p.Id,
+				Preview:     p.Preview,
+				BlurHash:    p.BlurHash,
+				Title:       p.Title,
+				SubTitle:    p.SubTitle,
+				Description: p.Description,
+				Stack:       p.Stack,
+				Type:        string(p.Type),
+				Link:        p.Link,
+				EducationID: p.EducationID,
+				CreatedAt:   p.CreatedAt,
+				UpdatedAt:   p.UpdatedAt,
+			}
+		}
+
 		educations[i] = EducationDTO{
 			Id: e.Id,
 			MainSchool: SchoolPeriodDTO{
@@ -607,6 +643,7 @@ func (h *educationServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 				}
 				return periods
 			}(),
+			Projects:  projectDTOs,
 			Level:     string(e.Level),
 			CreatedAt: e.CreatedAt,
 			UpdatedAt: e.UpdatedAt,

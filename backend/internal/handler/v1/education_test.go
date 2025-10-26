@@ -314,7 +314,7 @@ func TestEducationServiceHandler_Create_Routing(t *testing.T) {
 		EndDate:     time.Date(2019, 6, 1, 0, 0, 0, 0, time.UTC),
 	}
 
-	validCreateReq := EducationDTO{
+	validCreateReq := CreateEducationRequest{
 		MainSchool:    validSchool,
 		SchoolPeriods: []SchoolPeriodDTO{validSchool},
 		Level:         "college",
@@ -569,6 +569,7 @@ func TestEducationServiceHandler_Get_Routing(t *testing.T) {
 			}
 			return periods
 		}(),
+		Projects:  []ProjectDTO{},
 		Level:     string(sampleEducation.Level),
 		CreatedAt: sampleEducation.CreatedAt,
 		UpdatedAt: sampleEducation.UpdatedAt,
@@ -612,32 +613,40 @@ func TestEducationServiceHandler_Get_Routing(t *testing.T) {
 func TestEducationServiceHandler_Update(t *testing.T) {
 	fixedID := "edu-123"
 
-	validSchool := domain.SchoolPeriod{
-		Name:        "Harvard University",
-		Description: "Top-tier education",
-		Logo:        "logo.png",
-		BlurHash:    "hash123",
-		StartDate:   time.Date(2015, 9, 1, 0, 0, 0, 0, time.UTC),
-		EndDate:     time.Date(2019, 6, 1, 0, 0, 0, 0, time.UTC),
-	}
-
 	existingEducation := &domain.Education{
-		Id:            fixedID,
-		MainSchool:    validSchool,
-		SchoolPeriods: []domain.SchoolPeriod{validSchool},
-		Level:         domain.College,
-		CreatedAt:     time.Now().Add(-time.Hour * 24),
-		UpdatedAt:     time.Now(),
+		Id: fixedID,
+		MainSchool: domain.SchoolPeriod{
+			Name:        "Harvard University",
+			Description: "Top-tier education",
+			Logo:        "logo.png",
+			BlurHash:    "hash123",
+			StartDate:   time.Date(2015, 9, 1, 0, 0, 0, 0, time.UTC),
+			EndDate:     time.Date(2019, 6, 1, 0, 0, 0, 0, time.UTC),
+		},
+		SchoolPeriods: []domain.SchoolPeriod{
+			{
+				Name:        "Harvard University",
+				Description: "Top-tier education",
+				Logo:        "logo.png",
+				BlurHash:    "hash123",
+				StartDate:   time.Date(2015, 9, 1, 0, 0, 0, 0, time.UTC),
+				EndDate:     time.Date(2019, 6, 1, 0, 0, 0, 0, time.UTC),
+			},
+		},
+		Level:     domain.College,
+		CreatedAt: time.Now().Add(-24 * time.Hour),
+		UpdatedAt: time.Now(),
 	}
 
-	dto := EducationDTO{
+	// Use UpdateEducationRequest for input (no timestamps)
+	requestDTO := UpdateEducationRequest{
 		Id: existingEducation.Id,
 		MainSchool: SchoolPeriodDTO{
-			Link:        existingEducation.MainSchool.Link,
 			Name:        existingEducation.MainSchool.Name,
 			Description: existingEducation.MainSchool.Description,
 			Logo:        existingEducation.MainSchool.Logo,
 			BlurHash:    existingEducation.MainSchool.BlurHash,
+			Link:        existingEducation.MainSchool.Link,
 			Honor:       existingEducation.MainSchool.Honor,
 			StartDate:   existingEducation.MainSchool.StartDate,
 			EndDate:     existingEducation.MainSchool.EndDate,
@@ -646,11 +655,43 @@ func TestEducationServiceHandler_Update(t *testing.T) {
 			periods := make([]SchoolPeriodDTO, len(existingEducation.SchoolPeriods))
 			for i, p := range existingEducation.SchoolPeriods {
 				periods[i] = SchoolPeriodDTO{
-					Link:        p.Link,
 					Name:        p.Name,
 					Description: p.Description,
 					Logo:        p.Logo,
 					BlurHash:    p.BlurHash,
+					Link:        p.Link,
+					Honor:       p.Honor,
+					StartDate:   p.StartDate,
+					EndDate:     p.EndDate,
+				}
+			}
+			return periods
+		}(),
+		Level: string(existingEducation.Level),
+	}
+
+	// Use UpdateEducationResponse for expected response (includes timestamps)
+	responseDTO := UpdateEducationResponse{
+		Id: existingEducation.Id,
+		MainSchool: SchoolPeriodDTO{
+			Name:        existingEducation.MainSchool.Name,
+			Description: existingEducation.MainSchool.Description,
+			Logo:        existingEducation.MainSchool.Logo,
+			BlurHash:    existingEducation.MainSchool.BlurHash,
+			Link:        existingEducation.MainSchool.Link,
+			Honor:       existingEducation.MainSchool.Honor,
+			StartDate:   existingEducation.MainSchool.StartDate,
+			EndDate:     existingEducation.MainSchool.EndDate,
+		},
+		SchoolPeriods: func() []SchoolPeriodDTO {
+			periods := make([]SchoolPeriodDTO, len(existingEducation.SchoolPeriods))
+			for i, p := range existingEducation.SchoolPeriods {
+				periods[i] = SchoolPeriodDTO{
+					Name:        p.Name,
+					Description: p.Description,
+					Logo:        p.Logo,
+					BlurHash:    p.BlurHash,
+					Link:        p.Link,
 					Honor:       p.Honor,
 					StartDate:   p.StartDate,
 					EndDate:     p.EndDate,
@@ -663,8 +704,8 @@ func TestEducationServiceHandler_Update(t *testing.T) {
 		UpdatedAt: existingEducation.UpdatedAt,
 	}
 
-	validBody, _ := json.Marshal(dto)
-	validResp, _ := json.Marshal(dto)
+	validBody, _ := json.Marshal(requestDTO)
+	validResp, _ := json.Marshal(responseDTO)
 
 	type Given struct {
 		method   string
@@ -723,8 +764,8 @@ func TestEducationServiceHandler_Update(t *testing.T) {
 			given: Given{
 				method: http.MethodPut,
 				body: func() string {
-					bad := *existingEducation
-					bad.MainSchool = domain.SchoolPeriod{} // fails ValidatePayload()
+					bad := requestDTO
+					bad.MainSchool = SchoolPeriodDTO{}
 					b, _ := json.Marshal(bad)
 					return string(b)
 				}(),
@@ -769,7 +810,7 @@ func TestEducationServiceHandler_Update(t *testing.T) {
 			given: Given{
 				method: http.MethodPut,
 				body: func() string {
-					large := dto
+					large := requestDTO
 					large.MainSchool.Description = strings.Repeat("A", 10_000)
 					b, _ := json.Marshal(large)
 					return string(b)
@@ -789,7 +830,7 @@ func TestEducationServiceHandler_Update(t *testing.T) {
 			given: Given{
 				method: http.MethodPut,
 				body: func() string {
-					unicode := dto
+					unicode := requestDTO
 					unicode.MainSchool.Name = "東京大学 🏫"
 					unicode.MainSchool.Description = "研究 excellence"
 					b, _ := json.Marshal(unicode)
@@ -857,11 +898,44 @@ func TestEducationServiceHandler_Update_Routing(t *testing.T) {
 		MainSchool:    validSchool,
 		SchoolPeriods: []domain.SchoolPeriod{validSchool},
 		Level:         domain.College,
-		CreatedAt:     time.Now().Add(-time.Hour * 24),
+		CreatedAt:     time.Now().Add(-24 * time.Hour),
 		UpdatedAt:     time.Now(),
 	}
 
-	dto := EducationDTO{
+	// Request uses UpdateEducationRequest (no timestamps)
+	requestDTO := UpdateEducationRequest{
+		Id: existingEducation.Id,
+		MainSchool: SchoolPeriodDTO{
+			Name:        existingEducation.MainSchool.Name,
+			Description: existingEducation.MainSchool.Description,
+			Logo:        existingEducation.MainSchool.Logo,
+			BlurHash:    existingEducation.MainSchool.BlurHash,
+			Link:        existingEducation.MainSchool.Link,
+			Honor:       existingEducation.MainSchool.Honor,
+			StartDate:   existingEducation.MainSchool.StartDate,
+			EndDate:     existingEducation.MainSchool.EndDate,
+		},
+		SchoolPeriods: func() []SchoolPeriodDTO {
+			periods := make([]SchoolPeriodDTO, len(existingEducation.SchoolPeriods))
+			for i, p := range existingEducation.SchoolPeriods {
+				periods[i] = SchoolPeriodDTO{
+					Name:        p.Name,
+					Description: p.Description,
+					Logo:        p.Logo,
+					BlurHash:    p.BlurHash,
+					Link:        p.Link,
+					Honor:       p.Honor,
+					StartDate:   p.StartDate,
+					EndDate:     p.EndDate,
+				}
+			}
+			return periods
+		}(),
+		Level: string(existingEducation.Level),
+	}
+
+	// Response uses UpdateEducationResponse (with timestamps)
+	responseDTO := UpdateEducationResponse{
 		Id: existingEducation.Id,
 		MainSchool: SchoolPeriodDTO{
 			Name:        existingEducation.MainSchool.Name,
@@ -894,8 +968,8 @@ func TestEducationServiceHandler_Update_Routing(t *testing.T) {
 		UpdatedAt: existingEducation.UpdatedAt,
 	}
 
-	validBody, _ := json.Marshal(dto)
-	expectedResp, _ := json.Marshal(dto)
+	validBody, _ := json.Marshal(requestDTO)
+	expectedResp, _ := json.Marshal(responseDTO)
 
 	f := newEducationHandlerTestFixture(t)
 
@@ -1122,6 +1196,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 				}
 				return periods
 			}(),
+			Projects:  []ProjectDTO{},
 			Level:     string(e.Level),
 			CreatedAt: e.CreatedAt,
 			UpdatedAt: e.UpdatedAt,
@@ -1131,9 +1206,10 @@ func TestEducationServiceHandler_List(t *testing.T) {
 	validJSON, _ := json.Marshal(educations)
 
 	type Given struct {
-		method   string
-		query    string
-		mockRepo func(m *mockRepo.MockEducationRepository)
+		method       string
+		query        string
+		mockEducRepo func(m *mockRepo.MockEducationRepository)
+		mockProjRepo func(m *mockRepo.MockProjectRepository)
 	}
 	type Expected struct {
 		code int
@@ -1148,16 +1224,23 @@ func TestEducationServiceHandler_List(t *testing.T) {
 			given: Given{
 				method: http.MethodGet,
 				query:  "",
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
+				mockEducRepo: func(m *mockRepo.MockEducationRepository) {
 					expectedFilter := domain.EducationFilter{
 						Page:          1,
 						PageSize:      10,
-						SortBy:        nil, // default: no sort
+						SortBy:        nil,
 						SortAscending: false,
 					}
 					m.EXPECT().
 						List(mock.Anything, expectedFilter).
 						Return(listResp, nil)
+				},
+				mockProjRepo: func(m *mockRepo.MockProjectRepository) {
+					m.EXPECT().
+						ListByEducationIDs(mock.Anything, []string{"edu-123"}).
+						Return(map[string][]domain.Project{
+							"edu-123": {},
+						}, nil)
 				},
 			},
 			expected: Expected{
@@ -1167,9 +1250,10 @@ func TestEducationServiceHandler_List(t *testing.T) {
 		},
 		"method not allowed": {
 			given: Given{
-				method:   http.MethodPost,
-				query:    "",
-				mockRepo: nil,
+				method:       http.MethodPost,
+				query:        "",
+				mockEducRepo: nil,
+				mockProjRepo: nil,
 			},
 			expected: Expected{
 				code: http.StatusMethodNotAllowed,
@@ -1178,9 +1262,10 @@ func TestEducationServiceHandler_List(t *testing.T) {
 		},
 		"invalid sort_by": {
 			given: Given{
-				method:   http.MethodGet,
-				query:    "?sort_by=!!invalid",
-				mockRepo: nil,
+				method:       http.MethodGet,
+				query:        "?sort_by=!!invalid",
+				mockEducRepo: nil,
+				mockProjRepo: nil,
 			},
 			expected: Expected{
 				code: http.StatusBadRequest,
@@ -1191,7 +1276,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 			given: Given{
 				method: http.MethodGet,
 				query:  "?page=1&page_size=10&sort_by=created_at",
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
+				mockEducRepo: func(m *mockRepo.MockEducationRepository) {
 					sortBy := domain.CreatedAt
 					expectedFilter := domain.EducationFilter{
 						Page:          1,
@@ -1203,6 +1288,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 						List(mock.Anything, expectedFilter).
 						Return(nil, errors.New("database failure"))
 				},
+				mockProjRepo: nil,
 			},
 			expected: Expected{
 				code: http.StatusInternalServerError,
@@ -1213,7 +1299,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 			given: Given{
 				method: http.MethodGet,
 				query:  "?page=2&page_size=5&sort_by=updated_at&sort_ascending=true",
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
+				mockEducRepo: func(m *mockRepo.MockEducationRepository) {
 					sortBy := domain.UpdatedAt
 					expectedFilter := domain.EducationFilter{
 						Page:          2,
@@ -1225,6 +1311,13 @@ func TestEducationServiceHandler_List(t *testing.T) {
 						List(mock.Anything, expectedFilter).
 						Return(listResp, nil)
 				},
+				mockProjRepo: func(m *mockRepo.MockProjectRepository) {
+					m.EXPECT().
+						ListByEducationIDs(mock.Anything, []string{"edu-123"}).
+						Return(map[string][]domain.Project{
+							"edu-123": {},
+						}, nil)
+				},
 			},
 			expected: Expected{
 				code: http.StatusOK,
@@ -1235,7 +1328,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 			given: Given{
 				method: http.MethodGet,
 				query:  "?sort_by=created_at",
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
+				mockEducRepo: func(m *mockRepo.MockEducationRepository) {
 					sortBy := domain.CreatedAt
 					expectedFilter := domain.EducationFilter{
 						Page:          1,
@@ -1247,6 +1340,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 						List(mock.Anything, expectedFilter).
 						Return([]domain.Education{}, nil)
 				},
+				mockProjRepo: nil,
 			},
 			expected: Expected{
 				code: http.StatusOK,
@@ -1257,8 +1351,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 			given: Given{
 				method: http.MethodGet,
 				query:  "?page=0",
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
-					// When page=0 is provided, it should default to page=1
+				mockEducRepo: func(m *mockRepo.MockEducationRepository) {
 					expectedFilter := domain.EducationFilter{
 						Page:          1,
 						PageSize:      10,
@@ -1268,6 +1361,13 @@ func TestEducationServiceHandler_List(t *testing.T) {
 					m.EXPECT().
 						List(mock.Anything, expectedFilter).
 						Return(listResp, nil)
+				},
+				mockProjRepo: func(m *mockRepo.MockProjectRepository) {
+					m.EXPECT().
+						ListByEducationIDs(mock.Anything, []string{"edu-123"}).
+						Return(map[string][]domain.Project{
+							"edu-123": {},
+						}, nil)
 				},
 			},
 			expected: Expected{
@@ -1279,17 +1379,23 @@ func TestEducationServiceHandler_List(t *testing.T) {
 			given: Given{
 				method: http.MethodGet,
 				query:  "?page_size=-1",
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
-					// Negative page_size should be handled gracefully (default to 10 or error)
+				mockEducRepo: func(m *mockRepo.MockEducationRepository) {
 					expectedFilter := domain.EducationFilter{
 						Page:          1,
-						PageSize:      10, // Should default to 10
+						PageSize:      10,
 						SortBy:        nil,
 						SortAscending: false,
 					}
 					m.EXPECT().
 						List(mock.Anything, expectedFilter).
 						Return(listResp, nil)
+				},
+				mockProjRepo: func(m *mockRepo.MockProjectRepository) {
+					m.EXPECT().
+						ListByEducationIDs(mock.Anything, []string{"edu-123"}).
+						Return(map[string][]domain.Project{
+							"edu-123": {},
+						}, nil)
 				},
 			},
 			expected: Expected{
@@ -1301,17 +1407,23 @@ func TestEducationServiceHandler_List(t *testing.T) {
 			given: Given{
 				method: http.MethodGet,
 				query:  "?page_size=1000",
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
-					// Assuming max page_size is 100, it should be clamped
+				mockEducRepo: func(m *mockRepo.MockEducationRepository) {
 					expectedFilter := domain.EducationFilter{
 						Page:          1,
-						PageSize:      100, // Should be clamped to max (adjust based on your handler logic)
+						PageSize:      100,
 						SortBy:        nil,
 						SortAscending: false,
 					}
 					m.EXPECT().
 						List(mock.Anything, expectedFilter).
 						Return(listResp, nil)
+				},
+				mockProjRepo: func(m *mockRepo.MockProjectRepository) {
+					m.EXPECT().
+						ListByEducationIDs(mock.Anything, []string{"edu-123"}).
+						Return(map[string][]domain.Project{
+							"edu-123": {},
+						}, nil)
 				},
 			},
 			expected: Expected{
@@ -1323,8 +1435,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 			given: Given{
 				method: http.MethodGet,
 				query:  "?page=invalid",
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
-					// Invalid page should default to 1
+				mockEducRepo: func(m *mockRepo.MockEducationRepository) {
 					expectedFilter := domain.EducationFilter{
 						Page:          1,
 						PageSize:      10,
@@ -1334,6 +1445,13 @@ func TestEducationServiceHandler_List(t *testing.T) {
 					m.EXPECT().
 						List(mock.Anything, expectedFilter).
 						Return(listResp, nil)
+				},
+				mockProjRepo: func(m *mockRepo.MockProjectRepository) {
+					m.EXPECT().
+						ListByEducationIDs(mock.Anything, []string{"edu-123"}).
+						Return(map[string][]domain.Project{
+							"edu-123": {},
+						}, nil)
 				},
 			},
 			expected: Expected{
@@ -1345,8 +1463,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 			given: Given{
 				method: http.MethodGet,
 				query:  "?page_size=invalid",
-				mockRepo: func(m *mockRepo.MockEducationRepository) {
-					// Invalid page_size should default to 10
+				mockEducRepo: func(m *mockRepo.MockEducationRepository) {
 					expectedFilter := domain.EducationFilter{
 						Page:          1,
 						PageSize:      10,
@@ -1356,6 +1473,13 @@ func TestEducationServiceHandler_List(t *testing.T) {
 					m.EXPECT().
 						List(mock.Anything, expectedFilter).
 						Return(listResp, nil)
+				},
+				mockProjRepo: func(m *mockRepo.MockProjectRepository) {
+					m.EXPECT().
+						ListByEducationIDs(mock.Anything, []string{"edu-123"}).
+						Return(map[string][]domain.Project{
+							"edu-123": {},
+						}, nil)
 				},
 			},
 			expected: Expected{
@@ -1368,8 +1492,11 @@ func TestEducationServiceHandler_List(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			f := newEducationHandlerTestFixture(t)
-			if tt.given.mockRepo != nil {
-				tt.given.mockRepo(f.mockEducationRepo)
+			if tt.given.mockEducRepo != nil {
+				tt.given.mockEducRepo(f.mockEducationRepo)
+			}
+			if tt.given.mockProjRepo != nil {
+				tt.given.mockProjRepo(f.mockProjectRepo)
 			}
 
 			req := httptest.NewRequest(tt.given.method, "/educations"+tt.given.query, nil)
@@ -1390,6 +1517,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 			}
 
 			f.mockEducationRepo.AssertExpectations(t)
+			f.mockProjectRepo.AssertExpectations(t)
 		})
 	}
 }
@@ -1443,6 +1571,7 @@ func TestEducationServiceHandler_List_Routing(t *testing.T) {
 				}
 				return periods
 			}(),
+			Projects:  []ProjectDTO{},
 			Level:     string(e.Level),
 			CreatedAt: e.CreatedAt,
 			UpdatedAt: e.UpdatedAt,
@@ -1453,7 +1582,7 @@ func TestEducationServiceHandler_List_Routing(t *testing.T) {
 
 	f := newEducationHandlerTestFixture(t)
 
-	// Setup mock expectation
+	// Setup mock expectation for education repository
 	expectedFilter := domain.EducationFilter{
 		Page:          1,
 		PageSize:      10,
@@ -1463,6 +1592,13 @@ func TestEducationServiceHandler_List_Routing(t *testing.T) {
 	f.mockEducationRepo.EXPECT().
 		List(mock.Anything, expectedFilter).
 		Return(listResp, nil)
+
+		// Setup mock expectation for project repository (batch)
+	f.mockProjectRepo.EXPECT().
+		ListByEducationIDs(mock.Anything, []string{"edu-123"}).
+		Return(map[string][]domain.Project{
+			"edu-123": {},
+		}, nil)
 
 	// Create request and recorder
 	req := httptest.NewRequest(http.MethodGet, "/educations", nil)
@@ -1482,4 +1618,5 @@ func TestEducationServiceHandler_List_Routing(t *testing.T) {
 	assert.JSONEq(t, string(validJSON), string(body))
 
 	f.mockEducationRepo.AssertExpectations(t)
+	f.mockProjectRepo.AssertExpectations(t)
 }
