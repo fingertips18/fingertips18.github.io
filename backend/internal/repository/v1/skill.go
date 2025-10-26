@@ -306,9 +306,10 @@ func (r *skillRepository) List(ctx context.Context, filter domain.SkillFilter) (
 		filter.SortBy = &defaultSort
 	}
 
+	tableIdent := pgx.Identifier{r.skillTable}.Sanitize()
 	baseQuery := fmt.Sprintf(
 		`SELECT id, icon, hex_color, label, category, created_at, updated_at FROM %s`,
-		r.skillTable,
+		tableIdent,
 	)
 	var conditions []string
 	var args []any
@@ -326,12 +327,22 @@ func (r *skillRepository) List(ctx context.Context, filter domain.SkillFilter) (
 		baseQuery += " WHERE " + strings.Join(conditions, " AND ")
 	}
 
-	// Add sorting
+	// Add sorting with allowlist
 	sortOrder := "ASC"
 	if !filter.SortAscending {
 		sortOrder = "DESC"
 	}
-	baseQuery += fmt.Sprintf(" ORDER BY %s %s", *filter.SortBy, sortOrder)
+	var orderCol string
+	switch *filter.SortBy {
+	case domain.CreatedAt:
+		orderCol = "created_at"
+	case domain.UpdatedAt:
+		orderCol = "updated_at"
+	default:
+		// fallback to a safe default to avoid invalid column names
+		orderCol = "created_at"
+	}
+	baseQuery += fmt.Sprintf(" ORDER BY %s %s", orderCol, sortOrder)
 
 	// Add pagination
 	offset := (filter.Page - 1) * filter.PageSize

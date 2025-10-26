@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"strings"
 	"testing"
 	"time"
@@ -75,9 +74,6 @@ func (r *skillFakeRows) Next() bool {
 }
 
 func (r *skillFakeRows) Scan(dest ...any) error {
-	if r.index >= len(r.rows) {
-		return io.EOF
-	}
 	err := r.rows[r.index].Scan(dest...)
 	r.index++
 	return err
@@ -721,14 +717,8 @@ func TestSkillRepository_List(t *testing.T) {
 								if len(args) != 1 {
 									return false
 								}
-								switch v := args[0].(type) {
-								case domain.SkillCategory:
-									return v == category
-								case string:
-									return v == string(category)
-								default:
-									return false
-								}
+								cat, ok := args[0].(domain.SkillCategory)
+								return ok && cat == category
 							}),
 						).
 						Return(&skillFakeRows{
@@ -828,6 +818,22 @@ func TestSkillRepository_List(t *testing.T) {
 			},
 			expected: Expected{
 				result: []domain.Skill{mockSkill},
+				err:    nil,
+			},
+		},
+		"Empty result set": {
+			given: Given{
+				filter: domain.SkillFilter{},
+				mockRows: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().
+						Query(mock.Anything, mock.Anything, mock.Anything).
+						Return(&skillFakeRows{
+							rows: []*skillFakeRow{}, // empty rows
+						}, nil)
+				},
+			},
+			expected: Expected{
+				result: nil,
 				err:    nil,
 			},
 		},
