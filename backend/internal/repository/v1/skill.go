@@ -76,12 +76,13 @@ func (r *skillRepository) Create(ctx context.Context, skill *domain.Skill) (stri
 	skill.CreatedAt = now
 	skill.UpdatedAt = now
 
+	tableIdent := pgx.Identifier{r.skillTable}.Sanitize()
 	query := fmt.Sprintf(
 		`INSERT INTO %s
 		(id, icon, hex_color, label, category, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
 		RETURNING id`,
-		r.skillTable,
+		tableIdent,
 	)
 
 	var returnedID string
@@ -123,11 +124,12 @@ func (r *skillRepository) Get(ctx context.Context, id string) (*domain.Skill, er
 
 	var skill domain.Skill
 
+	tableIdent := pgx.Identifier{r.skillTable}.Sanitize()
 	query := fmt.Sprintf(
 		`SELECT id, icon, hex_color, label, category, created_at, updated_at
 		FROM %s
 		WHERE id = $1`,
-		r.skillTable,
+		tableIdent,
 	)
 
 	err := r.databaseAPI.QueryRow(
@@ -179,11 +181,11 @@ func (r *skillRepository) Update(ctx context.Context, skill *domain.Skill) (*dom
 		return nil, fmt.Errorf("failed to validate skill: %w", err)
 	}
 
-	now := r.timeProvider()
-	skill.UpdatedAt = now
+	updatedAt := r.timeProvider()
 
 	var updatedSkill domain.Skill
 
+	tableIdent := pgx.Identifier{r.skillTable}.Sanitize()
 	query := fmt.Sprintf(
 		`UPDATE %s
 		SET icon=$2,
@@ -193,7 +195,7 @@ func (r *skillRepository) Update(ctx context.Context, skill *domain.Skill) (*dom
 			updated_at=$6
 		WHERE id=$1
 		RETURNING id, icon, hex_color, label, category, created_at, updated_at`,
-		r.skillTable,
+		tableIdent,
 	)
 
 	err := r.databaseAPI.QueryRow(
@@ -204,7 +206,7 @@ func (r *skillRepository) Update(ctx context.Context, skill *domain.Skill) (*dom
 		skill.HexColor,
 		skill.Label,
 		skill.Category,
-		skill.UpdatedAt,
+		updatedAt,
 	).Scan(
 		&updatedSkill.Id,
 		&updatedSkill.Icon,
@@ -220,6 +222,10 @@ func (r *skillRepository) Update(ctx context.Context, skill *domain.Skill) (*dom
 			return nil, nil
 		}
 		return nil, fmt.Errorf("failed to update skill: %w", err)
+	}
+
+	if err := updatedSkill.ValidateResponse(); err != nil {
+		return nil, fmt.Errorf("invalid skill returned: %w", err)
 	}
 
 	return &updatedSkill, nil

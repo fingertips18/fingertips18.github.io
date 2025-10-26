@@ -19,7 +19,7 @@ const (
 	testSkillTable = "test-skills"
 )
 
-// skillFakeRow for both Create and Get
+// skillFakeRow for Create, Get, and Update paths
 type skillFakeRow struct {
 	id      string
 	skill   *domain.Skill
@@ -392,14 +392,18 @@ func TestSkillRepository_Update(t *testing.T) {
 	}{
 		"Successful update": {
 			given: Given{
-				skill: &originalSkill,
+				skill: func() *domain.Skill { s := originalSkill; return &s }(),
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					updatedReturned := updatedSkill
 					updatedReturned.UpdatedAt = fixedTime
 					m.EXPECT().QueryRow(
 						mock.Anything,
 						mock.MatchedBy(func(q string) bool { return strings.Contains(q, "UPDATE") }),
-						mock.AnythingOfType("[]interface {}"),
+						mock.MatchedBy(func(args []any) bool {
+							return len(args) == 6 &&
+								args[0] == originalSkill.Id &&
+								args[5] == fixedTime
+						}),
 					).Return(&skillFakeRow{skill: &updatedReturned})
 				},
 			},
@@ -490,6 +494,21 @@ func TestSkillRepository_Update(t *testing.T) {
 			expected: Expected{
 				result: nil,
 				err:    fmt.Errorf("failed to update skill: %w", scanErr),
+			},
+		},
+		"Returned skill fails validation": {
+			given: Given{
+				skill: func() *domain.Skill { s := originalSkill; return &s }(),
+				mockQueryRow: func(m *database.MockDatabaseAPI) {
+					invalid := originalSkill
+					invalid.Label = ""
+					m.EXPECT().QueryRow(mock.Anything, mock.Anything, mock.Anything).
+						Return(&skillFakeRow{skill: &invalid})
+				},
+			},
+			expected: Expected{
+				result: nil,
+				err:    fmt.Errorf("invalid skill returned: %w", errors.New("label missing")),
 			},
 		},
 	}
