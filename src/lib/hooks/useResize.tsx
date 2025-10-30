@@ -1,29 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 
 const useResize = () => {
-  const [size, setSize] = useState({
-    width: 0,
-    height: 0,
-  });
-
-  const getSize = () => {
-    setSize({
-      width: window.innerWidth,
-      height: window.innerHeight,
-    });
+  const subscribe = (callback: () => void) => {
+    window.addEventListener('resize', callback);
+    return () => window.removeEventListener('resize', callback);
   };
 
-  useEffect(() => {
-    getSize();
+  const width = useSyncExternalStore(
+    subscribe,
+    () => window.innerWidth,
+    () => 0, // Server snapshot
+  );
 
-    window.addEventListener('resize', getSize);
+  const height = useSyncExternalStore(
+    subscribe,
+    () => window.innerHeight,
+    () => 0, // Server snapshot
+  );
 
-    return () => {
-      window.removeEventListener('resize', getSize);
-    };
-  }, []);
-
-  return size;
+  return { width, height };
 };
 
 export { useResize };
