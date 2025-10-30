@@ -1,6 +1,6 @@
 import { useLenis } from 'lenis/react';
 import { LucideMenu, MoveLeft } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 import { Hint } from '@/components/common/hint';
@@ -29,14 +29,12 @@ interface SheetMenuProps {
 const SheetMenu = ({ active }: SheetMenuProps) => {
   const lenis = useLenis();
   const location = useLocation();
-  const [open, setOpen] = useState(false);
+  // Track user's intent to open the sheet
+  const [userOpen, setUserOpen] = useState(false);
   const { width } = useResize();
 
-  useEffect(() => {
-    if (width > 1024) {
-      setOpen(false);
-    }
-  }, [width]);
+  // Derive the actual open state: only open if user wants it AND on mobile
+  const open = width <= 1024 && userOpen;
 
   const onOpenChange = (open: boolean) => {
     if (!lenis) return;
@@ -64,7 +62,7 @@ const SheetMenu = ({ active }: SheetMenuProps) => {
       open={open}
       onOpenChange={(open) => {
         onOpenChange(open);
-        setOpen(open);
+        setUserOpen(open);
       }}
     >
       <Hint asChild label='Menu'>
@@ -80,7 +78,7 @@ const SheetMenu = ({ active }: SheetMenuProps) => {
         </SheetTrigger>
       </Hint>
       <SheetContent data-lenis-prevent className='overflow-y-auto no-scrollbar'>
-        <SheetHeader className='mt-4 !items-start'>
+        <SheetHeader className='mt-4 items-start!'>
           <SheetTitle className='text-sm'>Menu</SheetTitle>
           <SheetDescription className='text-xs text-start'>
             Discover my portfolio, skills, projects, and how to connect.
