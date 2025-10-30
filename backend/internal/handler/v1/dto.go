@@ -87,6 +87,13 @@ type EducationFilterRequest struct {
 	SortAscending bool   `json:"sort_ascending"`
 }
 
+type CreateSkillRequest struct {
+	Icon     string `json:"icon"`
+	HexColor string `json:"hex_color"`
+	Label    string `json:"label"`
+	Category string `json:"category"`
+}
+
 type IDResponse struct {
 	Id string `json:"id"`
 }

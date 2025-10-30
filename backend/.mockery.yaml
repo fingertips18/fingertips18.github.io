@@ -21,6 +21,7 @@ packages:
       EmailHandler: {}
       ProjectHandler: {}
       EducationHandler: {}
+      SkillHandler: {}
   github.com/fingertips18/fingertips18.github.io/backend/internal/database:
     interfaces:
       DatabaseAPI: {}
