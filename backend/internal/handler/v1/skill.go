@@ -429,7 +429,7 @@ func (h *skillServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	sortBy, err := utils.GetQuerySortBy(q, "sort_by")
 	if err != nil {
-		http.Error(w, "invalid sort by", http.StatusBadRequest)
+		http.Error(w, "invalid sort_by: must be 'created_at' or 'updated_at'", http.StatusBadRequest)
 		return
 	}
 
@@ -461,7 +461,7 @@ func (h *skillServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 		case domain.Frontend, domain.Backend, domain.Tools, domain.Others:
 			skillCategory = &t
 		default:
-			http.Error(w, "invalid skill category", http.StatusBadRequest)
+			http.Error(w, "invalid category: must be one of 'frontend', 'backend', 'tools', 'others'", http.StatusBadRequest)
 			return
 		}
 	}
