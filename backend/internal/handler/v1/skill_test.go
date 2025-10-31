@@ -876,7 +876,7 @@ func TestSkillServiceHandler_List(t *testing.T) {
 			},
 			expected: Expected{
 				code: http.StatusBadRequest,
-				body: "invalid skill category\n",
+				body: "invalid category: must be one of 'frontend', 'backend', 'tools', 'others'\n",
 			},
 		},
 		"invalid sort by": {
@@ -886,7 +886,7 @@ func TestSkillServiceHandler_List(t *testing.T) {
 			},
 			expected: Expected{
 				code: http.StatusBadRequest,
-				body: "invalid sort by\n",
+				body: "invalid sort_by: must be 'created_at' or 'updated_at'\n",
 			},
 		},
 		"repo error": {
