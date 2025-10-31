@@ -114,6 +114,7 @@ func (h *educationServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
+		return
 
 	// GET / DELETE /education/{id}
 	case strings.HasPrefix(path, "/education/"):
