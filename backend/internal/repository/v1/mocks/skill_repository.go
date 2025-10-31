@@ -229,6 +229,74 @@ func (_c *MockSkillRepository_Get_Call) RunAndReturn(run func(ctx context.Contex
 	return _c
 }
 
+// List provides a mock function for the type MockSkillRepository
+func (_mock *MockSkillRepository) List(ctx context.Context, filter domain.SkillFilter) ([]domain.Skill, error) {
+	ret := _mock.Called(ctx, filter)
+
+	if len(ret) == 0 {
+		panic("no return value specified for List")
+	}
+
+	var r0 []domain.Skill
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.SkillFilter) ([]domain.Skill, error)); ok {
+		return returnFunc(ctx, filter)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.SkillFilter) []domain.Skill); ok {
+		r0 = returnFunc(ctx, filter)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]domain.Skill)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, domain.SkillFilter) error); ok {
+		r1 = returnFunc(ctx, filter)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockSkillRepository_List_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'List'
+type MockSkillRepository_List_Call struct {
+	*mock.Call
+}
+
+// List is a helper method to define mock.On call
+//   - ctx context.Context
+//   - filter domain.SkillFilter
+func (_e *MockSkillRepository_Expecter) List(ctx interface{}, filter interface{}) *MockSkillRepository_List_Call {
+	return &MockSkillRepository_List_Call{Call: _e.mock.On("List", ctx, filter)}
+}
+
+func (_c *MockSkillRepository_List_Call) Run(run func(ctx context.Context, filter domain.SkillFilter)) *MockSkillRepository_List_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 domain.SkillFilter
+		if args[1] != nil {
+			arg1 = args[1].(domain.SkillFilter)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockSkillRepository_List_Call) Return(skills []domain.Skill, err error) *MockSkillRepository_List_Call {
+	_c.Call.Return(skills, err)
+	return _c
+}
+
+func (_c *MockSkillRepository_List_Call) RunAndReturn(run func(ctx context.Context, filter domain.SkillFilter) ([]domain.Skill, error)) *MockSkillRepository_List_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Update provides a mock function for the type MockSkillRepository
 func (_mock *MockSkillRepository) Update(ctx context.Context, skill *domain.Skill) (*domain.Skill, error) {
 	ret := _mock.Called(ctx, skill)
