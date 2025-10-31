@@ -119,7 +119,7 @@ jobs:
 
     strategy:
       matrix:
-        go-version: ['1.x']
+        go-version: ['1.25.x']
 
     steps:
       - name: Checkout code
