@@ -1,6 +1,6 @@
 module github.com/fingertips18/fingertips18.github.io/backend
 
-go 1.24.3
+go 1.25.3
 
 require (
 	github.com/blackmagiqq/ga4 v1.0.4

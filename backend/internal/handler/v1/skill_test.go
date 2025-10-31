@@ -186,7 +186,7 @@ func TestSkillServiceHandler_Create(t *testing.T) {
 				tt.given.mockRepo(f.mockSkillRepo)
 			}
 
-			req := httptest.NewRequest(tt.given.method, "/skills", strings.NewReader(tt.given.body))
+			req := httptest.NewRequest(tt.given.method, "/skill", strings.NewReader(tt.given.body))
 			w := httptest.NewRecorder()
 
 			f.skillHandler.Create(w, req)

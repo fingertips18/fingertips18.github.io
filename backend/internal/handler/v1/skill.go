@@ -47,7 +47,7 @@ func (h *skillServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	path := strings.TrimSuffix(r.URL.Path, "/")
 
 	switch {
-	// POST / PUT /project
+	// POST /skill
 	case path == "/skill":
 		switch r.Method {
 		case http.MethodPost:
