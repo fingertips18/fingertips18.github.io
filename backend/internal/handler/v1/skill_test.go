@@ -791,3 +791,184 @@ func TestSkillServiceHandler_Delete_Routing(t *testing.T) {
 
 	f.mockSkillRepo.AssertExpectations(t)
 }
+
+func TestSkillServiceHandler_List(t *testing.T) {
+	fixedTime := time.Now()
+	validSkills := []domain.Skill{
+		{
+			Id:        "s1",
+			Icon:      "icon-js",
+			HexColor:  "#f7df1e",
+			Label:     "JavaScript",
+			Category:  domain.Frontend,
+			CreatedAt: fixedTime,
+			UpdatedAt: fixedTime,
+		},
+		{
+			Id:        "s2",
+			Icon:      "icon-go",
+			HexColor:  "#00ADD8",
+			Label:     "Go",
+			Category:  domain.Backend,
+			CreatedAt: fixedTime,
+			UpdatedAt: fixedTime,
+		},
+	}
+
+	type Given struct {
+		method   string
+		query    string
+		mockRepo func(m *mockRepo.MockSkillRepository)
+	}
+	type Expected struct {
+		code int
+		body string
+	}
+
+	tests := map[string]struct {
+		given    Given
+		expected Expected
+	}{
+		"success - no filters": {
+			given: Given{
+				method: http.MethodGet,
+				query:  "",
+				mockRepo: func(m *mockRepo.MockSkillRepository) {
+					m.EXPECT().
+						List(mock.Anything, mock.AnythingOfType("domain.SkillFilter")).
+						Return(validSkills, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusOK,
+				body: toJSON(validSkills),
+			},
+		},
+		"success - with category filter": {
+			given: Given{
+				method: http.MethodGet,
+				query:  "?category=frontend&page=1&page_size=5&sort_by=created_at&sort_ascending=true",
+				mockRepo: func(m *mockRepo.MockSkillRepository) {
+					m.EXPECT().
+						List(mock.Anything, mock.AnythingOfType("domain.SkillFilter")).
+						Return([]domain.Skill{validSkills[0]}, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusOK,
+				body: toJSON([]domain.Skill{validSkills[0]}),
+			},
+		},
+		"invalid method": {
+			given: Given{
+				method: http.MethodPost,
+				query:  "",
+			},
+			expected: Expected{
+				code: http.StatusMethodNotAllowed,
+				body: "Method not allowed: only GET is supported\n",
+			},
+		},
+		"invalid skill category": {
+			given: Given{
+				method: http.MethodGet,
+				query:  "?category=ai",
+			},
+			expected: Expected{
+				code: http.StatusBadRequest,
+				body: "invalid category: must be one of 'frontend', 'backend', 'tools', 'others'\n",
+			},
+		},
+		"invalid sort by": {
+			given: Given{
+				method: http.MethodGet,
+				query:  "?sort_by=invalid_field",
+			},
+			expected: Expected{
+				code: http.StatusBadRequest,
+				body: "invalid sort_by: must be 'created_at' or 'updated_at'\n",
+			},
+		},
+		"repo error": {
+			given: Given{
+				method: http.MethodGet,
+				query:  "",
+				mockRepo: func(m *mockRepo.MockSkillRepository) {
+					m.EXPECT().
+						List(mock.Anything, mock.AnythingOfType("domain.SkillFilter")).
+						Return(nil, errors.New("db failure"))
+				},
+			},
+			expected: Expected{
+				code: http.StatusInternalServerError,
+				body: "Failed to list skills: db failure\n",
+			},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			f := newSkillHandlerTestFixture(t)
+
+			if tt.given.mockRepo != nil {
+				tt.given.mockRepo(f.mockSkillRepo)
+			}
+
+			req := httptest.NewRequest(tt.given.method, "/skills"+tt.given.query, nil)
+			w := httptest.NewRecorder()
+
+			f.skillHandler.(*skillServiceHandler).List(w, req)
+
+			res := w.Result()
+			defer res.Body.Close()
+
+			body, _ := io.ReadAll(res.Body)
+			assert.Equal(t, tt.expected.code, res.StatusCode)
+
+			if strings.HasPrefix(tt.expected.body, "[") {
+				assert.JSONEq(t, tt.expected.body, string(body))
+			} else {
+				assert.Equal(t, tt.expected.body, string(body))
+			}
+
+			f.mockSkillRepo.AssertExpectations(t)
+		})
+	}
+}
+
+func TestSkillServiceHandler_List_Routing(t *testing.T) {
+	fixedTime := time.Now()
+	validSkills := []domain.Skill{
+		{
+			Id:        "s1",
+			Icon:      "icon-js",
+			HexColor:  "#f7df1e",
+			Label:     "JavaScript",
+			Category:  domain.Frontend,
+			CreatedAt: fixedTime,
+			UpdatedAt: fixedTime,
+		},
+	}
+
+	f := newSkillHandlerTestFixture(t)
+
+	f.mockSkillRepo.EXPECT().
+		List(mock.Anything, mock.AnythingOfType("domain.SkillFilter")).
+		Return(validSkills, nil)
+
+	req := httptest.NewRequest(http.MethodGet, "/skills", nil)
+	w := httptest.NewRecorder()
+
+	handler, ok := f.skillHandler.(http.Handler)
+	assert.True(t, ok, "skillHandler should implement http.Handler")
+	handler.ServeHTTP(w, req)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	body, _ := io.ReadAll(res.Body)
+	assert.Equal(t, http.StatusOK, res.StatusCode)
+	assert.JSONEq(t, toJSON(validSkills), string(body))
+
+	f.mockSkillRepo.AssertExpectations(t)
+}

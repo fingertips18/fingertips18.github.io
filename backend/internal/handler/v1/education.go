@@ -92,7 +92,7 @@ func (h *educationServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 
-		// GET / DELETE /education/{id}
+	// GET / DELETE /education/{id}
 	case strings.HasPrefix(path, "/education/"):
 		id := strings.TrimPrefix(path, "/education/")
 

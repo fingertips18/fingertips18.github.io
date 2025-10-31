@@ -122,6 +122,14 @@ type SkillDTO struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type SkillFilterRequest struct {
+	Page          int32  `json:"page"`
+	PageSize      int32  `json:"page_size"`
+	SortBy        string `json:"sort_by"`
+	SortAscending bool   `json:"sort_ascending"`
+	Category      string `json:"category"`
+}
+
 type IDResponse struct {
 	Id string `json:"id"`
 }
