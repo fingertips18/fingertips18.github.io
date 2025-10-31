@@ -414,7 +414,7 @@ func (h *skillServiceHandler) Delete(w http.ResponseWriter, r *http.Request, id 
 // @Param page_size query int false "Number of items per page (default 10)"
 // @Param sort_by query string false "Field to sort by" Enums(created_at, updated_at)
 // @Param sort_ascending query bool false "Sort ascending order"
-// @Param type query string false "Filter by skill category" Enums(frontend, backend, tools, others)
+// @Param category query string false "Filter by skill category" Enums(frontend, backend, tools, others)
 // @Success 200 {array} SkillDTO
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse

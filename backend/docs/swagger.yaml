@@ -842,7 +842,7 @@ paths:
         - tools
         - others
         in: query
-        name: type
+        name: category
         type: string
       produces:
       - application/json

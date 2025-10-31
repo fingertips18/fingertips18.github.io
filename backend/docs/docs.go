@@ -955,7 +955,7 @@ const docTemplate = `{
                         ],
                         "type": "string",
                         "description": "Filter by skill category",
-                        "name": "type",
+                        "name": "category",
                         "in": "query"
                     }
                 ],
