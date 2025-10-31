@@ -9,9 +9,11 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
 	mockRepo "github.com/fingertips18/fingertips18.github.io/backend/internal/repository/v1/mocks"
+	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -240,6 +242,215 @@ func TestSkillServiceHandler_Create_Routing(t *testing.T) {
 
 	body, _ := io.ReadAll(res.Body)
 	assert.Equal(t, http.StatusCreated, res.StatusCode)
+	assert.JSONEq(t, string(expectedResp), string(body))
+
+	f.mockSkillRepo.AssertExpectations(t)
+}
+
+func TestSkillServiceHandler_Get(t *testing.T) {
+	fixedID := "skill-123"
+	fixedTime := time.Date(2025, 10, 25, 21, 56, 4, 0, time.UTC)
+
+	sampleSkill := &SkillDTO{
+		Id:        fixedID,
+		Icon:      "icon.png",
+		HexColor:  "#FFFFFF",
+		Label:     "Golang",
+		Category:  "programming",
+		CreatedAt: fixedTime,
+		UpdatedAt: fixedTime,
+	}
+
+	validResp, _ := json.Marshal(sampleSkill)
+
+	type Given struct {
+		method      string
+		id          string
+		mockSkillFn func(m *mockRepo.MockSkillRepository)
+	}
+
+	type Expected struct {
+		code int
+		body string
+	}
+
+	tests := map[string]struct {
+		given    Given
+		expected Expected
+	}{
+		"success": {
+			given: Given{
+				method: http.MethodGet,
+				id:     fixedID,
+				mockSkillFn: func(m *mockRepo.MockSkillRepository) {
+					m.EXPECT().
+						Get(mock.Anything, fixedID).
+						Return(&domain.Skill{
+							Id:        fixedID,
+							Icon:      "icon.png",
+							HexColor:  "#FFFFFF",
+							Label:     "Golang",
+							Category:  domain.SkillCategory("programming"),
+							CreatedAt: fixedTime,
+							UpdatedAt: fixedTime,
+						}, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusOK,
+				body: string(validResp),
+			},
+		},
+		"method not allowed": {
+			given: Given{
+				method:      http.MethodPost,
+				id:          fixedID,
+				mockSkillFn: nil,
+			},
+			expected: Expected{
+				code: http.StatusMethodNotAllowed,
+				body: "Method not allowed: only GET is supported\n",
+			},
+		},
+		"skill not found (nil result)": {
+			given: Given{
+				method: http.MethodGet,
+				id:     "nonexistent",
+				mockSkillFn: func(m *mockRepo.MockSkillRepository) {
+					m.EXPECT().
+						Get(mock.Anything, "nonexistent").
+						Return(nil, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusNotFound,
+				body: "Skill not found\n",
+			},
+		},
+		"skill not found (pgx.ErrNoRows)": {
+			given: Given{
+				method: http.MethodGet,
+				id:     "missing-skill",
+				mockSkillFn: func(m *mockRepo.MockSkillRepository) {
+					m.EXPECT().
+						Get(mock.Anything, "missing-skill").
+						Return(nil, pgx.ErrNoRows)
+				},
+			},
+			expected: Expected{
+				code: http.StatusNotFound,
+				body: "Skill not found\n",
+			},
+		},
+		"repository error": {
+			given: Given{
+				method: http.MethodGet,
+				id:     fixedID,
+				mockSkillFn: func(m *mockRepo.MockSkillRepository) {
+					m.EXPECT().
+						Get(mock.Anything, fixedID).
+						Return(nil, errors.New("database failure"))
+				},
+			},
+			expected: Expected{
+				code: http.StatusInternalServerError,
+				body: "GET error: database failure\n",
+			},
+		},
+		"empty id": {
+			given: Given{
+				method: http.MethodGet,
+				id:     "",
+				mockSkillFn: func(m *mockRepo.MockSkillRepository) {
+					m.EXPECT().
+						Get(mock.Anything, "").
+						Return(nil, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusNotFound,
+				body: "Skill not found\n",
+			},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			f := newSkillHandlerTestFixture(t)
+
+			if tt.given.mockSkillFn != nil {
+				tt.given.mockSkillFn(f.mockSkillRepo)
+			}
+
+			req := httptest.NewRequest(tt.given.method, "/skill/"+tt.given.id, nil)
+			w := httptest.NewRecorder()
+
+			f.skillHandler.Get(w, req, tt.given.id)
+
+			res := w.Result()
+			defer res.Body.Close()
+
+			body, _ := io.ReadAll(res.Body)
+
+			assert.Equal(t, tt.expected.code, res.StatusCode)
+
+			if strings.HasPrefix(tt.expected.body, "{") {
+				assert.JSONEq(t, tt.expected.body, string(body))
+			} else if strings.HasPrefix(tt.expected.body, "Failed to write response:") {
+				assert.Contains(t, string(body), "Failed to write response:")
+			} else {
+				assert.Equal(t, tt.expected.body, string(body))
+			}
+
+			f.mockSkillRepo.AssertExpectations(t)
+		})
+	}
+}
+
+func TestSkillServiceHandler_Get_Routing(t *testing.T) {
+	fixedID := "skill-123"
+
+	sampleSkill := &domain.Skill{
+		Id:        fixedID,
+		Icon:      "icon.png",
+		HexColor:  "#ABCDEF",
+		Label:     "Python",
+		Category:  domain.SkillCategory("language"),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	dto := SkillDTO{
+		Id:        sampleSkill.Id,
+		Icon:      sampleSkill.Icon,
+		HexColor:  sampleSkill.HexColor,
+		Label:     sampleSkill.Label,
+		Category:  string(sampleSkill.Category),
+		CreatedAt: sampleSkill.CreatedAt,
+		UpdatedAt: sampleSkill.UpdatedAt,
+	}
+
+	expectedResp, _ := json.Marshal(dto)
+
+	f := newSkillHandlerTestFixture(t)
+
+	f.mockSkillRepo.EXPECT().
+		Get(mock.Anything, fixedID).
+		Return(sampleSkill, nil)
+
+	req := httptest.NewRequest(http.MethodGet, "/skill/"+fixedID, nil)
+	w := httptest.NewRecorder()
+
+	handlerInterface, ok := f.skillHandler.(http.Handler)
+	assert.True(t, ok, "skillHandler should implement http.Handler")
+
+	handlerInterface.ServeHTTP(w, req)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	body, _ := io.ReadAll(res.Body)
+	assert.Equal(t, http.StatusOK, res.StatusCode)
 	assert.JSONEq(t, string(expectedResp), string(body))
 
 	f.mockSkillRepo.AssertExpectations(t)
