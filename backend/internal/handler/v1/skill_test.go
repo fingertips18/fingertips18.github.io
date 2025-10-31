@@ -644,3 +644,150 @@ func TestSkillServiceHandler_Update(t *testing.T) {
 		})
 	}
 }
+
+func TestSkillServiceHandler_Delete(t *testing.T) {
+	fixedID := "skill-123"
+
+	type Given struct {
+		method   string
+		id       string
+		mockRepo func(m *mockRepo.MockSkillRepository)
+	}
+	type Expected struct {
+		code int
+		body string
+	}
+
+	tests := map[string]struct {
+		given    Given
+		expected Expected
+	}{
+		"success": {
+			given: Given{
+				method: http.MethodDelete,
+				id:     fixedID,
+				mockRepo: func(m *mockRepo.MockSkillRepository) {
+					m.EXPECT().
+						Delete(mock.Anything, fixedID).
+						Return(nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusNoContent,
+				body: "",
+			},
+		},
+		"method not allowed": {
+			given: Given{
+				method: http.MethodGet,
+				id:     fixedID,
+				mockRepo: func(m *mockRepo.MockSkillRepository) {
+					// No expectations; handler should block before calling repo
+				},
+			},
+			expected: Expected{
+				code: http.StatusMethodNotAllowed,
+				body: "Method not allowed: only DELETE is supported\n",
+			},
+		},
+		"skill not found (pgx.ErrNoRows)": {
+			given: Given{
+				method: http.MethodDelete,
+				id:     "missing-id",
+				mockRepo: func(m *mockRepo.MockSkillRepository) {
+					m.EXPECT().
+						Delete(mock.Anything, "missing-id").
+						Return(pgx.ErrNoRows)
+				},
+			},
+			expected: Expected{
+				code: http.StatusNotFound,
+				body: "Skill not found\n",
+			},
+		},
+		"repository error": {
+			given: Given{
+				method: http.MethodDelete,
+				id:     fixedID,
+				mockRepo: func(m *mockRepo.MockSkillRepository) {
+					m.EXPECT().
+						Delete(mock.Anything, fixedID).
+						Return(errors.New("database failure"))
+				},
+			},
+			expected: Expected{
+				code: http.StatusInternalServerError,
+				body: "Failed to delete skill: database failure\n",
+			},
+		},
+		"empty id": {
+			given: Given{
+				method: http.MethodDelete,
+				id:     "",
+				mockRepo: func(m *mockRepo.MockSkillRepository) {
+					m.EXPECT().
+						Delete(mock.Anything, "").
+						Return(pgx.ErrNoRows)
+				},
+			},
+			expected: Expected{
+				code: http.StatusNotFound,
+				body: "Skill not found\n",
+			},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			f := newSkillHandlerTestFixture(t)
+
+			if tt.given.mockRepo != nil {
+				tt.given.mockRepo(f.mockSkillRepo)
+			}
+
+			req := httptest.NewRequest(tt.given.method, "/skill/"+tt.given.id, nil)
+			w := httptest.NewRecorder()
+
+			f.skillHandler.Delete(w, req, tt.given.id)
+
+			res := w.Result()
+			defer res.Body.Close()
+
+			body, _ := io.ReadAll(res.Body)
+			assert.Equal(t, tt.expected.code, res.StatusCode)
+			assert.Equal(t, tt.expected.body, string(body))
+
+			f.mockSkillRepo.AssertExpectations(t)
+		})
+	}
+}
+
+func TestSkillServiceHandler_Delete_Routing(t *testing.T) {
+	fixedID := "skill-123"
+
+	f := newSkillHandlerTestFixture(t)
+
+	// Setup mock expectation
+	f.mockSkillRepo.EXPECT().
+		Delete(mock.Anything, fixedID).
+		Return(nil)
+
+	// Create request and recorder
+	req := httptest.NewRequest(http.MethodDelete, "/skill/"+fixedID, nil)
+	w := httptest.NewRecorder()
+
+	// Cast handler to http.Handler and call ServeHTTP
+	handler, ok := f.skillHandler.(http.Handler)
+	assert.True(t, ok, "skillHandler should implement http.Handler")
+	handler.ServeHTTP(w, req)
+
+	// Verify response
+	res := w.Result()
+	defer res.Body.Close()
+
+	body, _ := io.ReadAll(res.Body)
+	assert.Equal(t, http.StatusNoContent, res.StatusCode)
+	assert.Equal(t, "", string(body))
+
+	f.mockSkillRepo.AssertExpectations(t)
+}

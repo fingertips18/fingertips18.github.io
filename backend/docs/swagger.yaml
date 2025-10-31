@@ -694,7 +694,7 @@ paths:
       - application/json
       responses:
         "201":
-          description: Education ID
+          description: Skill ID
           schema:
             $ref: '#/definitions/v1.IDResponse'
         "400":
@@ -747,6 +747,34 @@ paths:
       tags:
       - skill
   /skill/{id}:
+    delete:
+      description: Deletes an existing skill by its unique ID provided in the path.
+      parameters:
+      - description: Skill ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a skill
+      tags:
+      - skill
     get:
       consumes:
       - application/json

@@ -18,6 +18,7 @@ type SkillHandler interface {
 	Create(w http.ResponseWriter, r *http.Request)
 	Get(w http.ResponseWriter, r *http.Request, id string)
 	Update(w http.ResponseWriter, r *http.Request)
+	Delete(w http.ResponseWriter, r *http.Request, id string)
 }
 
 type SkillServiceConfig struct {
@@ -78,6 +79,8 @@ func (h *skillServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		switch r.Method {
 		case http.MethodGet:
 			h.Get(w, r, id)
+		case http.MethodDelete:
+			h.Delete(w, r, id)
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
@@ -122,7 +125,7 @@ func (h *skillServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 // @Accept json
 // @Produce json
 // @Param skill body CreateSkillRequest true "Skill payload"
-// @Success 201 {object} IDResponse "Education ID"
+// @Success 201 {object} IDResponse "Skill ID"
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /skill [post]
@@ -321,4 +324,50 @@ func (h *skillServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(buf.Bytes())
+}
+
+// Delete handles HTTP DELETE requests to remove a skill identified by id.
+// It expects the request method to be DELETE; otherwise it responds with
+// 405 Method Not Allowed. The request context is forwarded to the repository
+// layer when attempting the delete.
+//
+// On success the handler responds with 204 No Content and no response body.
+// If the repository returns pgx.ErrNoRows the handler responds with 404 Not Found.
+// Any other repository error results in a 500 Internal Server Error and an
+// error message written to the response.
+//
+// Parameters:
+//   - w: http.ResponseWriter used to send the HTTP response.
+//   - r: *http.Request representing the incoming HTTP request.
+//   - id: string identifier of the skill to delete.
+//
+// @Security ApiKeyAuth
+// @Summary Delete a skill
+// @Description Deletes an existing skill by its unique ID provided in the path.
+// @Tags skill
+// @Param id path string true "Skill ID"
+// @Success 204 "No Content"
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /skill/{id} [delete]
+func (h *skillServiceHandler) Delete(w http.ResponseWriter, r *http.Request, id string) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "Method not allowed: only DELETE is supported", http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := h.skillRepo.Delete(r.Context(), id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			http.Error(w, "Skill not found", http.StatusNotFound)
+			return
+		}
+
+		http.Error(w, "Failed to delete skill: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Successful delete → 204 No Content
+	w.WriteHeader(http.StatusNoContent)
 }
