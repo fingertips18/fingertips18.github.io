@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"io"
@@ -160,6 +161,52 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 	}
 }
 
+func TestProjectServiceHandler_Create_Routing(t *testing.T) {
+	fixedID := "123-abc"
+
+	f := newProjectHandlerTestFixture(t)
+
+	// Setup valid input and expected output
+	createReq := ProjectDTO{
+		Preview:     "preview.png",
+		BlurHash:    "hash",
+		Title:       "title",
+		SubTitle:    "subtitle",
+		Description: "desc",
+		Stack:       []string{"go", "react"},
+		Type:        "web",
+		Link:        "http://example.com",
+	}
+	reqBody, _ := json.Marshal(createReq)
+	expectedResp, _ := json.Marshal(domain.ProjectIDResponse{ID: fixedID})
+
+	// Setup mock expectation
+	f.mockProjectRepo.EXPECT().
+		Create(mock.Anything, mock.AnythingOfType("*domain.Project")).
+		Return(fixedID, nil)
+
+	// Create HTTP request
+	req := httptest.NewRequest(http.MethodPost, "/project", bytes.NewReader(reqBody))
+	w := httptest.NewRecorder()
+
+	// Ensure the handler implements http.Handler
+	handler, ok := f.projectHandler.(http.Handler)
+	assert.True(t, ok, "projectHandler should implement http.Handler")
+
+	// Serve the request
+	handler.ServeHTTP(w, req)
+
+	// Validate response
+	res := w.Result()
+	defer res.Body.Close()
+
+	body, _ := io.ReadAll(res.Body)
+	assert.Equal(t, http.StatusCreated, res.StatusCode)
+	assert.JSONEq(t, string(expectedResp), string(body))
+
+	f.mockProjectRepo.AssertExpectations(t)
+}
+
 func TestProjectServiceHandler_Get(t *testing.T) {
 	fixedID := "123-abc"
 	fixedTime := time.Date(2025, 1, 1, 12, 0, 0, 0, time.UTC)
@@ -281,6 +328,54 @@ func TestProjectServiceHandler_Get(t *testing.T) {
 			f.mockProjectRepo.AssertExpectations(t)
 		})
 	}
+}
+
+func TestProjectServiceHandler_Get_Routing(t *testing.T) {
+	fixedID := "123-abc"
+	fixedTime := time.Date(2025, 1, 1, 12, 0, 0, 0, time.UTC)
+
+	validProject := &domain.Project{
+		Id:          fixedID,
+		Preview:     "preview.png",
+		BlurHash:    "hash",
+		Title:       "title",
+		SubTitle:    "subtitle",
+		Description: "desc",
+		Stack:       []string{"go", "react"},
+		Type:        domain.Web,
+		Link:        "http://example.com",
+		CreatedAt:   fixedTime,
+		UpdatedAt:   fixedTime,
+	}
+	expectedBody, _ := json.Marshal(validProject)
+
+	f := newProjectHandlerTestFixture(t)
+
+	// Setup mock expectation
+	f.mockProjectRepo.EXPECT().
+		Get(mock.Anything, fixedID).
+		Return(validProject, nil)
+
+	// Create HTTP request and response recorder
+	req := httptest.NewRequest(http.MethodGet, "/project/"+fixedID, nil)
+	w := httptest.NewRecorder()
+
+	// Ensure handler implements http.Handler
+	handler, ok := f.projectHandler.(http.Handler)
+	assert.True(t, ok, "projectHandler should implement http.Handler")
+
+	// Serve the HTTP request
+	handler.ServeHTTP(w, req)
+
+	// Verify the response
+	res := w.Result()
+	defer res.Body.Close()
+
+	body, _ := io.ReadAll(res.Body)
+	assert.Equal(t, http.StatusOK, res.StatusCode)
+	assert.JSONEq(t, string(expectedBody), string(body))
+
+	f.mockProjectRepo.AssertExpectations(t)
 }
 
 func TestProjectServiceHandler_Update(t *testing.T) {
@@ -412,6 +507,53 @@ func TestProjectServiceHandler_Update(t *testing.T) {
 	}
 }
 
+func TestProjectServiceHandler_Update_Routing(t *testing.T) {
+	fixedID := "123-abc"
+
+	validProject := &domain.Project{
+		Id:          fixedID,
+		Preview:     "preview.png",
+		BlurHash:    "hash",
+		Title:       "title",
+		SubTitle:    "subtitle",
+		Description: "desc",
+		Stack:       []string{"go", "react"},
+		Type:        domain.Web,
+		Link:        "http://example.com",
+	}
+
+	reqBody, _ := json.Marshal(validProject)
+	expectedResp, _ := json.Marshal(validProject)
+
+	f := newProjectHandlerTestFixture(t)
+
+	// Setup mock expectation
+	f.mockProjectRepo.EXPECT().
+		Update(mock.Anything, validProject).
+		Return(validProject, nil)
+
+	// Create PUT request
+	req := httptest.NewRequest(http.MethodPut, "/project", bytes.NewReader(reqBody))
+	w := httptest.NewRecorder()
+
+	// Ensure handler implements http.Handler
+	handler, ok := f.projectHandler.(http.Handler)
+	assert.True(t, ok, "projectHandler should implement http.Handler")
+
+	// Serve request
+	handler.ServeHTTP(w, req)
+
+	// Verify response
+	res := w.Result()
+	defer res.Body.Close()
+
+	body, _ := io.ReadAll(res.Body)
+	assert.Equal(t, http.StatusOK, res.StatusCode)
+	assert.JSONEq(t, string(expectedResp), string(body))
+
+	f.mockProjectRepo.AssertExpectations(t)
+}
+
 func TestProjectServiceHandler_Delete(t *testing.T) {
 	fixedID := "123-abc"
 
@@ -515,6 +657,39 @@ func TestProjectServiceHandler_Delete(t *testing.T) {
 			f.mockProjectRepo.AssertExpectations(t)
 		})
 	}
+}
+
+func TestProjectServiceHandler_Delete_Routing(t *testing.T) {
+	fixedID := "123-abc"
+
+	f := newProjectHandlerTestFixture(t)
+
+	// Setup mock expectation
+	f.mockProjectRepo.EXPECT().
+		Delete(mock.Anything, fixedID).
+		Return(nil)
+
+	// Create DELETE request
+	req := httptest.NewRequest(http.MethodDelete, "/project/"+fixedID, nil)
+	w := httptest.NewRecorder()
+
+	// Ensure the handler implements http.Handler
+	handler, ok := f.projectHandler.(http.Handler)
+	assert.True(t, ok, "projectHandler should implement http.Handler")
+
+	// Serve the request
+	handler.ServeHTTP(w, req)
+
+	// Verify the response
+	res := w.Result()
+	defer res.Body.Close()
+
+	body, _ := io.ReadAll(res.Body)
+	assert.Equal(t, http.StatusNoContent, res.StatusCode)
+	assert.Empty(t, string(body))
+
+	// Verify the mock was called as expected
+	f.mockProjectRepo.AssertExpectations(t)
 }
 
 func TestProjectServiceHandler_List(t *testing.T) {
@@ -667,4 +842,67 @@ func TestProjectServiceHandler_List(t *testing.T) {
 			f.mockProjectRepo.AssertExpectations(t)
 		})
 	}
+}
+
+func TestProjectServiceHandler_List_Routing(t *testing.T) {
+	fixedTime := time.Date(2025, 1, 1, 12, 0, 0, 0, time.UTC)
+
+	validProjects := []domain.Project{
+		{
+			Id:          "p1",
+			Preview:     "preview1",
+			BlurHash:    "hash1",
+			Title:       "title1",
+			SubTitle:    "subtitle1",
+			Description: "desc1",
+			Stack:       []string{"go"},
+			Type:        domain.Web,
+			Link:        "http://example.com/1",
+			CreatedAt:   fixedTime,
+			UpdatedAt:   fixedTime,
+		},
+		{
+			Id:          "p2",
+			Preview:     "preview2",
+			BlurHash:    "hash2",
+			Title:       "title2",
+			SubTitle:    "subtitle2",
+			Description: "desc2",
+			Stack:       []string{"react"},
+			Type:        domain.Mobile,
+			Link:        "http://example.com/2",
+			CreatedAt:   fixedTime,
+			UpdatedAt:   fixedTime,
+		},
+	}
+
+	expectedBody, _ := json.Marshal(validProjects)
+
+	f := newProjectHandlerTestFixture(t)
+
+	// Mock the repository call
+	f.mockProjectRepo.EXPECT().
+		List(mock.Anything, mock.AnythingOfType("domain.ProjectFilter")).
+		Return(validProjects, nil)
+
+	// Create GET request to /projects
+	req := httptest.NewRequest(http.MethodGet, "/projects", nil)
+	w := httptest.NewRecorder()
+
+	// Ensure the handler implements http.Handler
+	handler, ok := f.projectHandler.(http.Handler)
+	assert.True(t, ok, "projectHandler should implement http.Handler")
+
+	// Serve through full HTTP routing
+	handler.ServeHTTP(w, req)
+
+	// Check response
+	res := w.Result()
+	defer res.Body.Close()
+
+	body, _ := io.ReadAll(res.Body)
+	assert.Equal(t, http.StatusOK, res.StatusCode)
+	assert.JSONEq(t, string(expectedBody), string(body))
+
+	f.mockProjectRepo.AssertExpectations(t)
 }

@@ -53,6 +53,26 @@ func NewSkillServiceHandler(cfg SkillServiceConfig) SkillHandler {
 	}
 }
 
+// ServeHTTP dispatches HTTP requests for skillServiceHandler.
+//
+// It normalizes the request path by trimming a trailing slash, then routes
+// requests to CRUD handlers based on exact path equality or prefix checks.
+// The routing and behavior are as follows:
+//
+//   - GET  /skills         -> calls h.List(w, r)
+//   - POST /skill          -> calls h.Create(w, r)
+//   - PUT  /skill          -> calls h.Update(w, r)
+//   - GET  /skill/{id}     -> calls h.Get(w, r, id)
+//   - DELETE /skill/{id}   -> calls h.Delete(w, r, id)
+//
+// If a method is not allowed for a matched route, ServeHTTP responds with
+// 405 Method Not Allowed. If a required skill ID segment is missing for a
+// /skill/{id} route, it responds with 400 Bad Request. Unknown routes yield
+// a 404 Not Found.
+//
+// Note: path matching is simple (case-sensitive string equality and prefix),
+// and request body parsing/validation is delegated to the called handler
+// methods, which are expected to write appropriate responses and status codes.
 func (h *skillServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Normalize path by trimming trailing slash
 	path := strings.TrimSuffix(r.URL.Path, "/")

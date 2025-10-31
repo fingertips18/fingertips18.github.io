@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"io"
@@ -141,4 +142,46 @@ func TestAnalyticsServiceHandler_PageView(t *testing.T) {
 			f.mockAnalyticsRepo.AssertExpectations(t)
 		})
 	}
+}
+
+func TestAnalyticsServiceHandler_PageView_Routing(t *testing.T) {
+	validReq := domain.PageView{
+		PageLocation: "http://example.com/home",
+		PageTitle:    "Homepage",
+	}
+	validBody, _ := json.Marshal(validReq)
+
+	expectedResp, _ := json.Marshal(map[string]string{
+		"message":      "Page view recorded successfully",
+		"pageLocation": validReq.PageLocation,
+		"pageTitle":    validReq.PageTitle,
+	})
+
+	f := newAnalyticsHandlerTestFixture(t)
+
+	// Mock expectation
+	f.mockAnalyticsRepo.EXPECT().
+		PageView(validReq).
+		Return(nil)
+
+	// Create request
+	req := httptest.NewRequest(http.MethodPost, "/analytics/page-view", bytes.NewReader(validBody))
+	w := httptest.NewRecorder()
+
+	// Verify handler implements http.Handler
+	handler, ok := f.analyticsHandler.(http.Handler)
+	assert.True(t, ok, "analyticsHandler should implement http.Handler")
+
+	// Route through ServeHTTP
+	handler.ServeHTTP(w, req)
+
+	// Validate response
+	res := w.Result()
+	defer res.Body.Close()
+
+	body, _ := io.ReadAll(res.Body)
+	assert.Equal(t, http.StatusOK, res.StatusCode)
+	assert.JSONEq(t, string(expectedResp), string(body))
+
+	f.mockAnalyticsRepo.AssertExpectations(t)
 }
