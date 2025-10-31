@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"io"
@@ -141,4 +142,46 @@ func TestEmailServiceHandler_Send(t *testing.T) {
 			f.mockEmailRepo.AssertExpectations(t)
 		})
 	}
+}
+
+func TestEmailServiceHandler_Send_Routing(t *testing.T) {
+	validReq := domain.SendEmail{
+		Name:    "John Doe",
+		Email:   "john@example.com",
+		Message: "Hello, world!",
+	}
+	validBody, _ := json.Marshal(validReq)
+
+	expectedResp, _ := json.Marshal(map[string]string{
+		"message": "Email sent successfully",
+		"email":   validReq.Email,
+	})
+
+	f := newEmailHandlerTestFixture(t)
+
+	// Mock repo expectation
+	f.mockEmailRepo.EXPECT().
+		Send(validReq).
+		Return(nil)
+
+	// Create POST request
+	req := httptest.NewRequest(http.MethodPost, "/email/send", bytes.NewReader(validBody))
+	w := httptest.NewRecorder()
+
+	// Ensure handler implements http.Handler
+	handler, ok := f.emailHandler.(http.Handler)
+	assert.True(t, ok, "emailHandler should implement http.Handler")
+
+	// Route through ServeHTTP
+	handler.ServeHTTP(w, req)
+
+	// Verify response
+	res := w.Result()
+	defer res.Body.Close()
+
+	body, _ := io.ReadAll(res.Body)
+	assert.Equal(t, http.StatusAccepted, res.StatusCode)
+	assert.JSONEq(t, string(expectedResp), string(body))
+
+	f.mockEmailRepo.AssertExpectations(t)
 }

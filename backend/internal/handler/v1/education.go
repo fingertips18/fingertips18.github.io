@@ -67,6 +67,29 @@ func NewEducationServiceHandler(cfg EducationServiceConfig) EducationHandler {
 	}
 }
 
+// ServeHTTP implements http.Handler for educationServiceHandler.
+//
+// It normalizes the request path by trimming a trailing slash and dispatches
+// requests to the appropriate handler method based on the normalized path and
+// HTTP method.
+//
+// Routes:
+//   - GET  /educations          -> h.List(w, r)
+//     Responds with 405 Method Not Allowed for other methods.
+//   - POST /education           -> h.Create(w, r)
+//   - PUT  /education           -> h.Update(w, r)
+//     Responds with 405 Method Not Allowed for other methods.
+//   - GET  /education/{id}      -> h.Get(w, r, id)
+//   - DELETE /education/{id}    -> h.Delete(w, r, id)
+//     If the {id} segment is empty, responds with 400 Bad Request.
+//     Responds with 405 Method Not Allowed for unsupported methods.
+//
+// Unknown routes receive a 404 Not Found response.
+//
+// Note: path matching uses exact matches for "/educations" and "/education",
+// and prefix matching for "/education/". Request body parsing, validation, and
+// response serialization are handled by the delegated methods (Create, Update,
+// List, Get, Delete).
 func (h *educationServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Normalize path by trimming trailing slash
 	path := strings.TrimSuffix(r.URL.Path, "/")
@@ -91,6 +114,7 @@ func (h *educationServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
+		return
 
 	// GET / DELETE /education/{id}
 	case strings.HasPrefix(path, "/education/"):
