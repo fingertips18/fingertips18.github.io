@@ -197,6 +197,36 @@ definitions:
       updated_at:
         type: string
     type: object
+  v1.UpdateSkillRequest:
+    properties:
+      category:
+        type: string
+      hex_color:
+        type: string
+      icon:
+        type: string
+      id:
+        type: string
+      label:
+        type: string
+    type: object
+  v1.UpdateSkillResponse:
+    properties:
+      category:
+        type: string
+      created_at:
+        type: string
+      hex_color:
+        type: string
+      icon:
+        type: string
+      id:
+        type: string
+      label:
+        type: string
+      updated_at:
+        type: string
+    type: object
 info:
   contact: {}
   description: This API powers the portfolio platform, offering endpoints to manage
@@ -678,6 +708,42 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Create a skill
+      tags:
+      - skill
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing skill using the ID provided in the request
+        body. Returns the updated skill.
+      parameters:
+      - description: Skill payload with ID
+        in: body
+        name: skill
+        required: true
+        schema:
+          $ref: '#/definitions/v1.UpdateSkillRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.UpdateSkillResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update a skill
       tags:
       - skill
   /skill/{id}:

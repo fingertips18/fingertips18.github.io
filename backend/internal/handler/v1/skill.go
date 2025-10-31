@@ -17,6 +17,7 @@ type SkillHandler interface {
 	http.Handler
 	Create(w http.ResponseWriter, r *http.Request)
 	Get(w http.ResponseWriter, r *http.Request, id string)
+	Update(w http.ResponseWriter, r *http.Request)
 }
 
 type SkillServiceConfig struct {
@@ -59,6 +60,8 @@ func (h *skillServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		switch r.Method {
 		case http.MethodPost:
 			h.Create(w, r)
+		case http.MethodPut:
+			h.Update(w, r)
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
@@ -223,6 +226,94 @@ func (h *skillServiceHandler) Get(w http.ResponseWriter, r *http.Request, id str
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(skill); err != nil {
+		http.Error(w, "Failed to write response: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(buf.Bytes())
+}
+
+// Update handles HTTP PUT requests to update an existing skill.
+//
+// Behavior:
+//   - Only accepts HTTP PUT; any other method results in 405 Method Not Allowed.
+//   - Reads and closes the request body, expecting a JSON payload that matches UpdateSkillRequest
+//     (including fields such as Id, Icon, HexColor, Label, Category).
+//   - Decodes the JSON into a domain.Skill, converts the Category string to domain.SkillCategory,
+//     and validates the resulting payload via skill.ValidatePayload(); validation failures return 400 Bad Request.
+//   - Calls h.skillRepo.Update with the request context to persist the change.
+//   - If the repository returns an error, responds with 500 Internal Server Error.
+//   - If the repository returns nil (skill not found), responds with 404 Not Found.
+//   - On success, encodes an UpdateSkillResponse containing the updated skill fields (Id, Icon, HexColor, Label,
+//     Category, CreatedAt, UpdatedAt) as JSON, sets Content-Type: application/json, and returns 200 OK.
+//
+// Notes:
+// - Uses json.Decoder/Encoder for request/response processing.
+// - Errors include brief human-readable messages for client feedback.
+//
+// @Security ApiKeyAuth
+// @Summary Update a skill
+// @Description Updates an existing skill using the ID provided in the request body. Returns the updated skill.
+// @Tags skill
+// @Accept json
+// @Produce json
+// @Param skill body UpdateSkillRequest true "Skill payload with ID"
+// @Success 200 {object} UpdateSkillResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /skill [put]
+func (h *skillServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "Method not allowed: only PUT is supported", http.StatusMethodNotAllowed)
+		return
+	}
+
+	defer r.Body.Close()
+
+	var updateReq UpdateSkillRequest
+	if err := json.NewDecoder(r.Body).Decode(&updateReq); err != nil {
+		http.Error(w, "Invalid JSON in request body", http.StatusBadRequest)
+		return
+	}
+
+	skill := domain.Skill{
+		Id:       updateReq.Id,
+		Icon:     updateReq.Icon,
+		HexColor: updateReq.HexColor,
+		Label:    updateReq.Label,
+		Category: domain.SkillCategory(updateReq.Category),
+	}
+
+	if err := skill.ValidatePayload(); err != nil {
+		http.Error(w, "Invalid skill payload: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	updatedSkillRes, err := h.skillRepo.Update(r.Context(), &skill)
+	if err != nil {
+		http.Error(w, "Failed to update skill: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if updatedSkillRes == nil {
+		http.Error(w, "Skill not found", http.StatusNotFound)
+		return
+	}
+
+	updatedSkill := UpdateSkillResponse{
+		Id:        updatedSkillRes.Id,
+		Icon:      updatedSkillRes.Icon,
+		HexColor:  updatedSkillRes.HexColor,
+		Label:     updatedSkillRes.Label,
+		Category:  string(updatedSkillRes.Category),
+		CreatedAt: updatedSkillRes.CreatedAt,
+		UpdatedAt: updatedSkillRes.UpdatedAt,
+	}
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(updatedSkill); err != nil {
 		http.Error(w, "Failed to write response: "+err.Error(), http.StatusInternalServerError)
 		return
 	}

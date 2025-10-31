@@ -455,3 +455,192 @@ func TestSkillServiceHandler_Get_Routing(t *testing.T) {
 
 	f.mockSkillRepo.AssertExpectations(t)
 }
+
+func TestSkillServiceHandler_Update(t *testing.T) {
+	fixedID := "skill-123"
+
+	existingSkill := &domain.Skill{
+		Id:        fixedID,
+		Icon:      "icon-js",
+		HexColor:  "#f7df1e",
+		Label:     "JavaScript",
+		Category:  domain.Backend,
+		CreatedAt: time.Now().Add(-24 * time.Hour),
+		UpdatedAt: time.Now(),
+	}
+
+	// Request DTO (input to handler)
+	requestDTO := UpdateSkillRequest{
+		Id:       existingSkill.Id,
+		Icon:     existingSkill.Icon,
+		HexColor: existingSkill.HexColor,
+		Label:    existingSkill.Label,
+		Category: string(existingSkill.Category),
+	}
+
+	// Response DTO (output from handler)
+	responseDTO := UpdateSkillResponse{
+		Id:        existingSkill.Id,
+		Icon:      existingSkill.Icon,
+		HexColor:  existingSkill.HexColor,
+		Label:     existingSkill.Label,
+		Category:  string(existingSkill.Category),
+		CreatedAt: existingSkill.CreatedAt,
+		UpdatedAt: existingSkill.UpdatedAt,
+	}
+
+	validBody, _ := json.Marshal(requestDTO)
+	validResp, _ := json.Marshal(responseDTO)
+
+	type Given struct {
+		method   string
+		body     string
+		mockRepo func(m *mockRepo.MockSkillRepository)
+	}
+	type Expected struct {
+		code int
+		body string
+	}
+
+	tests := map[string]struct {
+		given    Given
+		expected Expected
+	}{
+		"success": {
+			given: Given{
+				method: http.MethodPut,
+				body:   string(validBody),
+				mockRepo: func(m *mockRepo.MockSkillRepository) {
+					m.EXPECT().
+						Update(mock.Anything, mock.MatchedBy(func(s *domain.Skill) bool {
+							return s.Id == fixedID && s.Label == "JavaScript"
+						})).
+						Return(existingSkill, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusOK,
+				body: string(validResp),
+			},
+		},
+		"method not allowed": {
+			given: Given{
+				method:   http.MethodPost,
+				body:     string(validBody),
+				mockRepo: nil,
+			},
+			expected: Expected{
+				code: http.StatusMethodNotAllowed,
+				body: "Method not allowed: only PUT is supported\n",
+			},
+		},
+		"invalid JSON": {
+			given: Given{
+				method:   http.MethodPut,
+				body:     `{"invalid":}`,
+				mockRepo: nil,
+			},
+			expected: Expected{
+				code: http.StatusBadRequest,
+				body: "Invalid JSON in request body\n",
+			},
+		},
+		"invalid payload (validation failure)": {
+			given: Given{
+				method: http.MethodPut,
+				body: func() string {
+					bad := requestDTO
+					bad.Label = "" // assume ValidatePayload requires Label
+					b, _ := json.Marshal(bad)
+					return string(b)
+				}(),
+				mockRepo: nil,
+			},
+			expected: Expected{
+				code: http.StatusBadRequest,
+				body: "Invalid skill payload: label missing\n",
+			},
+		},
+		"repository error": {
+			given: Given{
+				method: http.MethodPut,
+				body:   string(validBody),
+				mockRepo: func(m *mockRepo.MockSkillRepository) {
+					m.EXPECT().
+						Update(mock.Anything, mock.AnythingOfType("*domain.Skill")).
+						Return(nil, errors.New("database failure"))
+				},
+			},
+			expected: Expected{
+				code: http.StatusInternalServerError,
+				body: "Failed to update skill: database failure\n",
+			},
+		},
+		"skill not found": {
+			given: Given{
+				method: http.MethodPut,
+				body:   string(validBody),
+				mockRepo: func(m *mockRepo.MockSkillRepository) {
+					m.EXPECT().
+						Update(mock.Anything, mock.AnythingOfType("*domain.Skill")).
+						Return(nil, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusNotFound,
+				body: "Skill not found\n",
+			},
+		},
+		"unicode fields": {
+			given: Given{
+				method: http.MethodPut,
+				body: func() string {
+					unicode := requestDTO
+					unicode.Label = "東京大学 🏫"
+					b, _ := json.Marshal(unicode)
+					return string(b)
+				}(),
+				mockRepo: func(m *mockRepo.MockSkillRepository) {
+					m.EXPECT().
+						Update(mock.Anything, mock.MatchedBy(func(s *domain.Skill) bool {
+							return strings.Contains(s.Label, "東京")
+						})).
+						Return(existingSkill, nil)
+				},
+			},
+			expected: Expected{
+				code: http.StatusOK,
+				body: string(validResp),
+			},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			f := newSkillHandlerTestFixture(t)
+
+			if tt.given.mockRepo != nil {
+				tt.given.mockRepo(f.mockSkillRepo)
+			}
+
+			req := httptest.NewRequest(tt.given.method, "/skill", strings.NewReader(tt.given.body))
+			w := httptest.NewRecorder()
+
+			f.skillHandler.Update(w, req)
+
+			res := w.Result()
+			defer res.Body.Close()
+
+			body, _ := io.ReadAll(res.Body)
+			assert.Equal(t, tt.expected.code, res.StatusCode)
+
+			if strings.HasPrefix(tt.expected.body, "{") {
+				assert.JSONEq(t, tt.expected.body, string(body))
+			} else {
+				assert.Equal(t, tt.expected.body, string(body))
+			}
+
+			f.mockSkillRepo.AssertExpectations(t)
+		})
+	}
+}
