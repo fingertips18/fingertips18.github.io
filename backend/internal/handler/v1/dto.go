@@ -94,6 +94,24 @@ type CreateSkillRequest struct {
 	Category string `json:"category"`
 }
 
+type UpdateSkillRequest struct {
+	Id       string `json:"id"`
+	Icon     string `json:"icon"`
+	HexColor string `json:"hex_color"`
+	Label    string `json:"label"`
+	Category string `json:"category"`
+}
+
+type UpdateSkillResponse struct {
+	Id        string    `json:"id"`
+	Icon      string    `json:"icon"`
+	HexColor  string    `json:"hex_color"`
+	Label     string    `json:"label"`
+	Category  string    `json:"category"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 type SkillDTO struct {
 	Id        string    `json:"id"`
 	Icon      string    `json:"icon"`
