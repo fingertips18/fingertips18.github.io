@@ -10,6 +10,7 @@ import (
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/database"
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
 	v1 "github.com/fingertips18/fingertips18.github.io/backend/internal/repository/v1"
+	"github.com/fingertips18/fingertips18.github.io/backend/internal/utils"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -19,6 +20,7 @@ type SkillHandler interface {
 	Get(w http.ResponseWriter, r *http.Request, id string)
 	Update(w http.ResponseWriter, r *http.Request)
 	Delete(w http.ResponseWriter, r *http.Request, id string)
+	List(w http.ResponseWriter, r *http.Request)
 }
 
 type SkillServiceConfig struct {
@@ -56,7 +58,16 @@ func (h *skillServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	path := strings.TrimSuffix(r.URL.Path, "/")
 
 	switch {
-	// POST /skill
+	// GET /skills
+	case path == "/skills":
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		h.List(w, r)
+		return
+
+	// POST / PUT /skill
 	case path == "/skill":
 		switch r.Method {
 		case http.MethodPost:
@@ -68,6 +79,7 @@ func (h *skillServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		}
 		return
 
+	// GET / DELETE /skill/{id}
 	case strings.HasPrefix(path, "/skill/"):
 		id := strings.TrimPrefix(path, "/skill/")
 
@@ -370,4 +382,116 @@ func (h *skillServiceHandler) Delete(w http.ResponseWriter, r *http.Request, id 
 
 	// Successful delete → 204 No Content
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// List handles HTTP GET requests to return a paginated list of skills.
+//
+// It only supports the GET method; other methods receive HTTP 405 Method Not Allowed.
+//
+// Query parameters:
+//   - page (int, default: 1): 1-based page index. Values < 1 are clamped to 1.
+//   - page_size (int, default: 10, max: 100): number of items per page. Values < 1 revert to the default; values > 100 are clamped to 100.
+//   - sort_by (string): validated via utils.GetQuerySortBy; if invalid, the handler returns HTTP 400.
+//   - sort_ascending (bool, default: false): whether to sort ascending.
+//   - category (string): optional skill category. Supported categories are "Frontend", "Backend", "Tools", and "Others"; unknown categories result in HTTP 400.
+//
+// Behavior:
+//   - Builds a domain.SkillFilter from the validated query parameters and calls the repository to obtain the skill list.
+//   - On repository errors, responds with HTTP 500 and an error message.
+//   - On successful retrieval, encodes the skills as JSON, sets Content-Type: application/json, and responds with HTTP 200.
+//   - On JSON encoding errors, responds with HTTP 500.
+//
+// Notes:
+//   - The handler returns concise HTTP error responses for invalid input (400), unsupported method (405), and internal failures (500).
+//
+// @Security ApiKeyAuth
+// @Summary List skills
+// @Description Retrieves a paginated list of skills with optional filtering and sorting.
+// @Tags skill
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number (default 1)"
+// @Param page_size query int false "Number of items per page (default 10)"
+// @Param sort_by query string false "Field to sort by" Enums(created_at, updated_at)
+// @Param sort_ascending query bool false "Sort ascending order"
+// @Param type query string false "Filter by skill category" Enums(frontend, backend, tools, others)
+// @Success 200 {array} SkillDTO
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /skills [get]
+func (h *skillServiceHandler) List(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed: only GET is supported", http.StatusMethodNotAllowed)
+		return
+	}
+
+	q := r.URL.Query()
+
+	sortBy, err := utils.GetQuerySortBy(q, "sort_by")
+	if err != nil {
+		http.Error(w, "invalid sort by", http.StatusBadRequest)
+		return
+	}
+
+	filter := SkillFilterRequest{
+		Page:          utils.GetQueryInt32(q, "page", 1),
+		PageSize:      utils.GetQueryInt32(q, "page_size", 10),
+		SortBy:        sortBy,
+		SortAscending: utils.GetQueryBool(q, "sort_ascending", false),
+		Category:      q.Get("category"),
+	}
+
+	// Clamp page to minimum of 1
+	if filter.Page < 1 {
+		filter.Page = 1
+	}
+
+	// Clamp page_size to valid range
+	const maxPageSize = 100
+	if filter.PageSize < 1 {
+		filter.PageSize = 10 // default
+	} else if filter.PageSize > maxPageSize {
+		filter.PageSize = maxPageSize
+	}
+
+	var skillCategory *domain.SkillCategory
+	if filter.Category != "" {
+		t := domain.SkillCategory(filter.Category)
+		switch t {
+		case domain.Frontend, domain.Backend, domain.Tools, domain.Others:
+			skillCategory = &t
+		default:
+			http.Error(w, "invalid skill category", http.StatusBadRequest)
+			return
+		}
+	}
+
+	var sortByPtr *domain.SortBy
+	if filter.SortBy != "" {
+		sb := domain.SortBy(filter.SortBy)
+		sortByPtr = &sb
+	}
+	domainFilter := domain.SkillFilter{
+		Page:          filter.Page,
+		PageSize:      filter.PageSize,
+		SortBy:        sortByPtr,
+		SortAscending: filter.SortAscending,
+		Category:      skillCategory,
+	}
+
+	skills, err := h.skillRepo.List(r.Context(), domainFilter)
+	if err != nil {
+		http.Error(w, "Failed to list skills: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(skills); err != nil {
+		http.Error(w, "Failed to write response: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(buf.Bytes())
 }
