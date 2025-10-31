@@ -124,6 +124,12 @@ func createHandlers(cfg Config) []handlerConfig {
 		},
 	)
 
+	skillHandler := v1.NewSkillServiceHandler(
+		v1.SkillServiceConfig{
+			DatabaseAPI: cfg.DatabaseAPI,
+		},
+	)
+
 	handlers := []handlerConfig{
 		{
 			paths:   []string{"/email", "/email/"},
@@ -140,6 +146,10 @@ func createHandlers(cfg Config) []handlerConfig {
 		{
 			paths:   []string{"/education", "/education/", "/educations", "/educations/"},
 			handler: educationHandler,
+		},
+		{
+			paths:   []string{"/skill", "/skill/", "/skills", "/skills/"},
+			handler: skillHandler,
 		},
 	}
 
