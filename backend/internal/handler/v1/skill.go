@@ -125,7 +125,7 @@ func (h *skillServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 // @Accept json
 // @Produce json
 // @Param skill body CreateSkillRequest true "Skill payload"
-// @Success 201 {object} IDResponse "Education ID"
+// @Success 201 {object} IDResponse "Skill ID"
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /skill [post]
@@ -340,6 +340,17 @@ func (h *skillServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 //   - w: http.ResponseWriter used to send the HTTP response.
 //   - r: *http.Request representing the incoming HTTP request.
 //   - id: string identifier of the skill to delete.
+//
+// @Security ApiKeyAuth
+// @Summary Delete a skill
+// @Description Deletes an existing skill by its unique ID provided in the path.
+// @Tags skill
+// @Param id path string true "Skill ID"
+// @Success 204 "No Content"
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /skill/{id} [delete]
 func (h *skillServiceHandler) Delete(w http.ResponseWriter, r *http.Request, id string) {
 	if r.Method != http.MethodDelete {
 		http.Error(w, "Method not allowed: only DELETE is supported", http.StatusMethodNotAllowed)

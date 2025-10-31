@@ -780,7 +780,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Education ID",
+                        "description": "Skill ID",
                         "schema": {
                             "$ref": "#/definitions/v1.IDResponse"
                         }
@@ -833,6 +833,50 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/v1.SkillDTO"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/v1.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/v1.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Deletes an existing skill by its unique ID provided in the path.",
+                "tags": [
+                    "skill"
+                ],
+                "summary": "Delete a skill",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Skill ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",
