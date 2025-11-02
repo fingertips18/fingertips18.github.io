@@ -24,7 +24,6 @@
     "noUncheckedSideEffectImports": true,
 
     /* TailwindCSS */
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }
