@@ -1,12 +1,19 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
 import './index.css';
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-createRoot(document.getElementById('root')!).render(
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { RouterProvider } from 'react-router-dom';
+
+import { router } from './routes/router';
+
+const rootElement = document.getElementById('root');
+
+if (!rootElement) {
+  throw new Error('Root element not found');
+}
+
+createRoot(rootElement).render(
   <StrictMode>
-    <main className='h-dvh flex-center'>
-      <h1 className='text-lg font-bold'>Admin Dashboard</h1>
-    </main>
+    <RouterProvider router={router} />
   </StrictMode>,
 );
