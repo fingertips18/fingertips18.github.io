@@ -51,6 +51,8 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: latest
+          cache: "npm"
+          cache-dependency-path: "apps/frontend/package-lock.json"
 
       - name: Cache Node Modules
         uses: actions/cache@v4
@@ -58,7 +60,7 @@ jobs:
           path: |
             ~/.npm
             apps/frontend/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('apps/frontend/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
