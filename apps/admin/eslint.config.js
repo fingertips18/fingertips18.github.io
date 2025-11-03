@@ -11,7 +11,7 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig([
-  globalIgnores(['dist', 'node_modules', './src/components/shadcn/*.{ts,tsx}']),
+  globalIgnores(['dist', 'node_modules',  './src/**/shadcn/*.{ts,tsx}',]),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

@@ -7,18 +7,22 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: 'Branch to deploy (defaults to main)'
+        description: "Branch to deploy (defaults to main)"
         required: false
-        default: 'main'
+        default: "main"
       deployment_reason:
-        description: 'Reason for deployment'
+        description: "Reason for deployment"
         required: false
-        default: 'Manual deployment triggered by workflow_dispatch'
+        default: "Manual deployment triggered by workflow_dispatch"
 
 permissions:
   contents: read
   pages: read
   id-token: write
+
+defaults:
+  run:
+    working-directory: apps/frontend
 
 jobs:
   build-and-deploy:

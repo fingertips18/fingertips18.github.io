@@ -5,14 +5,18 @@ on:
     branches:
       - main
     paths-ignore:
-      - '.github/workflows/backend-pr-checks.yaml'
-      - 'backend/**'
-      - 'admin/**'
+      - ".github/workflows/backend-pr-checks.yaml"
+      - "apps/backend/**"
+      - "apps/admin/**"
 
 permissions:
   contents: read
   pull-requests: write
   security-events: write
+
+defaults:
+  run:
+    working-directory: apps/frontend
 
 jobs:
   quality-checks:
@@ -28,7 +32,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 22
-          cache: 'npm'
+          cache: "npm"
 
       - name: Cache Node Modules
         uses: actions/cache@v4
@@ -95,7 +99,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 22
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install Dependencies
         run: npm ci
@@ -109,23 +113,23 @@ jobs:
       - name: Trivy Vulnerability Scanner
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'table'
-          exit-code: '1'
-          severity: 'CRITICAL,HIGH'
+          scan-type: "fs"
+          scan-ref: "."
+          format: "table"
+          exit-code: "1"
+          severity: "CRITICAL,HIGH"
 
       - name: Trivy for SARIF Output
         uses: aquasecurity/trivy-action@master
         if: github.event_name == 'push'
         with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+          scan-type: "fs"
+          scan-ref: "."
+          format: "sarif"
+          output: "trivy-results.sarif"
 
       - name: Upload Trivy Scan results
         uses: github/codeql-action/upload-sarif@v4
         if: github.event_name == 'push' && always()
         with:
-          sarif_file: 'trivy-results.sarif'
+          sarif_file: "trivy-results.sarif"
