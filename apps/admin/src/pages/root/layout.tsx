@@ -1,18 +1,19 @@
 import { Outlet } from 'react-router-dom';
 
 import { Header } from '@/components/header';
-import { SidebarProvider, SidebarTrigger } from '@/components/shadcn/sidebar';
+import { SidebarProvider } from '@/components/shadcn/sidebar';
 import { Sidebar } from '@/components/sidebar';
 
 export function RootLayout() {
   return (
-    <SidebarProvider className='flex-col'>
-      <Header />
+    <SidebarProvider>
       <Sidebar />
-      <main className='h-default max-w-7xl mx-auto'>
-        <SidebarTrigger />
-        <Outlet />
-      </main>
+      <div className='w-full'>
+        <Header />
+        <main className='h-default size-full'>
+          <Outlet />
+        </main>
+      </div>
     </SidebarProvider>
   );
 }
