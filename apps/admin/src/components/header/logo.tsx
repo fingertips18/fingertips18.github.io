@@ -14,7 +14,7 @@ export function Logo() {
   const title =
     pathname in TABLE_TITLE
       ? TABLE_TITLE[pathname as keyof typeof TABLE_TITLE]
-      : TABLE_TITLE[Route.root];
+      : 'Not Found';
 
   return (
     <div className='flex-start gap-x-2 h-full'>
@@ -23,7 +23,7 @@ export function Logo() {
       </Hint>
       <Separator orientation='vertical' />
       <Button asChild variant='link' className='p-0 ml-2 font-bold'>
-        <Link to={pathname}>{title}</Link>
+        <Link to={title === 'Not Found' ? Route.root : pathname}>{title}</Link>
       </Button>
     </div>
   );
