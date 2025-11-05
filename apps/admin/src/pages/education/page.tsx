@@ -1,4 +1,4 @@
-export function EducationPage() {
+export default function EducationPage() {
   return (
     <section className='size-full flex-center'>
       <h2>Education</h2>

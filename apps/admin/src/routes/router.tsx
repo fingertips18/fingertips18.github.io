@@ -4,12 +4,12 @@ import {
   Route,
 } from 'react-router-dom';
 
-import { EducationPage } from '@/pages/education/page';
+import EducationPage from '@/pages/education/page';
 import NotFoundPage from '@/pages/not-found/page';
-import { ProjectPage } from '@/pages/project/page';
-import { RootLayout } from '@/pages/root/layout';
-import { RootPage } from '@/pages/root/page';
-import { SkillPage } from '@/pages/skill/page';
+import ProjectPage from '@/pages/project/page';
+import RootLayout from '@/pages/root/layout';
+import RootPage from '@/pages/root/page';
+import SkillPage from '@/pages/skill/page';
 
 import { Route as AppRoute } from './route';
 

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/shadcn/button';
 import { Route } from '@/routes/route';
 
-const NotFoundPage = () => {
+export default function NotFoundPage() {
   return (
     <section className='size-full flex-center flex-col gap-y-2 lg:gap-y-1 leading-tight'>
       <h6 className='lg:text-lg font-bold leading-none'>404 Page Not Found</h6>
@@ -15,6 +15,4 @@ const NotFoundPage = () => {
       </Button>
     </section>
   );
-};
-
-export default NotFoundPage;
+}
