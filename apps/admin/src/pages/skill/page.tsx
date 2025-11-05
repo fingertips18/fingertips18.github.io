@@ -1,4 +1,4 @@
-export function SkillPage() {
+export default function SkillPage() {
   return (
     <section className='size-full flex-center'>
       <h2>Skill</h2>

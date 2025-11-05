@@ -1,4 +1,4 @@
-export function ProjectPage() {
+export default function ProjectPage() {
   return (
     <section className='size-full flex-center'>
       <h2>Project</h2>

@@ -3,4 +3,5 @@ export const Route = {
   project: '/project',
   education: '/education',
   skill: '/skill',
+  notFound: '*',
 } as const;

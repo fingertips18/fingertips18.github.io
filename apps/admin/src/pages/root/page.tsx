@@ -1,4 +1,4 @@
-export function RootPage() {
+export default function RootPage() {
   return (
     <section className='size-full flex-center'>
       <h2>Dashboard</h2>

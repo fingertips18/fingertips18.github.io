@@ -4,7 +4,7 @@ import { Header } from '@/components/header';
 import { SidebarProvider } from '@/components/shadcn/sidebar';
 import { Sidebar } from '@/components/sidebar';
 
-export function RootLayout() {
+export default function RootLayout() {
   return (
     <SidebarProvider>
       <Sidebar />
