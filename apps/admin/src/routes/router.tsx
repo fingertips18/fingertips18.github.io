@@ -5,6 +5,7 @@ import {
 } from 'react-router-dom';
 
 import EducationPage from '@/pages/education/page';
+import ErrorPage from '@/pages/error/page';
 import NotFoundPage from '@/pages/not-found/page';
 import ProjectPage from '@/pages/project/page';
 import RootLayout from '@/pages/root/layout';
@@ -15,7 +16,11 @@ import { Route as AppRoute } from './route';
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route path={AppRoute.root} element={<RootLayout />}>
+    <Route
+      path={AppRoute.root}
+      element={<RootLayout />}
+      errorElement={<ErrorPage />}
+    >
       {/* Root */}
       <Route index element={<RootPage />} />
 
