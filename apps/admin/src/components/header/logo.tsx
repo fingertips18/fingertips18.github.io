@@ -22,7 +22,7 @@ export function Logo() {
         <SidebarTrigger className='cursor-pointer' />
       </Hint>
       <Separator orientation='vertical' />
-      <Button asChild variant='link' className='p-0 ml-2'>
+      <Button asChild variant='link' className='p-0 ml-2 font-bold'>
         <Link to={pathname}>{title}</Link>
       </Button>
     </div>
