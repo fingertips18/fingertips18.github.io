@@ -51,10 +51,10 @@ export function Sidebar() {
                 return (
                   <SidebarMenuItem key={table.title}>
                     <SidebarMenuButton asChild>
-                      <a href={table.url}>
+                      <Link to={table.url}>
                         <Icon />
                         <span>{table.title}</span>
-                      </a>
+                      </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );

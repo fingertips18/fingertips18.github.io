@@ -12,8 +12,9 @@ export function Logo() {
 
   // Look up the title for the current pathname, fallback to the root title
   const title =
-    TABLE_TITLE[pathname as keyof typeof TABLE_TITLE] ??
-    TABLE_TITLE[Route.root];
+    pathname in TABLE_TITLE
+      ? TABLE_TITLE[pathname as keyof typeof TABLE_TITLE]
+      : TABLE_TITLE[Route.root];
 
   return (
     <div className='flex-start gap-x-2 h-full'>

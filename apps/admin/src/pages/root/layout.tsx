@@ -10,7 +10,7 @@ export function RootLayout() {
       <Sidebar />
       <div className='w-full'>
         <Header />
-        <main className='h-default size-full'>
+        <main className='h-default'>
           <Outlet />
         </main>
       </div>

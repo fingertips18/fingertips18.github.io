@@ -137,6 +137,6 @@
   }
 
   .h-default {
-    height: calc(100svh - var(--header-height));
+    height: calc(100dvh - var(--header-height));
   }
 }

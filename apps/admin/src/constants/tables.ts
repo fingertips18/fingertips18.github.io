@@ -14,17 +14,17 @@ type Table = {
 };
 export const TABLES: Table[] = [
   {
-    title: 'Projects',
+    title: 'Project',
     url: Route.project,
     icon: FolderKanban,
   },
   {
-    title: 'Educations',
+    title: 'Education',
     url: Route.education,
     icon: GraduationCap,
   },
   {
-    title: 'Skills',
+    title: 'Skill',
     url: Route.skill,
     icon: Brain,
   },
