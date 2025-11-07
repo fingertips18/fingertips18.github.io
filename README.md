@@ -1,4 +1,4 @@
-<img src="public/banner.png" alt="Banner" width="100%" />
+<img src="assets/banner.png" alt="Banner" width="100%" />
 
 # 📂 Welcome to My Portfolio
 
