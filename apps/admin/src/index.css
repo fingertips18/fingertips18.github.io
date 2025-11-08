@@ -138,6 +138,14 @@
   }
 
   .h-default {
-    @apply h-[calc(100dvh-var(--header-height))];
+    @apply h-[calc(100dvh-var(--header-height))] min-h-[calc(100dvh-var(--header-height))];
+  }
+
+  .padding {
+    @apply p-4;
+  }
+
+  .content {
+    @apply size-full max-w-7xl mx-auto;
   }
 }
