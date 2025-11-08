@@ -49,11 +49,11 @@ export function Sidebar() {
                 const Icon = table.icon;
 
                 return (
-                  <SidebarMenuItem key={table.title}>
+                  <SidebarMenuItem key={table.label}>
                     <SidebarMenuButton asChild>
                       <Link to={table.url}>
                         <Icon />
-                        <span>{table.title}</span>
+                        <span>{table.label}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
