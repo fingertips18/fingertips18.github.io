@@ -1,12 +1,12 @@
 import { Outlet } from 'react-router-dom';
 
 import { Header } from '@/components/header';
-import { SidebarProvider } from '@/components/shadcn/sidebar';
 import { Sidebar } from '@/components/sidebar';
+import Providers from '@/providers';
 
 export default function RootLayout() {
   return (
-    <SidebarProvider>
+    <Providers>
       <Sidebar />
       <div className='w-full'>
         <Header />
@@ -14,6 +14,6 @@ export default function RootLayout() {
           <Outlet />
         </main>
       </div>
-    </SidebarProvider>
+    </Providers>
   );
 }

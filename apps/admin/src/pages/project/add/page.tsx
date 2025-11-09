@@ -2,9 +2,11 @@ import { FolderPlus } from 'lucide-react';
 
 import { Back } from '@/components/common/back';
 
+import { Form } from './_components/form';
+
 export default function AddProjectPage() {
   return (
-    <section className='content padding flex flex-col'>
+    <section className='content padding flex flex-col gap-y-6 lg:gap-y-8'>
       <div className='flex-between gap-x-4'>
         <Back />
         <div className='flex-end gap-x-2 text-primary'>
@@ -15,9 +17,7 @@ export default function AddProjectPage() {
         </div>
       </div>
 
-      <div className='flex-1 flex-center'>
-        <h6>Add Project</h6>
-      </div>
+      <Form />
     </section>
   );
 }
