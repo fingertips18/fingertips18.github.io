@@ -48,7 +48,8 @@ export function useFetch<T>({ url, ...props }: FetchProps) {
         setLoading(false);
       }
     },
-    [props, url],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [url],
   );
 
   useEffect(() => {
