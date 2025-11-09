@@ -19,17 +19,24 @@ export function useFetch<T>({ url, ...props }: FetchProps) {
           ...props,
         });
 
-        const data = await response.json();
-
         if (!response.ok) {
-          const message = 'Server error occured';
+          const errorData = await response.json().catch(() => null);
+          const message =
+            (errorData?.message as string) ||
+            `Server error: ${response.status} ${response.statusText}`;
+
           setError(message);
           throw Error(message);
         }
 
+        const data = await response.json();
+
         setData(data as T);
         setError(null);
       } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          return;
+        }
         const message = (error as Error).message || 'Something went wrong';
         setError(message);
         toast({

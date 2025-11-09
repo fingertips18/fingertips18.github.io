@@ -7,7 +7,7 @@ interface ToastProps {
 }
 
 export function toast({ level, title, description }: ToastProps) {
-  return sonnerToast?.[level]?.(title, {
+  return sonnerToast[level](title, {
     description,
   });
 }
