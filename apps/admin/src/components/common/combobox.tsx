@@ -29,6 +29,10 @@ interface ComboboxProps
   selectPlaceholder?: string;
 }
 
+/**
+ * Combobox component for multi-tag input with suggestions.
+ * Note: All tags are normalized to lowercase for consistent comparison and storage.
+ */
 export function Combobox({
   value: tags = [],
   onChange,
@@ -59,7 +63,9 @@ export function Combobox({
 
     const allSuggestions = [
       ...new Set(
-        [...suggestions, ...defaultSuggestions].filter((s) => s.trim()),
+        [...suggestions, ...defaultSuggestions].filter(
+          (s) => s.trim().length > 0,
+        ),
       ),
     ];
     return allSuggestions.filter(
