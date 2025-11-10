@@ -140,7 +140,7 @@ export function Combobox({
         </Popover>
 
         <Button
-          onClick={() => addTag(input.trim().toLowerCase())}
+          onClick={() => addTag(input)}
           disabled={!input.trim()}
           className='cursor-pointer'
         >

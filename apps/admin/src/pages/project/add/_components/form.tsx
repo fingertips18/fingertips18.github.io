@@ -185,9 +185,14 @@ export function Form() {
                 Select the main platform or category your project belongs to.
               </FormDescription>
               <FormControl>
-                <Select>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  name={field.name}
+                  disabled={field.disabled}
+                >
                   <SelectTrigger className='w-full'>
-                    <SelectValue placeholder='Select a type' {...field} />
+                    <SelectValue placeholder='Select a type' />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
