@@ -43,7 +43,7 @@ export function Combobox({
 
   const addTag = (tag: string) => {
     const normalized = tag.toLowerCase();
-    if (!normalized || tags.includes(normalized)) return;
+    if (!normalized || tags.some((t) => t.toLowerCase() === normalized)) return;
     const newTags = [...tags, normalized];
     setInput('');
     onChange?.(newTags);
@@ -61,7 +61,9 @@ export function Combobox({
       ...new Set([...suggestions, ...defaultSuggestions]),
     ];
     return allSuggestions.filter(
-      (s) => s.toLowerCase().includes(input.toLowerCase()) && !tags.includes(s),
+      (s) =>
+        s.toLowerCase().includes(input.toLowerCase()) &&
+        !tags.some((t) => t.toLowerCase() === s.toLowerCase()),
     );
   }, [input, suggestions, defaultSuggestions, tags]);
 
@@ -123,7 +125,9 @@ export function Combobox({
                         aria-hidden='true'
                         className={cn(
                           'ml-auto',
-                          tags.includes(suggestion)
+                          tags.some(
+                            (t) => t.toLowerCase() === suggestion.toLowerCase(),
+                          )
                             ? 'opacity-100'
                             : 'opacity-0',
                         )}
