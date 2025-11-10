@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import { Combobox } from '@/components/common/combobox';
 import {
   Form as ShadcnForm,
   FormControl,
@@ -54,6 +55,13 @@ const formSchema = z.object({
     .max(300, {
       message: 'Description must not exceed 300 characters.',
     }),
+  stack: z
+    .array(
+      z.string().min(1, {
+        error: 'Tag cannot be empty',
+      }),
+    )
+    .min(1, { error: 'At least one tag is required' }),
   type: z.enum(ProjectType, {
     error: 'Please select a valid project type.',
   }),
@@ -69,6 +77,7 @@ export function Form() {
       title: '',
       subTitle: '',
       description: '',
+      stack: [],
       type: undefined,
       link: '',
     },
@@ -144,6 +153,28 @@ export function Form() {
 
         <FormField
           control={form.control}
+          name='stack'
+          render={({ field }) => (
+            <FormItem className='w-full'>
+              <FormLabel>Stack</FormLabel>
+              <FormDescription>
+                Add tags to categorize or describe items.
+              </FormDescription>
+              <FormControl>
+                <Combobox
+                  placeholder='e.g. ts, js, go, ruby, c#'
+                  defaultSuggestions={['c#', 'c++']}
+                  emptyMessage='No stack found.'
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name='type'
           render={({ field }) => (
             <FormItem className='w-full'>
@@ -160,7 +191,7 @@ export function Form() {
                     <SelectGroup>
                       <SelectLabel>Project Type</SelectLabel>
                       {Object.values(ProjectType).map((t) => (
-                        <SelectItem key={t} value={t}>
+                        <SelectItem key={t} value={t} className='capitalize'>
                           {t}
                         </SelectItem>
                       ))}

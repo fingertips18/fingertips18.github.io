@@ -1,16 +1,16 @@
-import { ChevronsUpDown, Stars, X } from 'lucide-react';
-import {
-  type ChangeEvent,
-  type ComponentProps,
-  type KeyboardEvent,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { Check, ChevronsUpDown, X } from 'lucide-react';
+import { type ComponentProps, useMemo, useState } from 'react';
 
 import { Badge } from '@/components/shadcn/badge';
 import { Button } from '@/components/shadcn/button';
-import { Input } from '@/components/shadcn/input';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/shadcn/command';
 import {
   Popover,
   PopoverContent,
@@ -18,26 +18,27 @@ import {
 } from '@/components/shadcn/popover';
 import { cn } from '@/lib/utils';
 
-import { Command, CommandInput } from '../shadcn/command';
-
-interface TagsInputProps
+interface ComboboxProps
   extends Omit<ComponentProps<'input'>, 'value' | 'onChange' | 'onKeyDown'> {
   value?: string[];
   onChange?: (tags: string[]) => void;
   suggestions?: string[];
+  defaultSuggestions: string[];
   className?: string;
+  emptyMessage: string;
 }
 
-export function TagsInput({
+export function Combobox({
   value = [],
   onChange,
   suggestions = [],
+  defaultSuggestions,
+  emptyMessage,
   ...props
-}: TagsInputProps) {
+}: ComboboxProps) {
   const [input, setInput] = useState<string>('');
   const [tags, setTags] = useState<string[]>(value);
   const [open, setOpen] = useState<boolean>(false);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const addTag = (tag: string) => {
     if (!tag || tags.includes(tag)) return;
@@ -51,27 +52,6 @@ export function TagsInput({
     const newTags = tags.filter((t) => t !== tag);
     setTags(newTags);
     onChange?.(newTags);
-  };
-
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const nextValue = e.target.value;
-    setInput(nextValue);
-
-    // Only open if there are suggestions
-    setOpen(
-      nextValue.trim().length > 0 &&
-        suggestions.some(
-          (s) =>
-            s.toLowerCase().includes(nextValue.toLowerCase()) &&
-            !tags.includes(s),
-        ),
-    );
-  };
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key !== 'Enter' || !input.trim()) return;
-    e.preventDefault();
-    addTag(input);
   };
 
   const filteredSuggestions = useMemo(() => {
@@ -99,60 +79,55 @@ export function TagsInput({
 
       <div className='flex-center gap-x-2'>
         <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger className='w-full'>
+          <PopoverTrigger asChild>
             <Button
               variant='outline'
               role='combobox'
               aria-expanded={open}
-              className='justify-between'
+              className='justify-between flex-1'
             >
               Select tech stack...
               <ChevronsUpDown aria-hidden='true' className='opacity-50' />
             </Button>
           </PopoverTrigger>
           <PopoverContent
-            align='start'
-            side='bottom'
-            className={cn(
-              'space-y-2 transition-opacity duration-150 p-1',
-              filteredSuggestions.length > 0
-                ? 'opacity-100'
-                : 'opacity-0 pointer-events-none',
-            )}
+            className='p-0'
             style={{
               width: 'var(--radix-popover-trigger-width)',
             }}
           >
             <Command>
               <CommandInput
-                ref={inputRef}
-                value={input}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
+                onValueChange={(value) => setInput(value)}
                 {...props}
-              ></CommandInput>
+              />
+              <CommandList>
+                <CommandEmpty>{emptyMessage}</CommandEmpty>
+                <CommandGroup>
+                  {(filteredSuggestions.length > 0
+                    ? filteredSuggestions
+                    : defaultSuggestions
+                  ).map((suggestion) => (
+                    <CommandItem
+                      key={suggestion}
+                      value={suggestion}
+                      onSelect={(value) => addTag(value)}
+                    >
+                      {suggestion}
+                      <Check
+                        aria-hidden='true'
+                        className={cn(
+                          'ml-auto',
+                          tags.includes(suggestion)
+                            ? 'opacity-100'
+                            : 'opacity-0',
+                        )}
+                      />
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
             </Command>
-
-            <div className='flex-start gap-x-1 opacity-50 px-2 py-1'>
-              <Stars aria-hidden='true' className='size-4' />
-              <span className='text-sm font-medium'>Suggestions</span>
-            </div>
-
-            <ul className='space-y-1 list-none'>
-              {filteredSuggestions.map((suggestion) => (
-                <li
-                  key={suggestion}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => {
-                    addTag(suggestion);
-                    setOpen(false);
-                  }}
-                  className='px-2 py-1 rounded-md cursor-pointer hover:bg-accent hover:text-accent-foreground'
-                >
-                  {suggestion}
-                </li>
-              ))}
-            </ul>
           </PopoverContent>
         </Popover>
 
