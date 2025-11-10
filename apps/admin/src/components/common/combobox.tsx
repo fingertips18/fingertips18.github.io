@@ -58,7 +58,9 @@ export function Combobox({
     if (!input) return defaultSuggestions;
 
     const allSuggestions = [
-      ...new Set([...suggestions, ...defaultSuggestions]),
+      ...new Set(
+        [...suggestions, ...defaultSuggestions].filter((s) => s.trim()),
+      ),
     ];
     return allSuggestions.filter(
       (s) =>
