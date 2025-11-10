@@ -42,8 +42,9 @@ export function Combobox({
   const [open, setOpen] = useState<boolean>(false);
 
   const addTag = (tag: string) => {
-    if (!tag || tags.some((t) => t.toLowerCase() === tag.toLowerCase())) return;
-    const newTags = [...tags, tag];
+    const normalized = tag.toLowerCase();
+    if (!normalized || tags.includes(normalized)) return;
+    const newTags = [...tags, normalized];
     setInput('');
     onChange?.(newTags);
   };
@@ -86,6 +87,7 @@ export function Combobox({
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
+              type='button'
               variant='outline'
               role='combobox'
               aria-expanded={open}
