@@ -1,5 +1,5 @@
 import { Check, ChevronsUpDown, X } from 'lucide-react';
-import { type ComponentProps, useMemo, useState } from 'react';
+import { type ComponentProps, useEffect, useMemo, useState } from 'react';
 
 import { Badge } from '@/components/shadcn/badge';
 import { Button } from '@/components/shadcn/button';
@@ -26,6 +26,7 @@ interface ComboboxProps
   defaultSuggestions: string[];
   className?: string;
   emptyMessage: string;
+  selectPlaceholder?: string;
 }
 
 export function Combobox({
@@ -34,11 +35,16 @@ export function Combobox({
   suggestions = [],
   defaultSuggestions,
   emptyMessage,
+  selectPlaceholder = 'Select...',
   ...props
 }: ComboboxProps) {
   const [input, setInput] = useState<string>('');
   const [tags, setTags] = useState<string[]>(value);
   const [open, setOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    setTags(value);
+  }, [value]);
 
   const addTag = (tag: string) => {
     if (!tag || tags.includes(tag)) return;
@@ -69,6 +75,7 @@ export function Combobox({
             {tag}
             <button
               onClick={() => removeTag(tag)}
+              aria-label={`Remove ${tag}`}
               className='p-1 rounded-full size-5 flex-center cursor-pointer hover:bg-accent/25 transition-colors'
             >
               <X aria-hidden='true' />
@@ -86,7 +93,7 @@ export function Combobox({
               aria-expanded={open}
               className='justify-between flex-1'
             >
-              Select tech stack...
+              {selectPlaceholder}
               <ChevronsUpDown aria-hidden='true' className='opacity-50' />
             </Button>
           </PopoverTrigger>
@@ -98,6 +105,7 @@ export function Combobox({
           >
             <Command>
               <CommandInput
+                value={input}
                 onValueChange={(value) => setInput(value)}
                 {...props}
               />
@@ -132,7 +140,7 @@ export function Combobox({
         </Popover>
 
         <Button
-          onClick={() => addTag(input)}
+          onClick={() => addTag(input.trim().toLowerCase())}
           disabled={!input.trim()}
           className='cursor-pointer'
         >

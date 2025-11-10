@@ -58,10 +58,10 @@ const formSchema = z.object({
   stack: z
     .array(
       z.string().min(1, {
-        error: 'Tag cannot be empty',
+        error: 'Stack item cannot be empty',
       }),
     )
-    .min(1, { error: 'At least one tag is required' }),
+    .min(1, { error: 'At least one stack item is required' }),
   type: z.enum(ProjectType, {
     error: 'Please select a valid project type.',
   }),
@@ -158,13 +158,15 @@ export function Form() {
             <FormItem className='w-full'>
               <FormLabel>Stack</FormLabel>
               <FormDescription>
-                Add tags to categorize or describe items.
+                Add the technologies, frameworks, or languages used in your
+                project.
               </FormDescription>
               <FormControl>
                 <Combobox
                   placeholder='e.g. ts, js, go, ruby, c#'
                   defaultSuggestions={['c#', 'c++']}
                   emptyMessage='No stack found.'
+                  selectPlaceholder='Select tech stack...'
                   {...field}
                 />
               </FormControl>
