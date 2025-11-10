@@ -1,5 +1,5 @@
 import { Check, ChevronsUpDown, X } from 'lucide-react';
-import { type ComponentProps, useEffect, useMemo, useState } from 'react';
+import { type ComponentProps, useMemo, useState } from 'react';
 
 import { Badge } from '@/components/shadcn/badge';
 import { Button } from '@/components/shadcn/button';
@@ -23,49 +23,46 @@ interface ComboboxProps
   value?: string[];
   onChange?: (tags: string[]) => void;
   suggestions?: string[];
-  defaultSuggestions: string[];
+  defaultSuggestions?: string[];
   className?: string;
-  emptyMessage: string;
+  emptyMessage?: string;
   selectPlaceholder?: string;
 }
 
 export function Combobox({
-  value = [],
+  value: tags = [],
   onChange,
   suggestions = [],
-  defaultSuggestions,
-  emptyMessage,
+  defaultSuggestions = [],
+  emptyMessage = 'No results found.',
   selectPlaceholder = 'Select...',
   ...props
 }: ComboboxProps) {
   const [input, setInput] = useState<string>('');
-  const [tags, setTags] = useState<string[]>(value);
   const [open, setOpen] = useState<boolean>(false);
 
-  useEffect(() => {
-    setTags(value);
-  }, [value]);
-
   const addTag = (tag: string) => {
-    if (!tag || tags.includes(tag)) return;
+    if (!tag || tags.some((t) => t.toLowerCase() === tag.toLowerCase())) return;
     const newTags = [...tags, tag];
-    setTags(newTags);
     setInput('');
     onChange?.(newTags);
   };
 
   const removeTag = (tag: string) => {
     const newTags = tags.filter((t) => t !== tag);
-    setTags(newTags);
     onChange?.(newTags);
   };
 
   const filteredSuggestions = useMemo(() => {
-    if (!input) return [];
-    return suggestions.filter(
+    if (!input) return defaultSuggestions;
+
+    const allSuggestions = [
+      ...new Set([...suggestions, ...defaultSuggestions]),
+    ];
+    return allSuggestions.filter(
       (s) => s.toLowerCase().includes(input.toLowerCase()) && !tags.includes(s),
     );
-  }, [input, suggestions, tags]);
+  }, [input, suggestions, defaultSuggestions, tags]);
 
   return (
     <div className='space-y-2'>
@@ -74,6 +71,7 @@ export function Combobox({
           <Badge key={tag} className='flex items-center'>
             {tag}
             <button
+              type='button'
               onClick={() => removeTag(tag)}
               aria-label={`Remove ${tag}`}
               className='p-1 rounded-full size-5 flex-center cursor-pointer hover:bg-accent/25 transition-colors'
@@ -112,10 +110,7 @@ export function Combobox({
               <CommandList>
                 <CommandEmpty>{emptyMessage}</CommandEmpty>
                 <CommandGroup>
-                  {(filteredSuggestions.length > 0
-                    ? filteredSuggestions
-                    : defaultSuggestions
-                  ).map((suggestion) => (
+                  {filteredSuggestions.map((suggestion) => (
                     <CommandItem
                       key={suggestion}
                       value={suggestion}
@@ -140,6 +135,7 @@ export function Combobox({
         </Popover>
 
         <Button
+          type='button'
           onClick={() => addTag(input)}
           disabled={!input.trim()}
           className='cursor-pointer'

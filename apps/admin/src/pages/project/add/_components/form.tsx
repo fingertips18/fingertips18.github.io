@@ -164,7 +164,7 @@ export function Form() {
               <FormControl>
                 <Combobox
                   placeholder='e.g. ts, js, go, ruby, c#'
-                  defaultSuggestions={['c#', 'c++']}
+                  defaultSuggestions={['js', 'ts', 'go', 'c#', 'c++']}
                   emptyMessage='No stack found.'
                   selectPlaceholder='Select tech stack...'
                   {...field}
