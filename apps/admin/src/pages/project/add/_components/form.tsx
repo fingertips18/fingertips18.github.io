@@ -78,7 +78,6 @@ export function Form() {
       subTitle: '',
       description: '',
       stack: [],
-      type: undefined,
       link: '',
     },
   });
@@ -90,7 +89,7 @@ export function Form() {
   return (
     <ShadcnForm {...form}>
       <form
-        onSubmit={void form.handleSubmit(onSubmit)}
+        onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}
         className='flex-1 space-y-6'
       >
         <div className='flex-center max-lg:flex-col gap-x-4 gap-y-6'>

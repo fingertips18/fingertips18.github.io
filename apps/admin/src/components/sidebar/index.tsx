@@ -19,8 +19,8 @@ import { Route } from '@/routes/route';
 export function Sidebar() {
   const { pathname } = useLocation();
 
-  // Split and filter to remove empty parts
-  const parts = pathname.split('/').filter(Boolean); // e.g. ['project', 'education', 'skill']
+  // Split pathname and filter to remove empty parts
+  const parts = pathname.split('/').filter(Boolean); // e.g. ['project'] or ['education', 'create']
 
   return (
     <ShadcnSidebar className='overflow-x-hidden'>
