@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 import { Button } from '@/components/shadcn/button';
@@ -20,7 +21,10 @@ export function Sidebar() {
   const { pathname } = useLocation();
 
   // Split pathname and filter to remove empty parts
-  const parts = pathname.split('/').filter(Boolean); // e.g. ['project'] or ['education', 'create']
+  const parts = useMemo(
+    () => pathname.split('/').filter(Boolean), // e.g. ['project'] or ['education', 'create']
+    [pathname],
+  );
 
   return (
     <ShadcnSidebar className='overflow-x-hidden'>
