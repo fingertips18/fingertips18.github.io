@@ -34,14 +34,22 @@ export function Breadcrumbs() {
     <Breadcrumb className='ml-2'>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink href={Route.root}>Dashboard</BreadcrumbLink>
+          <BreadcrumbLink
+            href={Route.root}
+            className='outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background rounded-xs'
+          >
+            Dashboard
+          </BreadcrumbLink>
         </BreadcrumbItem>
 
         {mainBreadcrumb && (
           <>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <MainComp href={mainBreadcrumb.url}>
+              <MainComp
+                href={mainBreadcrumb.url}
+                className='outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background rounded-xs'
+              >
                 {mainBreadcrumb.label}
               </MainComp>
             </BreadcrumbItem>
