@@ -1,14 +1,36 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react-swc';
 import * as path from 'path';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+
+  return {
+    plugins: [react(), tailwindcss()],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+      },
     },
-  },
+    server: {
+      proxy: {
+        '/github': {
+          target: 'https://api.github.com',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/github/, ''), // remove /github prefix
+          configure: (proxy) => {
+            proxy.on('proxyReq', (proxyReq) => {
+              proxyReq.setHeader('Authorization', `Bearer ${env.GITHUB_TOKEN}`);
+              proxyReq.setHeader(
+                'Accept',
+                'application/vnd.github.mercy-preview+json',
+              );
+            });
+          },
+        },
+      },
+    },
+  };
 });
