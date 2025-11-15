@@ -9,7 +9,7 @@ import { Route } from '@/routes/route';
 interface BackProps
   extends Omit<ComponentProps<typeof Button>, 'className' | 'onClick'> {
   label?: string;
-  className: string;
+  className?: string;
   onBack?: () => void;
   withIcon?: boolean;
 }

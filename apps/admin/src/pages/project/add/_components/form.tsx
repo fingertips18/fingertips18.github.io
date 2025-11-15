@@ -197,11 +197,7 @@ export function Form() {
         <Tags
           control={form.control}
           name='tags'
-          hasError={
-            Array.isArray(form.formState.errors.tags)
-              ? form.formState.errors.tags.length > 0
-              : !!form.formState.errors.tags
-          }
+          hasError={!!form.formState.errors.tags}
         />
 
         <FormField
@@ -270,9 +266,7 @@ export function Form() {
             label='Cancel'
             withIcon={false}
             className='w-full sm:w-fit'
-          >
-            Cancel
-          </Back>
+          />
           <Button type='submit' className='w-full sm:w-fit cursor-pointer'>
             Submit
           </Button>
