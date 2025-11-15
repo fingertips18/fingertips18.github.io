@@ -3,7 +3,6 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Combobox } from '@/components/common/combobox';
-import { ImageUploader } from '@/components/common/image-uploader';
 import {
   Form as ShadcnForm,
   FormControl,
@@ -24,6 +23,8 @@ import {
   SelectValue,
 } from '@/components/shadcn/select';
 import { Textarea } from '@/components/shadcn/textarea';
+
+import { Preview } from './preview';
 
 const ProjectType = {
   web: 'web',
@@ -47,6 +48,15 @@ const formSchema = z.object({
     .refine((files) => files[0]?.size <= MAX_BYTES, {
       error: 'Image must be less than 10MB',
     }),
+  blurhash: z
+    .string()
+    .min(1, { message: 'Blurhash cannot be empty.' })
+    .refine(
+      (value) => value.startsWith('data:image/') && value.includes(';base64,'),
+      {
+        message: 'Invalid preview format. Expected a base64 data URL.',
+      },
+    ),
   title: z
     .string()
     .min(6, {
@@ -91,6 +101,7 @@ export function Form() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       preview: undefined,
+      blurhash: '',
       title: '',
       subTitle: '',
       description: '',
@@ -110,26 +121,13 @@ export function Form() {
         onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}
         className='flex-1 space-y-6'
       >
-        <FormField
+        <Preview
           control={form.control}
           name='preview'
-          render={({ field }) => (
-            <FormItem className='w-full'>
-              <FormLabel>Preview</FormLabel>
-              <FormDescription>
-                Provide a preview image for your project.
-              </FormDescription>
-              <FormControl>
-                <ImageUploader
-                  {...field}
-                  maxFiles={1}
-                  maxSize={MAX_BYTES}
-                  className='h-[312px]'
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          maxSize={MAX_BYTES}
+          onBlurhashChange={(blurhash: string) =>
+            form.setValue('blurhash', blurhash)
+          }
         />
 
         <div className='flex-center max-lg:flex-col gap-x-4 gap-y-6'>

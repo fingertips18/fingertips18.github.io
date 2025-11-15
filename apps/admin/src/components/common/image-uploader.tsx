@@ -14,7 +14,7 @@ interface ImageUploaderProps
   accept?: Accept;
   className?: string;
   value?: FileList;
-  onChange?: (files: FileList) => void;
+  onChange?: (files: FileList) => Promise<void>;
   onBlur?: () => void;
 }
 
@@ -56,11 +56,11 @@ export function ImageUploader({
     };
   }, [value]);
 
-  const handleDrop = (files: File[]) => {
+  const handleDrop = async (files: File[]) => {
     // Convert File[] to FileList for form compatibility
     const dataTransfer = new DataTransfer();
     files.forEach((file) => dataTransfer.items.add(file));
-    onChange?.(dataTransfer.files);
+    await onChange?.(dataTransfer.files);
     onBlur?.();
   };
 
@@ -68,12 +68,12 @@ export function ImageUploader({
     <div onBlur={onBlur}>
       <Dropzone
         accept={accept || { 'image/webp': ['.webp'] }}
-        onDrop={handleDrop}
+        onDrop={(props) => void handleDrop(props)}
         src={value ? Array.from(value) : undefined}
         className={cn(preview && 'p-0', className)}
         {...props}
       >
-        <DropzoneContent className='relative aspect-video'>
+        <DropzoneContent className='relative aspect-square lg:aspect-video'>
           {preview && (
             <img
               src={preview}
