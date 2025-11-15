@@ -82,13 +82,14 @@ export function Tags<T extends FieldValues>({ control, name }: TagsProps<T>) {
     },
   });
 
-  let suggestions: string[] = [];
+  const suggestions: string[] = [];
 
   if (data) {
     const [githubData, devToData] = data;
     const githubTopics = githubData?.items.flatMap((repo) => repo.topics) ?? [];
     const devToTags = devToData?.map((tag) => tag.name) ?? [];
-    suggestions = [...githubTopics, ...devToTags];
+    suggestions.push(...githubTopics.map((t) => t.toLowerCase()));
+    suggestions.push(...devToTags.map((t) => t.toLowerCase()));
   }
 
   const uniqueSuggestions = Array.from(new Set(suggestions));
@@ -105,7 +106,7 @@ export function Tags<T extends FieldValues>({ control, name }: TagsProps<T>) {
               placeholder='e.g. javascript, typescript, react, python, docker'
               suggestions={uniqueSuggestions}
               defaultSuggestions={defaults}
-              emptyMessage='No tag found.'
+              emptyMessage='No tags found.'
               selectPlaceholder='Select tags...'
               disabled={loading}
               {...field}
