@@ -27,6 +27,7 @@ interface ComboboxProps
   className?: string;
   emptyMessage?: string;
   selectPlaceholder?: string;
+  hasError?: boolean;
 }
 
 /**
@@ -40,6 +41,7 @@ export function Combobox({
   defaultSuggestions = [],
   emptyMessage = 'No results found.',
   selectPlaceholder = 'Select...',
+  hasError,
   ...props
 }: ComboboxProps) {
   const [input, setInput] = useState<string>('');
@@ -101,7 +103,10 @@ export function Combobox({
               variant='outline'
               role='combobox'
               aria-expanded={open}
-              className='justify-between flex-1'
+              className={cn(
+                'justify-between flex-1 text-muted-foreground',
+                hasError && 'border-destructive',
+              )}
             >
               {selectPlaceholder}
               <ChevronsUpDown aria-hidden='true' className='opacity-50' />

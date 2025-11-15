@@ -24,6 +24,7 @@ interface PreviewProps<T extends FieldValues> {
   name: Path<T>;
   maxSize: number;
   onBlurhashChange: (blurhash: string) => void;
+  hasError?: boolean;
 }
 
 export function Preview<T extends FieldValues>({
@@ -31,6 +32,7 @@ export function Preview<T extends FieldValues>({
   name,
   maxSize,
   onBlurhashChange,
+  hasError = false,
 }: PreviewProps<T>) {
   const [base64, setBase64] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -88,6 +90,7 @@ export function Preview<T extends FieldValues>({
                 {...fields}
                 maxFiles={1}
                 maxSize={maxSize}
+                hasError={hasError}
                 className='h-[312px]'
               />
             </FormControl>
