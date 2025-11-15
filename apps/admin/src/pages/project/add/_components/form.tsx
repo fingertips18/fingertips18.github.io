@@ -2,7 +2,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { Combobox } from '@/components/common/combobox';
 import {
   Form as ShadcnForm,
   FormControl,
@@ -25,6 +24,7 @@ import {
 import { Textarea } from '@/components/shadcn/textarea';
 
 import { Preview } from './preview';
+import { Tags } from './tags';
 
 const ProjectType = {
   web: 'web',
@@ -81,13 +81,13 @@ const formSchema = z.object({
     .max(300, {
       message: 'Description must not exceed 300 characters.',
     }),
-  stack: z
+  tags: z
     .array(
       z.string().min(1, {
-        error: 'Stack item cannot be empty',
+        error: 'Tag item cannot be empty',
       }),
     )
-    .min(1, { error: 'At least one stack item is required' }),
+    .min(1, { error: 'At least one tag item is required' }),
   type: z.enum(ProjectType, {
     error: 'Please select a valid project type.',
   }),
@@ -105,7 +105,7 @@ export function Form() {
       title: '',
       subTitle: '',
       description: '',
-      stack: [],
+      tags: [],
       type: undefined,
       link: '',
     },
@@ -188,29 +188,7 @@ export function Form() {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name='stack'
-          render={({ field }) => (
-            <FormItem className='w-full'>
-              <FormLabel>Stack</FormLabel>
-              <FormDescription>
-                Add the technologies, frameworks, or languages used in your
-                project.
-              </FormDescription>
-              <FormControl>
-                <Combobox
-                  placeholder='e.g. ts, js, go, ruby, c#'
-                  defaultSuggestions={['js', 'ts', 'go', 'c#', 'c++']}
-                  emptyMessage='No stack found.'
-                  selectPlaceholder='Select tech stack...'
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <Tags control={form.control} name='tags' />
 
         <FormField
           control={form.control}
