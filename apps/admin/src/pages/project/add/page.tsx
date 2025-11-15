@@ -6,7 +6,7 @@ import { Form } from './_components/form';
 
 export default function AddProjectPage() {
   return (
-    <section className='content padding flex flex-col gap-y-6 lg:gap-y-8 overflow-y-auto'>
+    <section className='content padding flex flex-col gap-y-6 lg:gap-y-8'>
       <div className='flex-between gap-x-4'>
         <Back />
         <div className='flex-end gap-x-2 text-primary'>
