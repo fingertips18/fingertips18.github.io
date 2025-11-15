@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { toast } from '@/lib/toast';
 
 interface FetchProps extends Omit<RequestInit, 'signal'> {
-  url: string | string[]; // allow single or multiple URLs
+  url: string | string[];
   toastOptions?: {
     errorTitle?: string;
     errorMessage?: string;
@@ -19,14 +19,28 @@ export function useFetch<T extends unknown[] | object>({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Store  url, latest props and toastOptions in refs to avoid re-fetches on identity changes
+  const urlRef = useRef(url);
+  const propsRef = useRef(props);
+  const toastOptionsRef = useRef(toastOptions);
+
+  useEffect(() => {
+    urlRef.current = url;
+    propsRef.current = props;
+    toastOptionsRef.current = toastOptions;
+  }, [url, props, toastOptions]);
+
   const handleFetch = useCallback(
     async (signal: AbortSignal) => {
+      const url = urlRef.current;
+
       try {
+        setLoading(true); // Reset loading on each fetch
         let responses: T[] = [];
 
         if (Array.isArray(url)) {
           const fetchPromises: Promise<T>[] = url.map((u) =>
-            fetch(u, { signal, ...props }).then(async (res) => {
+            fetch(u, { signal, ...propsRef.current }).then(async (res) => {
               if (!res.ok) {
                 const errorData = await res.json().catch(() => null);
                 const message =
@@ -40,7 +54,7 @@ export function useFetch<T extends unknown[] | object>({
 
           responses = await Promise.all(fetchPromises);
         } else {
-          const response = await fetch(url, { signal, ...props });
+          const response = await fetch(url, { signal, ...propsRef.current });
           if (!response.ok) {
             const errorData = await response.json().catch(() => null);
             const message =
@@ -51,12 +65,10 @@ export function useFetch<T extends unknown[] | object>({
           responses = [(await response.json()) as T];
         }
 
-        // merge arrays only if T is an array type
         let mergedData: T;
-        if (Array.isArray(responses[0])) {
-          mergedData = ([] as unknown[]).concat(
-            ...(responses as unknown as unknown[][]),
-          ) as T;
+        if (Array.isArray(url)) {
+          // Return all responses as a tuple when multiple URLs provided
+          mergedData = responses as T;
         } else {
           mergedData = responses[0];
         }
@@ -68,12 +80,13 @@ export function useFetch<T extends unknown[] | object>({
 
         const message = (error as Error).message || 'Something went wrong';
         setError(message);
-        if (toastOptions) {
+        const currentToastOptions = toastOptionsRef.current;
+        if (currentToastOptions) {
           toast({
             level: 'error',
-            title: toastOptions.errorTitle || 'Unable to fetch data',
+            title: currentToastOptions.errorTitle || 'Unable to fetch data',
             description:
-              toastOptions.errorMessage ||
+              currentToastOptions.errorMessage ||
               'There was a problem retrieving the requested information. Please try again.',
           });
         }
@@ -81,7 +94,7 @@ export function useFetch<T extends unknown[] | object>({
         setLoading(false);
       }
     },
-    [url, props, toastOptions],
+    [], // Only depend on url - props changes won't trigger re-fetches
   );
 
   useEffect(() => {

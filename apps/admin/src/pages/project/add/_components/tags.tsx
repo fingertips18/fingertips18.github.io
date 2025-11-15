@@ -14,13 +14,64 @@ import { useFetch } from '@/hooks/useFetch';
 type GitHubResponse = { items: { topics: string[] }[] };
 type DevToTag = { name: string };
 
+const defaults = [
+  'typescript',
+  'javascript',
+  'react',
+  'vue',
+  'angular',
+  'svelte',
+  'next.js',
+  'nuxt',
+  'node.js',
+  'deno',
+  'bun',
+  'express',
+  'fastify',
+  'nest.js',
+  'python',
+  'django',
+  'flask',
+  'fastapi',
+  'java',
+  'spring',
+  'kotlin',
+  'c#',
+  '.net',
+  'go',
+  'rust',
+  'php',
+  'laravel',
+  'ruby',
+  'rails',
+  'swift',
+  'dart',
+  'flutter',
+  'react-native',
+  'tailwindcss',
+  'css',
+  'html',
+  'sql',
+  'postgresql',
+  'mysql',
+  'mongodb',
+  'redis',
+  'graphql',
+  'rest-api',
+  'docker',
+  'kubernetes',
+  'aws',
+  'azure',
+  'gcp',
+];
+
 interface TagsProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T>;
 }
 
 export function Tags<T extends FieldValues>({ control, name }: TagsProps<T>) {
-  const { data, loading } = useFetch<GitHubResponse | DevToTag[]>({
+  const { data, loading } = useFetch<[GitHubResponse, DevToTag[]]>({
     url: [
       '/github/search/repositories?q=stars:>500&sort=stars&order=desc',
       'https://dev.to/api/tags',
@@ -34,16 +85,18 @@ export function Tags<T extends FieldValues>({ control, name }: TagsProps<T>) {
   const suggestions: string[] = [];
 
   if (data) {
+    const [githubData, devToData] = data;
+
     // Handle GitHub response
-    if ('items' in data) {
-      data.items.forEach((repo) => {
+    if (githubData?.items) {
+      githubData.items.forEach((repo) => {
         suggestions.push(...repo.topics);
       });
     }
 
     // Handle Dev.to response
-    if (Array.isArray(data) && data.length && 'name' in data[0]) {
-      data.forEach((tag) => {
+    if (devToData) {
+      devToData.forEach((tag) => {
         suggestions.push(tag.name);
       });
     }
@@ -55,51 +108,23 @@ export function Tags<T extends FieldValues>({ control, name }: TagsProps<T>) {
     <FormField
       control={control}
       name={name}
-      disabled={loading}
       render={({ field }) => (
-        <FormItem className='w-full'>
+        <FormItem>
           <FormLabel>Tags</FormLabel>
-          <FormDescription>
-            Add any tags relevant to your project, including technologies,
-            frameworks, languages, etc.
-          </FormDescription>
           <FormControl>
             <Combobox
               placeholder='e.g. js, ts, python, ruby, go, c#, java'
               suggestions={uniqueSuggestions}
-              defaultSuggestions={[
-                'js',
-                'ts',
-                'python',
-                'ruby',
-                'go',
-                'c#',
-                'java',
-                'c++',
-                'php',
-                'rust',
-                'kotlin',
-                'swift',
-                'dart',
-                'scala',
-                'elixir',
-                'react',
-                'vue',
-                'angular',
-                'svelte',
-                'node',
-                'express',
-                'graphql',
-                'docker',
-                'kubernetes',
-                'aws',
-              ]}
+              defaultSuggestions={defaults}
               emptyMessage='No tag found.'
               selectPlaceholder='Select tags...'
               disabled={loading}
               {...field}
             />
           </FormControl>
+          <FormDescription>
+            Add tags for technologies, frameworks, languages, etc.
+          </FormDescription>
           <FormMessage />
         </FormItem>
       )}

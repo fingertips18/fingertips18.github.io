@@ -19,10 +19,15 @@ export default defineConfig(({ mode }) => {
         '/github': {
           target: 'https://api.github.com',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/github/, ''), // remove /github prefix
+          rewrite: (requestPath) => requestPath.replace(/^\/github/, ''), // remove /github prefix
           configure: (proxy) => {
             proxy.on('proxyReq', (proxyReq) => {
-              proxyReq.setHeader('Authorization', `Bearer ${env.GITHUB_TOKEN}`);
+              if (env.GITHUB_TOKEN) {
+                proxyReq.setHeader(
+                  'Authorization',
+                  `Bearer ${env.GITHUB_TOKEN}`,
+                );
+              }
               proxyReq.setHeader(
                 'Accept',
                 'application/vnd.github.mercy-preview+json',
