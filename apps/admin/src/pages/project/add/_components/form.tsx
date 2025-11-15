@@ -42,7 +42,7 @@ const formSchema = z.object({
       error: 'Exactly one image must be uploaded.',
     })
     .refine((files) => files[0]?.type === 'image/webp', {
-      error: 'Only .webp images allowed',
+      error: 'Only .webp images are allowed.',
     })
     .refine((files) => files[0]?.size <= MAX_BYTES, {
       error: 'Image must be less than 10MB',
@@ -90,10 +90,12 @@ export function Form() {
   const form = useForm<Schema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      preview: undefined,
       title: '',
       subTitle: '',
       description: '',
       stack: [],
+      type: undefined,
       link: '',
     },
   });
@@ -111,30 +113,23 @@ export function Form() {
         <FormField
           control={form.control}
           name='preview'
-          render={({ field }) => {
-            const { value, onChange, onBlur, ...fields } = field;
-
-            return (
-              <FormItem className='w-full'>
-                <FormLabel>Preview</FormLabel>
-                <FormDescription>
-                  Provide a preview image for your project.
-                </FormDescription>
-                <FormControl>
-                  <ImageUploader
-                    value={value}
-                    onChange={(files) => onChange(files)}
-                    onBlur={onBlur}
-                    {...fields}
-                    maxFiles={1}
-                    maxSize={MAX_BYTES}
-                    className='h-[312px]'
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            );
-          }}
+          render={({ field }) => (
+            <FormItem className='w-full'>
+              <FormLabel>Preview</FormLabel>
+              <FormDescription>
+                Provide a preview image for your project.
+              </FormDescription>
+              <FormControl>
+                <ImageUploader
+                  {...field}
+                  maxFiles={1}
+                  maxSize={MAX_BYTES}
+                  className='h-[312px]'
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
 
         <div className='flex-center max-lg:flex-col gap-x-4 gap-y-6'>
