@@ -1,0 +1,127 @@
+import { Layers2, Loader } from 'lucide-react';
+import { useState } from 'react';
+import type { Control, FieldValues, Path } from 'react-hook-form';
+
+import { ImageUploader } from '@/components/common/image-uploader';
+import {
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/shadcn/form';
+import {
+  decodeBlurhashToBase64URL,
+  encodeImageToBlurhash,
+  fileToImage,
+} from '@/lib/blurhash';
+import { cn } from '@/lib/utils';
+
+interface PreviewProps<T extends FieldValues> {
+  control: Control<T>;
+  name: Path<T>;
+  maxSize: number;
+  onBlurhashChange: (blurhash: string) => void;
+}
+
+export function Preview<T extends FieldValues>({
+  control,
+  name,
+  maxSize,
+  onBlurhashChange,
+}: PreviewProps<T>) {
+  const [base64, setBase64] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  return (
+    <FormField
+      control={control}
+      name={name}
+      render={({ field }) => {
+        const { onChange, ...fields } = field;
+
+        return (
+          <FormItem className='w-full'>
+            <FormLabel>Preview</FormLabel>
+            <FormDescription>
+              Provide a preview image for your project.
+            </FormDescription>
+            <FormControl>
+              <ImageUploader
+                onChange={async (files) => {
+                  setBase64(null); // reset previous image
+                  setLoading(files.length > 0); // start loading if there’s a file
+
+                  onChange(files);
+
+                  if (files.length === 0) {
+                    setLoading(false);
+                    return;
+                  }
+
+                  try {
+                    const file = files[0];
+                    const image = await fileToImage(file);
+                    const blurhash = await encodeImageToBlurhash(image);
+                    const base64Url = decodeBlurhashToBase64URL({
+                      hash: blurhash,
+                    });
+                    setBase64(base64Url || null);
+                    onBlurhashChange(base64Url || '');
+                  } catch {
+                    setBase64(null);
+                    onBlurhashChange('');
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                {...fields}
+                maxFiles={1}
+                maxSize={maxSize}
+                className='h-[312px]'
+              />
+            </FormControl>
+            <FormMessage />
+            <div className='flex flex-col gap-y-2 mt-4 w-full'>
+              <h6 className='text-sm leading-none font-medium'>Blurhash</h6>
+              <p className='text-muted-foreground text-sm'>
+                A small, blurred preview generated from your image.
+              </p>
+              <div
+                className={cn(
+                  'h-[312px] relative aspect-square lg:aspect-video rounded-md overflow-hidden',
+                  (loading || !base64) &&
+                    'border border-dashed border-border flex-center',
+                )}
+              >
+                {loading && (
+                  <div className='animate-spin'>
+                    <Loader aria-hidden='true' className='size-6' />
+                    <span className='sr-only'>Loading blurhash...</span>
+                  </div>
+                )}
+                {base64 && (
+                  <img
+                    src={base64}
+                    alt='Preview Blurhash'
+                    className='absolute inset-0 size-full object-center object-cover'
+                  />
+                )}
+                {!loading && !base64 && (
+                  <div className='flex-center flex-col gap-y-2'>
+                    <Layers2 aria-hidden='true' className='size-6' />
+                    <p className='text-muted-foreground text-sm text-center'>
+                      The blurhash preview will appear once an image is
+                      selected.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </FormItem>
+        );
+      }}
+    />
+  );
+}
