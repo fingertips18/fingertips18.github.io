@@ -57,6 +57,7 @@ export function Preview<T extends FieldValues>({
                   onChange(files);
 
                   if (files.length === 0) {
+                    onBlurhashChange('');
                     setLoading(false);
                     return;
                   }
