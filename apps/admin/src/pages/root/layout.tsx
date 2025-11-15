@@ -10,7 +10,7 @@ export default function RootLayout() {
       <Sidebar />
       <div className='w-full'>
         <Header />
-        <main className='h-default'>
+        <main className='h-default flex flex-col'>
           <Outlet />
         </main>
       </div>
