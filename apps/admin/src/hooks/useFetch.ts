@@ -19,7 +19,7 @@ export function useFetch<T extends unknown[] | object>({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Store  url, latest props and toastOptions in refs to avoid re-fetches on identity changes
+  // Store url, latest props and toastOptions in refs to avoid re-fetches on identity changes
   const urlRef = useRef(url);
   const propsRef = useRef(props);
   const toastOptionsRef = useRef(toastOptions);

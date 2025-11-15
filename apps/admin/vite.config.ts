@@ -28,10 +28,7 @@ export default defineConfig(({ mode }) => {
                   `Bearer ${env.GITHUB_TOKEN}`,
                 );
               }
-              proxyReq.setHeader(
-                'Accept',
-                'application/vnd.github.mercy-preview+json',
-              );
+              proxyReq.setHeader('Accept', 'application/vnd.github+json');
             });
           },
         },

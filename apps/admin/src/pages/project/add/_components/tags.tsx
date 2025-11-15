@@ -82,24 +82,15 @@ export function Tags<T extends FieldValues>({ control, name }: TagsProps<T>) {
     },
   });
 
-  const suggestions: string[] = [];
+  let suggestions: string[] = [];
 
   if (data) {
     const [githubData, devToData] = data;
-
-    // Handle GitHub response
-    if (githubData?.items) {
-      githubData.items.forEach((repo) => {
-        suggestions.push(...repo.topics);
-      });
-    }
-
-    // Handle Dev.to response
-    if (devToData) {
-      devToData.forEach((tag) => {
-        suggestions.push(tag.name);
-      });
-    }
+    const githubTopics = githubData?.items.flatMap((repo) => repo.topics) ?? [];
+    const devToTags = devToData?.map((tag) => tag.name) ?? [];
+    suggestions = [...githubTopics, ...devToTags];
+  } else {
+    suggestions = [];
   }
 
   const uniqueSuggestions = Array.from(new Set(suggestions));
@@ -113,7 +104,7 @@ export function Tags<T extends FieldValues>({ control, name }: TagsProps<T>) {
           <FormLabel>Tags</FormLabel>
           <FormControl>
             <Combobox
-              placeholder='e.g. js, ts, python, ruby, go, c#, java'
+              placeholder='e.g. javascript, typescript, react, python, docker'
               suggestions={uniqueSuggestions}
               defaultSuggestions={defaults}
               emptyMessage='No tag found.'
