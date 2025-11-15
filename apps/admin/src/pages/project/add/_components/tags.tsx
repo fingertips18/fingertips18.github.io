@@ -89,8 +89,6 @@ export function Tags<T extends FieldValues>({ control, name }: TagsProps<T>) {
     const githubTopics = githubData?.items.flatMap((repo) => repo.topics) ?? [];
     const devToTags = devToData?.map((tag) => tag.name) ?? [];
     suggestions = [...githubTopics, ...devToTags];
-  } else {
-    suggestions = [];
   }
 
   const uniqueSuggestions = Array.from(new Set(suggestions));
