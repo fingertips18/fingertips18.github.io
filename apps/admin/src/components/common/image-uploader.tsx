@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Accept } from 'react-dropzone';
 
 import {
@@ -13,48 +13,81 @@ interface ImageUploaderProps
   extends Omit<DropzoneProps, 'accept' | 'onDrop' | 'src' | 'className'> {
   accept?: Accept;
   className?: string;
+  value?: FileList;
+  onChange?: (files: FileList) => void;
+  onBlur?: () => void;
 }
 
 export function ImageUploader({
   accept,
   className,
+  value,
+  onChange,
+  onBlur,
   ...props
 }: ImageUploaderProps) {
-  const [files, setFiles] = useState<File[] | undefined>(undefined);
   const [preview, setPreview] = useState<string | null>(null);
 
-  const handleDrop = (files: File[]) => {
-    setFiles(files);
-
-    if (files.length > 0) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (typeof e.target?.result === 'string') {
-          setPreview(e.target.result);
-        }
-      };
-      reader.readAsDataURL(files[0]);
+  // Sync preview with value prop
+  useEffect(() => {
+    if (!value || value.length === 0) {
+      // Schedule the state update to avoid synchronous setState
+      queueMicrotask(() => setPreview(null));
+      return;
     }
+
+    const file = value[0];
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      if (typeof e.target?.result === 'string') {
+        setPreview(e.target.result);
+      }
+    };
+
+    reader.onerror = () => {
+      setPreview(null);
+    };
+
+    reader.readAsDataURL(file);
+
+    return () => {
+      reader.abort();
+    };
+  }, [value]);
+
+  const handleDrop = (files: File[]) => {
+    // Convert File[] to FileList for form compatibility
+    const dataTransfer = new DataTransfer();
+    files.forEach((file) => dataTransfer.items.add(file));
+    onChange?.(dataTransfer.files);
   };
 
   return (
-    <Dropzone
-      accept={accept || { 'image/webp': ['.webp'] }}
-      onDrop={handleDrop}
-      src={files}
-      className={cn(preview && 'p-0', className)}
-      {...props}
-    >
-      <DropzoneContent className='relative aspect-video'>
-        {preview && (
-          <img
-            src={preview}
-            alt='Preview'
-            className='absolute inset-0 size-full object-cover object-center group-hover:scale-105 transition-transform duration-600 ease-in-out rounded-md'
-          />
-        )}
-      </DropzoneContent>
-      <DropzoneEmptyState className='z-20 relative bg-black/25 backdrop-blur-sm p-8 rounded-md m-2' />
-    </Dropzone>
+    <div onBlur={onBlur}>
+      <Dropzone
+        accept={accept || { 'image/webp': ['.webp'] }}
+        onDrop={handleDrop}
+        src={value ? Array.from(value) : undefined}
+        className={cn(preview && 'p-0', className)}
+        {...props}
+      >
+        <DropzoneContent className='relative aspect-video'>
+          {preview && (
+            <img
+              src={preview}
+              alt='Preview'
+              className='absolute inset-0 size-full object-cover object-center group-hover:scale-105 transition-transform duration-600 ease-in-out rounded-md'
+            />
+          )}
+        </DropzoneContent>
+        <DropzoneEmptyState
+          className={cn(
+            preview &&
+              'z-20 relative bg-black/25 backdrop-blur-sm p-8 rounded-md m-2',
+          )}
+        />
+      </Dropzone>
+    </div>
   );
 }

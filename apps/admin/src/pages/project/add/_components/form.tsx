@@ -111,23 +111,30 @@ export function Form() {
         <FormField
           control={form.control}
           name='preview'
-          render={({ field }) => (
-            <FormItem className='w-full'>
-              <FormLabel>Preview</FormLabel>
-              <FormDescription>
-                Provide a preview image for your project.
-              </FormDescription>
-              <FormControl>
-                <ImageUploader
-                  {...field}
-                  className='h-[312px]'
-                  maxFiles={1}
-                  maxSize={1024 * 1024 * 10}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          render={({ field }) => {
+            const { value, onChange, onBlur, ...fields } = field;
+
+            return (
+              <FormItem className='w-full'>
+                <FormLabel>Preview</FormLabel>
+                <FormDescription>
+                  Provide a preview image for your project.
+                </FormDescription>
+                <FormControl>
+                  <ImageUploader
+                    value={value}
+                    onChange={(files) => onChange(files)}
+                    onBlur={onBlur}
+                    {...fields}
+                    maxFiles={1}
+                    maxSize={1024 * 1024 * 10}
+                    className='h-[312px]'
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
 
         <div className='flex-center max-lg:flex-col gap-x-4 gap-y-6'>
