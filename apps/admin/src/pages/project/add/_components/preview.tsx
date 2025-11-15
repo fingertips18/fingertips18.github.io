@@ -16,6 +16,7 @@ import {
   encodeImageToBlurhash,
   fileToImage,
 } from '@/lib/blurhash';
+import { toast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
 interface PreviewProps<T extends FieldValues> {
@@ -72,6 +73,13 @@ export function Preview<T extends FieldValues>({
                   } catch {
                     setBase64(null);
                     onBlurhashChange('');
+                    onChange(new DataTransfer().files);
+
+                    toast({
+                      level: 'error',
+                      title: 'Blurhash generation failed',
+                      description: 'Please try uploading the image again.',
+                    });
                   } finally {
                     setLoading(false);
                   }

@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { isBlurhashValid } from 'blurhash';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -52,9 +51,12 @@ const formSchema = z.object({
   blurhash: z
     .string()
     .min(1, { message: 'Blurhash cannot be empty.' })
-    .refine((value) => isBlurhashValid(value), {
-      message: 'Invalid blurhash. Please provide a valid encoded image string.',
-    }),
+    .refine(
+      (value) => value.startsWith('data:image/') && value.includes(';base64,'),
+      {
+        message: 'Invalid preview format. Expected a base64 data URL.',
+      },
+    ),
   title: z
     .string()
     .min(6, {

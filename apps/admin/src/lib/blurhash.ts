@@ -139,5 +139,5 @@ export function decodeBlurhashToBase64URL({
   imageData.data.set(pixels);
   context.putImageData(imageData, 0, 0);
 
-  return canvas.toDataURL('image/webp'); // returns "data:image/png;base64,..."
+  return canvas.toDataURL('image/webp'); // returns "data:image/webp;base64,..."
 }
