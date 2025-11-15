@@ -127,7 +127,7 @@ export function Form() {
                     onBlur={onBlur}
                     {...fields}
                     maxFiles={1}
-                    maxSize={1024 * 1024 * 10}
+                    maxSize={MAX_BYTES}
                     className='h-[312px]'
                   />
                 </FormControl>

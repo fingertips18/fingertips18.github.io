@@ -61,6 +61,7 @@ export function ImageUploader({
     const dataTransfer = new DataTransfer();
     files.forEach((file) => dataTransfer.items.add(file));
     onChange?.(dataTransfer.files);
+    onBlur?.();
   };
 
   return (
