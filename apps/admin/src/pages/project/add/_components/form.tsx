@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Combobox } from '@/components/common/combobox';
+import { ImageUploader } from '@/components/common/image-uploader';
 import {
   Form as ShadcnForm,
   FormControl,
@@ -24,13 +25,28 @@ import {
 } from '@/components/shadcn/select';
 import { Textarea } from '@/components/shadcn/textarea';
 
-export const ProjectType = {
+const ProjectType = {
   web: 'web',
   mobile: 'mobile',
   game: 'game',
 } as const;
 
+const MAX_BYTES = 10 * 1024 * 1024; // 10MB
+
 const formSchema = z.object({
+  preview: z
+    .custom<FileList>((v) => v instanceof FileList, {
+      error: 'No images provided.',
+    })
+    .refine((files) => files.length === 1, {
+      error: 'Exactly one image must be uploaded.',
+    })
+    .refine((files) => files[0]?.type === 'image/webp', {
+      error: 'Only .webp images allowed',
+    })
+    .refine((files) => files[0]?.size <= MAX_BYTES, {
+      error: 'Image must be less than 10MB',
+    }),
   title: z
     .string()
     .min(6, {
@@ -92,6 +108,28 @@ export function Form() {
         onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}
         className='flex-1 space-y-6'
       >
+        <FormField
+          control={form.control}
+          name='preview'
+          render={({ field }) => (
+            <FormItem className='w-full'>
+              <FormLabel>Preview</FormLabel>
+              <FormDescription>
+                Provide a preview image for your project.
+              </FormDescription>
+              <FormControl>
+                <ImageUploader
+                  {...field}
+                  className='h-[312px]'
+                  maxFiles={1}
+                  maxSize={1024 * 1024 * 10}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <div className='flex-center max-lg:flex-col gap-x-4 gap-y-6'>
           <FormField
             control={form.control}
