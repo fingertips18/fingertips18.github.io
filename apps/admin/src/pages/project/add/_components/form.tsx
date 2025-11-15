@@ -2,6 +2,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import { Back } from '@/components/common/back';
+import { Button } from '@/components/shadcn/button';
 import {
   Form as ShadcnForm,
   FormControl,
@@ -22,6 +24,7 @@ import {
   SelectValue,
 } from '@/components/shadcn/select';
 import { Textarea } from '@/components/shadcn/textarea';
+import { cn } from '@/lib/utils';
 
 import { Preview } from './preview';
 import { Tags } from './tags';
@@ -37,7 +40,7 @@ const MAX_BYTES = 10 * 1024 * 1024; // 10MB
 const formSchema = z.object({
   preview: z
     .custom<FileList>((v) => v instanceof FileList, {
-      error: 'No images provided.',
+      error: 'No image provided.',
     })
     .refine((files) => files.length === 1, {
       error: 'Exactly one image must be uploaded.',
@@ -128,6 +131,9 @@ export function Form() {
           onBlurhashChange={(blurhash: string) =>
             form.setValue('blurhash', blurhash)
           }
+          hasError={
+            !!form.formState.errors.preview || !!form.formState.errors.blurhash
+          }
         />
 
         <div className='flex-center max-lg:flex-col gap-x-4 gap-y-6'>
@@ -188,7 +194,15 @@ export function Form() {
           )}
         />
 
-        <Tags control={form.control} name='tags' />
+        <Tags
+          control={form.control}
+          name='tags'
+          hasError={
+            Array.isArray(form.formState.errors.tags)
+              ? form.formState.errors.tags.length > 0
+              : !!form.formState.errors.tags
+          }
+        />
 
         <FormField
           control={form.control}
@@ -206,7 +220,12 @@ export function Form() {
                   name={field.name}
                   disabled={field.disabled}
                 >
-                  <SelectTrigger className='w-full'>
+                  <SelectTrigger
+                    className={cn(
+                      'w-full',
+                      form.formState.errors.type && 'border-destructive',
+                    )}
+                  >
                     <SelectValue placeholder='Select a type' />
                   </SelectTrigger>
                   <SelectContent>
@@ -243,6 +262,21 @@ export function Form() {
             </FormItem>
           )}
         />
+
+        <div className='flex-end flex-col-reverse sm:flex-row gap-2'>
+          <Back
+            type='button'
+            variant='outline'
+            label='Cancel'
+            withIcon={false}
+            className='w-full sm:w-fit'
+          >
+            Cancel
+          </Back>
+          <Button type='submit' className='w-full sm:w-fit cursor-pointer'>
+            Submit
+          </Button>
+        </div>
       </form>
     </ShadcnForm>
   );

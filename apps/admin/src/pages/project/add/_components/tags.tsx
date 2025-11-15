@@ -68,9 +68,14 @@ const defaults = [
 interface TagsProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T>;
+  hasError?: boolean;
 }
 
-export function Tags<T extends FieldValues>({ control, name }: TagsProps<T>) {
+export function Tags<T extends FieldValues>({
+  control,
+  name,
+  hasError = false,
+}: TagsProps<T>) {
   const { data, loading } = useFetch<[GitHubResponse, DevToTag[]]>({
     url: [
       '/github/search/repositories?q=stars:>500&sort=stars&order=desc',
@@ -101,6 +106,9 @@ export function Tags<T extends FieldValues>({ control, name }: TagsProps<T>) {
       render={({ field }) => (
         <FormItem>
           <FormLabel>Tags</FormLabel>
+          <FormDescription>
+            Add tags for technologies, frameworks, languages, etc.
+          </FormDescription>
           <FormControl>
             <Combobox
               placeholder='e.g. javascript, typescript, react, python, docker'
@@ -109,12 +117,10 @@ export function Tags<T extends FieldValues>({ control, name }: TagsProps<T>) {
               emptyMessage='No tags found.'
               selectPlaceholder='Select tags...'
               disabled={loading}
+              hasError={hasError}
               {...field}
             />
           </FormControl>
-          <FormDescription>
-            Add tags for technologies, frameworks, languages, etc.
-          </FormDescription>
           <FormMessage />
         </FormItem>
       )}

@@ -40,6 +40,7 @@ export type DropzoneProps = Omit<DropzoneOptions, 'onDrop'> & {
     fileRejections: FileRejection[],
     event: DropEvent,
   ) => void;
+  hasError?: boolean;
   children?: ReactNode;
 };
 
@@ -53,6 +54,7 @@ export const Dropzone = ({
   disabled,
   src,
   className,
+  hasError,
   children,
   ...props
 }: DropzoneProps) => {
@@ -84,6 +86,7 @@ export const Dropzone = ({
         className={cn(
           'relative h-auto w-full flex-col overflow-hidden p-8 group',
           isDragActive && 'outline-none ring-1 ring-ring',
+          hasError && 'border-destructive',
           className,
         )}
         disabled={disabled}
