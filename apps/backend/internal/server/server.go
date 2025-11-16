@@ -32,6 +32,7 @@ type Config struct {
 	GoogleAPISecret     string
 	Username            string
 	Password            string
+	UploadthingToken    string
 	DatabaseAPI         database.DatabaseAPI
 }
 
@@ -130,6 +131,12 @@ func createHandlers(cfg Config) []handlerConfig {
 		},
 	)
 
+	imageHandler := v1.NewImageServiceHandler(
+		v1.ImageServiceConfig{
+			UploadthingToken: cfg.UploadthingToken,
+		},
+	)
+
 	handlers := []handlerConfig{
 		{
 			paths:   []string{"/email", "/email/"},
@@ -150,6 +157,10 @@ func createHandlers(cfg Config) []handlerConfig {
 		{
 			paths:   []string{"/skill", "/skill/", "/skills", "/skills/"},
 			handler: skillHandler,
+		},
+		{
+			paths:   []string{"/image", "/image/"},
+			handler: imageHandler,
 		},
 	}
 

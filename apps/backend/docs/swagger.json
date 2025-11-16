@@ -397,6 +397,57 @@
                 }
             }
         },
+        "/image/upload": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Handles image upload with the supplied metadata and returns the Uploadthing URL of the stored image.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "image"
+                ],
+                "summary": "Upload an image",
+                "parameters": [
+                    {
+                        "description": "Image upload payload",
+                        "name": "imageUpload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.UploadRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Confirmation message",
+                        "schema": {
+                            "$ref": "#/definitions/v1.UploadResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/project": {
             "put": {
                 "security": [
@@ -1124,6 +1175,23 @@
                 }
             }
         },
+        "v1.FilesDTO": {
+            "type": "object",
+            "properties": {
+                "custom_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "v1.IDResponse": {
             "type": "object",
             "properties": {
@@ -1322,6 +1390,32 @@
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.UploadRequestDTO": {
+            "type": "object",
+            "properties": {
+                "acl": {
+                    "type": "string"
+                },
+                "content_disposition": {
+                    "type": "string"
+                },
+                "files": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/v1.FilesDTO"
+                    }
+                },
+                "metadata": {}
+            }
+        },
+        "v1.UploadResponseDTO": {
+            "type": "object",
+            "properties": {
+                "url": {
                     "type": "string"
                 }
             }
