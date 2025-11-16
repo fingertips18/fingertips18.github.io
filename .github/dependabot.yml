@@ -1,40 +1,40 @@
 version: 2
 updates:
-  # Update npm dependencies in the root directory
-  - package-ecosystem: 'npm'
-    directory: /
+  # Update npm dependencies in the frontend directory
+  - package-ecosystem: "npm"
+    directory: /apps/frontend
     schedule:
-      interval: 'daily'
+      interval: "daily"
     commit-message:
-      prefix: 'chore'
-      include: 'scope'
+      prefix: "chore"
+      include: "scope"
     open-pull-requests-limit: 10
 
   # Update npm dependencies in the admin directory
-  - package-ecosystem: 'npm'
-    directory: /admin
+  - package-ecosystem: "npm"
+    directory: /apps/admin
     schedule:
-      interval: 'daily'
+      interval: "daily"
     commit-message:
-      prefix: 'chore'
-      include: 'scope'
+      prefix: "chore"
+      include: "scope"
     open-pull-requests-limit: 10
 
   # Update go dependencies in the backend directory
-  - package-ecosystem: 'gomod'
-    directory: /backend
+  - package-ecosystem: "gomod"
+    directory: /apps/backend
     schedule:
-      interval: 'daily'
+      interval: "daily"
     commit-message:
-      prefix: 'chore'
-      include: 'scope'
+      prefix: "chore"
+      include: "scope"
     open-pull-requests-limit: 10
 
   # Update github actions dependencies in the root directory
-  - package-ecosystem: 'github-actions'
+  - package-ecosystem: "github-actions"
     directory: /
     schedule:
-      interval: 'weekly'
+      interval: "weekly"
     commit-message:
-      prefix: 'chore'
-      include: 'scope'
+      prefix: "chore"
+      include: "scope"
