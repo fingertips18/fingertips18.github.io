@@ -85,7 +85,7 @@ func (r UploadResponse) Validate() error {
 	}
 
 	for idx, f := range r.Data {
-		prefix := "uploadthing: data[" + strconv.Itoa(idx) + "]."
+		prefix := "uploadthing: data[" + strconv.Itoa(idx) + "]"
 
 		// Check if this file had an error
 		if f.Error != nil {
@@ -95,7 +95,7 @@ func (r UploadResponse) Validate() error {
 
 		// Validate success data
 		if f.Data == nil {
-			return errors.New(prefix + ": missing data")
+			return errors.New(prefix + ": data missing")
 		}
 		if f.Data.Key == "" {
 			return errors.New(prefix + ".key missing")

@@ -55,12 +55,12 @@ func NewImageRepository(cfg ImageRepositoryConfig) ImageRepository {
 //     ContentDisposition => "inline").
 //   - Marshals the request to JSON and issues an HTTP POST to
 //     "https://api.uploadthing.com/v6/uploadFiles" using the repository's httpAPI and the
-//     repository's Uploadthing API key (r.uploadingthingToken). The HTTP request is executed
+//     repository's Uploadthing API key (r.uploadthingToken). The HTTP request is executed
 //     with the provided ctx.
 //   - Treats any non-200 (OK) response as an error and includes the response status and body
 //     in the returned error for diagnostics.
-//   - Decodes the successful response into domain.UploadthingUploadResponse, validates it,
-//     and returns the FileUrl of the first returned file (uploadResp.Data[0].FileUrl).
+//   - Decodes the successful response into domain.UploadResponse, validates it,
+//     and returns the URL of the first returned file (uploadResp.Data[0].Data.URL).
 //   - All underlying errors are wrapped with context for easier debugging.
 //
 // Logging: the method logs the upload attempt and the resulting uploaded file URL on success.
