@@ -45,11 +45,14 @@ func NewImageServiceHandler(cfg ImageServiceConfig) ImageHandler {
 }
 
 // ServeHTTP handles HTTP requests for image operations.
-// It routes requests based on the URL path after removing the "/image" prefix.
-// Requests to "/image" are routed to the Upload handler.
-// All other paths result in a 404 Not Found response.
+// It routes requests to appropriate handlers based on the URL path.
+// Supported routes:
+//   - POST /image/upload: Uploads an image
+//
+// For unrecognized paths, it returns a 404 Not Found response.
 func (h *imageServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	path := strings.TrimPrefix(r.URL.Path, "/image")
+	path := strings.TrimSuffix(r.URL.Path, "/")
+	path = strings.TrimPrefix(path, "/image")
 
 	switch path {
 	case "/upload":
