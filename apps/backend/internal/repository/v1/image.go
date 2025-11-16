@@ -19,14 +19,14 @@ type ImageRepository interface {
 }
 
 type ImageRepositoryConfig struct {
-	UploadingthingToken string
+	UploadthingToken string
 
 	httpAPI client.HttpAPI
 }
 
 type imageRepository struct {
-	uploadingthingToken string
-	httpAPI             client.HttpAPI
+	uploadthingToken string
+	httpAPI          client.HttpAPI
 }
 
 // NewImageRepository creates and returns an ImageRepository configured using the
@@ -41,8 +41,8 @@ func NewImageRepository(cfg ImageRepositoryConfig) ImageRepository {
 	}
 
 	return &imageRepository{
-		uploadingthingToken: cfg.UploadingthingToken,
-		httpAPI:             httpAPI,
+		uploadthingToken: cfg.UploadthingToken,
+		httpAPI:          httpAPI,
 	}
 }
 
@@ -76,16 +76,20 @@ func (r *imageRepository) Upload(ctx context.Context, image *domain.UploadthingU
 
 	log.Println("Attempting to upload the image...")
 
+	payload := *image
+
 	// Default fallback values
-	if image.ACL == "" {
-		image.ACL = "public-read"
+	if payload.ACL == nil {
+		acl := "public-read"
+		payload.ACL = &acl
 	}
-	if image.ContentDisposition == "" {
-		image.ContentDisposition = "inline"
+	if payload.ContentDisposition == nil {
+		contentDisposition := "inline"
+		payload.ContentDisposition = &contentDisposition
 	}
 
 	// Marshal request payload
-	body, err := json.Marshal(image)
+	body, err := json.Marshal(payload)
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal payload: %w", err)
 	}
@@ -102,7 +106,7 @@ func (r *imageRepository) Upload(ctx context.Context, image *domain.UploadthingU
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-Uploadthing-Api-Key", r.uploadingthingToken)
+	req.Header.Set("X-Uploadthing-Api-Key", r.uploadthingToken)
 
 	// Execute request
 	resp, err := r.httpAPI.Do(req)
@@ -113,7 +117,10 @@ func (r *imageRepository) Upload(ctx context.Context, image *domain.UploadthingU
 
 	// Handle non-200 response
 	if resp.StatusCode != http.StatusOK {
-		respBody, _ := io.ReadAll(resp.Body)
+		respBody, readErr := io.ReadAll(resp.Body)
+		if readErr != nil {
+			log.Printf("failed to read error response body: %v", readErr)
+		}
 		return "", fmt.Errorf(
 			"failed to upload image: status=%s message=%s",
 			resp.Status,

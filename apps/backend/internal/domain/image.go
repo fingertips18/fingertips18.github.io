@@ -7,16 +7,16 @@ import (
 
 type Files struct {
 	Name     string  `json:"name"`
-	Size     int32   `json:"size"`
+	Size     int     `json:"size"`
 	Type     string  `json:"type"`
-	CustomID *string `json:"custom_id,omitempty"`
+	CustomID *string `json:"customId,omitempty"`
 }
 
 type UploadthingUploadRequest struct {
 	Files              []Files `json:"files"`
-	ACL                string  `json:"acl"`
-	Metadata           any     `json:"metadata"`
-	ContentDisposition string  `json:"contentDisposition"`
+	ACL                *string `json:"acl,omitempty"`
+	Metadata           any     `json:"metadata,omitempty"`
+	ContentDisposition *string `json:"contentDisposition,omitempty"`
 }
 
 func (i UploadthingUploadRequest) Validate() error {
@@ -37,14 +37,18 @@ func (i UploadthingUploadRequest) Validate() error {
 		}
 	}
 
-	// ACL is required (UploadThing accepts: private, public-read)
-	if i.ACL == "" {
-		return errors.New("acl missing")
+	// UploadThing ACL accepts: private, public-read
+	if i.ACL != nil && *i.ACL != "" {
+		if *i.ACL != "public-read" && *i.ACL != "private" {
+			return errors.New("acl must be 'public-read' or 'private'")
+		}
 	}
 
-	// contentDisposition must not be empty (inline / attachment)
-	if i.ContentDisposition == "" {
-		return errors.New("contentDisposition missing")
+	// UploadThing ContentDisposition accepts: inline, attachment
+	if i.ContentDisposition != nil && *i.ContentDisposition != "" {
+		if *i.ContentDisposition != "inline" && *i.ContentDisposition != "attachment" {
+			return errors.New("contentDisposition must be 'inline' or 'attachment'")
+		}
 	}
 
 	return nil
