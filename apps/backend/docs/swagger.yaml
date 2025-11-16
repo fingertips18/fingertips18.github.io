@@ -94,6 +94,17 @@ definitions:
       error:
         type: string
     type: object
+  v1.FilesDTO:
+    properties:
+      custom_id:
+        type: string
+      name:
+        type: string
+      size:
+        type: integer
+      type:
+        type: string
+    type: object
   v1.IDResponse:
     properties:
       id:
@@ -225,6 +236,23 @@ definitions:
       label:
         type: string
       updated_at:
+        type: string
+    type: object
+  v1.UploadRequestDTO:
+    properties:
+      acl:
+        type: string
+      content_disposition:
+        type: string
+      files:
+        items:
+          $ref: '#/definitions/v1.FilesDTO'
+        type: array
+      metadata: {}
+    type: object
+  v1.UploadResponseDTO:
+    properties:
+      url:
         type: string
     type: object
 info:
@@ -489,6 +517,39 @@ paths:
       summary: Send an email
       tags:
       - email
+  /image/upload:
+    post:
+      consumes:
+      - application/json
+      description: Handles image upload with the supplied metadata and returns the
+        Uploadthing URL of the stored image.
+      parameters:
+      - description: Image upload payload
+        in: body
+        name: imageUpload
+        required: true
+        schema:
+          $ref: '#/definitions/v1.UploadRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Confirmation message
+          schema:
+            $ref: '#/definitions/v1.UploadResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload an image
+      tags:
+      - image
   /project:
     post:
       consumes:

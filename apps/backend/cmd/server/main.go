@@ -32,6 +32,7 @@ const (
 	FlagDatabaseURL         = "database-url"
 	FlagUsername            = "username"
 	FlagPassword            = "password"
+	FlagUploadthingToken    = "uploadthing-token"
 )
 
 // @title Portfolio Backend API
@@ -59,6 +60,7 @@ func main() {
 		flagDatabaseURL         = flag.String(FlagDatabaseURL, "", "Postgres Database URL")
 		flagUsername            = flag.String(FlagUsername, "", "Backend Username Access")
 		flagPassword            = flag.String(FlagPassword, "", "Backend Password Access")
+		flagUploadthingToken    = flag.String(FlagUploadthingToken, "", "Uploadthing Secret Token")
 	)
 
 	flag.Parse()
@@ -73,6 +75,7 @@ func main() {
 		FlagDatabaseURL,
 		FlagUsername,
 		FlagPassword,
+		FlagUploadthingToken,
 	)
 
 	err := godotenv.Load()
@@ -93,6 +96,7 @@ func main() {
 	databaseURL := *flagDatabaseURL
 	username := *flagUsername
 	password := *flagPassword
+	uploadthingToken := *flagUploadthingToken
 	if *flagEnvironment != "local" {
 		data, err := os.ReadFile(*flagPort)
 		if err != nil {
@@ -177,6 +181,13 @@ func main() {
 		} else {
 			password = string(data)
 		}
+
+		data, err = os.ReadFile(*flagUploadthingToken)
+		if err != nil {
+			log.Printf("Failed to read uploadthing token from file, using flag value: %v", *flagUploadthingToken)
+		} else {
+			uploadthingToken = string(data)
+		}
 	} else {
 		if port == "" {
 			port = os.Getenv("PORT")
@@ -225,6 +236,10 @@ func main() {
 		if password == "" {
 			password = os.Getenv("PASSWORD")
 		}
+
+		if uploadthingToken == "" {
+			uploadthingToken = os.Getenv("UPLOADTHING_TOKEN")
+		}
 	}
 
 	// Setup database
@@ -245,6 +260,7 @@ func main() {
 			GoogleAPISecret:     googleAPISecret,
 			Username:            username,
 			Password:            password,
+			UploadthingToken:    uploadthingToken,
 			DatabaseAPI:         database,
 		},
 	)
