@@ -7,6 +7,18 @@ import { defineConfig, loadEnv } from 'vite';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
+  // Validate required environment variables
+  if (!env.BACKEND_API) {
+    throw new Error(
+      'BACKEND_API environment variable is required for /api proxy',
+    );
+  }
+  if (!env.AUTH_TOKEN) {
+    throw new Error(
+      'AUTH_TOKEN environment variable is required for /api proxy',
+    );
+  }
+
   return {
     plugins: [react(), tailwindcss()],
     resolve: {
