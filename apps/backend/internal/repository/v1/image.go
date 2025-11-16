@@ -15,7 +15,7 @@ import (
 )
 
 type ImageRepository interface {
-	Upload(ctx context.Context, image *domain.UploadthingUploadRequest) (string, error)
+	Upload(ctx context.Context, image *domain.UploadRequest) (string, error)
 }
 
 type ImageRepositoryConfig struct {
@@ -32,7 +32,7 @@ type imageRepository struct {
 // NewImageRepository creates and returns an ImageRepository configured using the
 // provided ImageRepositoryConfig. If cfg.httpAPI is nil, a default HTTP API
 // client with a 30-second timeout will be created. The returned repository will
-// use cfg.UploadingthingToken for authenticated requests and the configured
+// use cfg.UploadthingToken for authenticated requests and the configured
 // httpAPI for performing image-related operations.
 func NewImageRepository(cfg ImageRepositoryConfig) ImageRepository {
 	httpAPI := cfg.httpAPI
@@ -68,7 +68,7 @@ func NewImageRepository(cfg ImageRepositoryConfig) ImageRepository {
 // Return values:
 // - string: the URL of the uploaded file on success, or an empty string on failure.
 // - error: non-nil if validation, marshaling, network, decoding, or response validation fails.
-func (r *imageRepository) Upload(ctx context.Context, image *domain.UploadthingUploadRequest) (string, error) {
+func (r *imageRepository) Upload(ctx context.Context, image *domain.UploadRequest) (string, error) {
 	// Validate request structure
 	if err := image.Validate(); err != nil {
 		return "", fmt.Errorf("failed to validate image: %w", err)
@@ -129,7 +129,7 @@ func (r *imageRepository) Upload(ctx context.Context, image *domain.UploadthingU
 	}
 
 	// Decode UploadThing response
-	var uploadResp domain.UploadthingUploadResponse
+	var uploadResp domain.UploadResponse
 	if err := json.NewDecoder(resp.Body).Decode(&uploadResp); err != nil {
 		return "", fmt.Errorf("failed to decode uploadthing response: %w", err)
 	}
@@ -140,7 +140,7 @@ func (r *imageRepository) Upload(ctx context.Context, image *domain.UploadthingU
 	}
 
 	// Extract file URL
-	fileUrl := uploadResp.Data[0].FileUrl
+	fileUrl := uploadResp.Data[0].Data.URL
 
 	log.Println("Image uploaded successfully:", fileUrl)
 
