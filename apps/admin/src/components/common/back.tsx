@@ -26,22 +26,23 @@ export function Back({
   const { pathname } = useLocation();
 
   const handleBack = () => {
+    // Split and filter to remove empty parts
+    const parts = pathname.split('/').filter(Boolean);
+
+    // Get the previous path by removing the last segment
+    const previousPath =
+      parts.length > 1
+        ? pathname.slice(0, pathname.lastIndexOf(`/${parts[parts.length - 1]}`))
+        : undefined;
+
     if (window.history.length <= 2) {
-      // Split and filter to remove empty parts
-      const parts = pathname.split('/').filter(Boolean);
-
-      // Get the previous path by removing the last segment
-      const previousPath =
-        parts.length > 1
-          ? pathname.slice(
-              0,
-              pathname.lastIndexOf(`/${parts[parts.length - 1]}`),
-            )
-          : undefined;
-
       void navigate(previousPath ?? Route.root);
     } else {
-      void navigate(-1);
+      if (document.referrer === '') {
+        void navigate(previousPath ?? Route.root);
+      } else {
+        void navigate(-1);
+      }
     }
 
     onBack?.();
