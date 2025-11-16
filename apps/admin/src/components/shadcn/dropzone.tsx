@@ -33,6 +33,7 @@ const DropzoneContext = createContext<DropzoneContextType | undefined>(
 );
 
 export type DropzoneProps = Omit<DropzoneOptions, 'onDrop'> & {
+  id?: string;
   src?: File[];
   className?: string;
   onDrop?: (
@@ -45,6 +46,7 @@ export type DropzoneProps = Omit<DropzoneOptions, 'onDrop'> & {
 };
 
 export const Dropzone = ({
+  id,
   accept,
   maxFiles = 1,
   maxSize,
@@ -83,6 +85,7 @@ export const Dropzone = ({
       value={{ src, accept, maxSize, minSize, maxFiles }}
     >
       <Button
+        id={id}
         className={cn(
           'relative h-auto w-full flex-col overflow-hidden p-8 group',
           isDragActive && 'outline-none ring-1 ring-ring',

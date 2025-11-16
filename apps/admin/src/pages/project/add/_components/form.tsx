@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Back } from '@/components/common/back';
+import { Dropdown } from '@/components/common/dropdown';
 import { Button } from '@/components/shadcn/button';
 import {
   Form as ShadcnForm,
@@ -14,17 +15,8 @@ import {
   FormMessage,
 } from '@/components/shadcn/form';
 import { Input } from '@/components/shadcn/input';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/shadcn/select';
+import { SelectItem } from '@/components/shadcn/select';
 import { Textarea } from '@/components/shadcn/textarea';
-import { cn } from '@/lib/utils';
 
 import { Preview } from './preview';
 import { Tags } from './tags';
@@ -131,18 +123,17 @@ export function Form() {
           onBlurhashChange={(blurhash: string) =>
             form.setValue('blurhash', blurhash)
           }
-          hasError={
-            !!form.formState.errors.preview || !!form.formState.errors.blurhash
-          }
+          previewHasError={!!form.formState.errors.preview}
+          blurError={form.formState.errors.blurhash?.message}
         />
 
-        <div className='flex-center max-lg:flex-col gap-x-4 gap-y-6'>
+        <div className='flex-center flex-col xl:flex-row gap-x-4 gap-y-6'>
           <FormField
             control={form.control}
             name='title'
             render={({ field }) => (
               <FormItem className='w-full'>
-                <FormLabel>Title</FormLabel>
+                <FormLabel className='w-fit'>Title</FormLabel>
                 <FormDescription>
                   A short, descriptive name for your project.
                 </FormDescription>
@@ -158,7 +149,7 @@ export function Form() {
             name='subTitle'
             render={({ field }) => (
               <FormItem className='w-full'>
-                <FormLabel>Subtitle</FormLabel>
+                <FormLabel className='w-fit'>Subtitle</FormLabel>
                 <FormDescription>
                   Add a short tagline or secondary title that describes your
                   project.
@@ -177,7 +168,7 @@ export function Form() {
           name='description'
           render={({ field }) => (
             <FormItem className='w-full'>
-              <FormLabel>Description</FormLabel>
+              <FormLabel className='w-fit'>Description</FormLabel>
               <FormDescription>
                 Write a brief summary of your project — what it does, its
                 purpose, or main features.
@@ -203,42 +194,34 @@ export function Form() {
         <FormField
           control={form.control}
           name='type'
-          render={({ field }) => (
-            <FormItem className='w-full'>
-              <FormLabel>Type</FormLabel>
-              <FormDescription>
-                Select the main platform or category your project belongs to.
-              </FormDescription>
-              <FormControl>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  name={field.name}
-                  disabled={field.disabled}
-                >
-                  <SelectTrigger
-                    className={cn(
-                      'w-full',
-                      form.formState.errors.type && 'border-destructive',
-                    )}
+          render={({ field }) => {
+            const { onChange, ...fields } = field;
+
+            return (
+              <FormItem className='w-full'>
+                <FormLabel className='w-fit'>Type</FormLabel>
+                <FormDescription>
+                  Select the main platform or category your project belongs to.
+                </FormDescription>
+                <FormControl>
+                  <Dropdown
+                    label='Project Type'
+                    placeholder='Select a type'
+                    onValueChange={onChange}
+                    {...fields}
+                    hasError={!!form.formState.errors.type}
                   >
-                    <SelectValue placeholder='Select a type' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Project Type</SelectLabel>
-                      {Object.values(ProjectType).map((t) => (
-                        <SelectItem key={t} value={t} className='capitalize'>
-                          {t}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+                    {Object.values(ProjectType).map((t) => (
+                      <SelectItem key={t} value={t} className='capitalize'>
+                        {t}
+                      </SelectItem>
+                    ))}
+                  </Dropdown>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
 
         <FormField
@@ -246,7 +229,7 @@ export function Form() {
           name='link'
           render={({ field }) => (
             <FormItem className='w-full'>
-              <FormLabel>Link</FormLabel>
+              <FormLabel className='w-fit'>Link</FormLabel>
               <FormDescription>
                 Enter the full URL for the deployed project (e.g.,
                 https://example.com)

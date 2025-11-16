@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import type { Control, FieldValues, Path } from 'react-hook-form';
 
 import { Combobox } from '@/components/common/combobox';
@@ -6,7 +7,6 @@ import {
   FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from '@/components/shadcn/form';
 import { useFetch } from '@/hooks/useFetch';
@@ -76,6 +76,8 @@ export function Tags<T extends FieldValues>({
   name,
   hasError = false,
 }: TagsProps<T>) {
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
   const { data, loading } = useFetch<[GitHubResponse, DevToTag[]]>({
     url: [
       '/github/search/repositories?q=stars:>500&sort=stars&order=desc',
@@ -103,27 +105,49 @@ export function Tags<T extends FieldValues>({
     <FormField
       control={control}
       name={name}
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Tags</FormLabel>
-          <FormDescription>
-            Add tags for technologies, frameworks, languages, etc.
-          </FormDescription>
-          <FormControl>
-            <Combobox
-              placeholder='e.g. javascript, typescript, react, python, docker'
-              suggestions={uniqueSuggestions}
-              defaultSuggestions={defaults}
-              emptyMessage='No tags found.'
-              selectPlaceholder='Select tags...'
-              disabled={loading}
-              hasError={hasError}
-              {...field}
-            />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
+      render={({ field }) => {
+        const { ref, ...fields } = field;
+        void ref;
+
+        return (
+          <FormItem>
+            {/* 
+              Using a <span> instead of a native <label> because 
+              Cmdk / headless Select overrides IDs and the input element, 
+              so native <label htmlFor> associations don’t work correctly. 
+              This span acts as the accessible label and also triggers the select 
+              when clicked via the ref.
+            */}
+            <span
+              id={field.name}
+              data-slot='form-label'
+              data-error={!!hasError}
+              className='text-sm font-medium data-[error=true]:text-destructive w-fit cursor-default'
+              onClick={() => triggerRef.current?.click()}
+            >
+              Tags
+            </span>
+            <FormDescription>
+              Add tags for technologies, frameworks, languages, etc.
+            </FormDescription>
+            <FormControl>
+              <Combobox
+                triggerRef={triggerRef}
+                aria-labelledby={field.name}
+                placeholder='e.g. javascript, typescript, react, python, docker'
+                suggestions={uniqueSuggestions}
+                defaultSuggestions={defaults}
+                emptyMessage='No tags found.'
+                selectPlaceholder='Select tags...'
+                disabled={loading}
+                hasError={hasError}
+                {...fields}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        );
+      }}
     />
   );
 }
