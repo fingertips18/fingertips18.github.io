@@ -46,12 +46,12 @@ definitions:
         type: string
       preview:
         type: string
-      stack:
+      sub_title:
+        type: string
+      tags:
         items:
           type: string
         type: array
-      sub_title:
-        type: string
       title:
         type: string
       type:
@@ -115,12 +115,12 @@ definitions:
         type: string
       preview:
         type: string
-      stack:
+      sub_title:
+        type: string
+      tags:
         items:
           type: string
         type: array
-      sub_title:
-        type: string
       title:
         type: string
       type:

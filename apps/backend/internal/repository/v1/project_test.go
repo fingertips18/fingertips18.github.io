@@ -49,9 +49,9 @@ func (f *projectFakeRow) Scan(dest ...any) error {
 		*dest[5].(*string) = f.project.Description
 
 		if v, ok := dest[6].(*[]string); ok {
-			*v = f.project.Stack
+			*v = f.project.Tags
 		} else {
-			return fmt.Errorf("expected *[]string for stack, got %T", dest[6])
+			return fmt.Errorf("expected *[]string for tags, got %T", dest[6])
 		}
 
 		switch v := dest[7].(type) {
@@ -139,7 +139,7 @@ func TestProjectRepository_Create(t *testing.T) {
 		Title:       "test-title",
 		SubTitle:    "test-subtitle",
 		Description: "test-description",
-		Stack:       []string{"stack1"},
+		Tags:        []string{"tags1"},
 		Type:        domain.Web,
 		Link:        "http://example.com",
 	}
@@ -210,7 +210,7 @@ func TestProjectRepository_Create(t *testing.T) {
 					Title:       validProject.Title,
 					SubTitle:    validProject.SubTitle,
 					Description: validProject.Description,
-					Stack:       validProject.Stack,
+					Tags:        validProject.Tags,
 					Type:        validProject.Type,
 					Link:        validProject.Link,
 				},
@@ -228,7 +228,7 @@ func TestProjectRepository_Create(t *testing.T) {
 					Title:       validProject.Title,
 					SubTitle:    validProject.SubTitle,
 					Description: validProject.Description,
-					Stack:       validProject.Stack,
+					Tags:        validProject.Tags,
 					Type:        validProject.Type,
 					Link:        validProject.Link,
 				},
@@ -246,7 +246,7 @@ func TestProjectRepository_Create(t *testing.T) {
 					Title:       "",
 					SubTitle:    validProject.SubTitle,
 					Description: validProject.Description,
-					Stack:       validProject.Stack,
+					Tags:        validProject.Tags,
 					Type:        validProject.Type,
 					Link:        validProject.Link,
 				},
@@ -264,7 +264,7 @@ func TestProjectRepository_Create(t *testing.T) {
 					Title:       validProject.Title,
 					SubTitle:    "",
 					Description: validProject.Description,
-					Stack:       validProject.Stack,
+					Tags:        validProject.Tags,
 					Type:        validProject.Type,
 					Link:        validProject.Link,
 				},
@@ -282,7 +282,7 @@ func TestProjectRepository_Create(t *testing.T) {
 					Title:       validProject.Title,
 					SubTitle:    validProject.SubTitle,
 					Description: "",
-					Stack:       validProject.Stack,
+					Tags:        validProject.Tags,
 					Type:        validProject.Type,
 					Link:        validProject.Link,
 				},
@@ -292,7 +292,7 @@ func TestProjectRepository_Create(t *testing.T) {
 				err: errors.New("failed to validate project: description missing"),
 			},
 		},
-		"Missing stack fails": {
+		"Missing tags fails": {
 			given: Given{
 				project: domain.Project{
 					Preview:     validProject.Preview,
@@ -300,17 +300,17 @@ func TestProjectRepository_Create(t *testing.T) {
 					Title:       validProject.Title,
 					SubTitle:    validProject.SubTitle,
 					Description: validProject.Description,
-					Stack:       []string{},
+					Tags:        []string{},
 					Type:        validProject.Type,
 					Link:        validProject.Link,
 				},
 				mockQueryRow: nil,
 			},
 			expected: Expected{
-				err: errors.New("failed to validate project: stack missing"),
+				err: errors.New("failed to validate project: tags missing"),
 			},
 		},
-		"Stack contains empty string fails": {
+		"Tags contains empty string fails": {
 			given: Given{
 				project: domain.Project{
 					Preview:     validProject.Preview,
@@ -318,7 +318,7 @@ func TestProjectRepository_Create(t *testing.T) {
 					Title:       validProject.Title,
 					SubTitle:    validProject.SubTitle,
 					Description: validProject.Description,
-					Stack:       []string{"stack1", "", "stack3"},
+					Tags:        []string{"tags1", "", "tags3"},
 					Type:        validProject.Type,
 					Link:        validProject.Link,
 					CreatedAt:   fixedTime,
@@ -327,7 +327,7 @@ func TestProjectRepository_Create(t *testing.T) {
 				mockQueryRow: nil,
 			},
 			expected: Expected{
-				err: errors.New("failed to validate project: stack[1] is empty"),
+				err: errors.New("failed to validate project: tag[1] is empty"),
 			},
 		},
 		"Missing type fails": {
@@ -338,7 +338,7 @@ func TestProjectRepository_Create(t *testing.T) {
 					Title:       validProject.Title,
 					SubTitle:    validProject.SubTitle,
 					Description: validProject.Description,
-					Stack:       validProject.Stack,
+					Tags:        validProject.Tags,
 					Type:        "",
 					Link:        validProject.Link,
 				},
@@ -356,7 +356,7 @@ func TestProjectRepository_Create(t *testing.T) {
 					Title:       validProject.Title,
 					SubTitle:    validProject.SubTitle,
 					Description: validProject.Description,
-					Stack:       validProject.Stack,
+					Tags:        validProject.Tags,
 					Type:        "invalid",
 					Link:        validProject.Link,
 				},
@@ -374,7 +374,7 @@ func TestProjectRepository_Create(t *testing.T) {
 					Title:       validProject.Title,
 					SubTitle:    validProject.SubTitle,
 					Description: validProject.Description,
-					Stack:       validProject.Stack,
+					Tags:        validProject.Tags,
 					Type:        validProject.Type,
 					Link:        "",
 				},
@@ -421,7 +421,7 @@ func TestProjectRepository_Get(t *testing.T) {
 		Title:       "test-title",
 		SubTitle:    "test-subtitle",
 		Description: "test-description",
-		Stack:       []string{"stack1"},
+		Tags:        []string{"tags1"},
 		Type:        domain.Web,
 		Link:        "http://example.com",
 		CreatedAt:   time.Now(),
@@ -495,7 +495,7 @@ func TestProjectRepository_Get(t *testing.T) {
 							Title:       validProject.Title,
 							SubTitle:    validProject.SubTitle,
 							Description: validProject.Description,
-							Stack:       validProject.Stack,
+							Tags:        validProject.Tags,
 							Type:        validProject.Type,
 							Link:        validProject.Link,
 							CreatedAt:   validProject.CreatedAt,
@@ -521,7 +521,7 @@ func TestProjectRepository_Get(t *testing.T) {
 							Title:       validProject.Title,
 							SubTitle:    validProject.SubTitle,
 							Description: validProject.Description,
-							Stack:       validProject.Stack,
+							Tags:        validProject.Tags,
 							Type:        validProject.Type,
 							Link:        validProject.Link,
 							CreatedAt:   validProject.CreatedAt,
@@ -547,7 +547,7 @@ func TestProjectRepository_Get(t *testing.T) {
 							Title:       validProject.Title,
 							SubTitle:    validProject.SubTitle,
 							Description: validProject.Description,
-							Stack:       validProject.Stack,
+							Tags:        validProject.Tags,
 							Type:        validProject.Type,
 							Link:        validProject.Link,
 							CreatedAt:   validProject.CreatedAt,
@@ -573,7 +573,7 @@ func TestProjectRepository_Get(t *testing.T) {
 							Title:       "",
 							SubTitle:    validProject.SubTitle,
 							Description: validProject.Description,
-							Stack:       validProject.Stack,
+							Tags:        validProject.Tags,
 							Type:        validProject.Type,
 							Link:        validProject.Link,
 							CreatedAt:   validProject.CreatedAt,
@@ -599,7 +599,7 @@ func TestProjectRepository_Get(t *testing.T) {
 							Title:       validProject.Title,
 							SubTitle:    "",
 							Description: validProject.Description,
-							Stack:       validProject.Stack,
+							Tags:        validProject.Tags,
 							Type:        validProject.Type,
 							Link:        validProject.Link,
 							CreatedAt:   validProject.CreatedAt,
@@ -625,7 +625,7 @@ func TestProjectRepository_Get(t *testing.T) {
 							Title:       validProject.Title,
 							SubTitle:    validProject.SubTitle,
 							Description: "",
-							Stack:       validProject.Stack,
+							Tags:        validProject.Tags,
 							Type:        validProject.Type,
 							Link:        validProject.Link,
 							CreatedAt:   validProject.CreatedAt,
@@ -638,7 +638,7 @@ func TestProjectRepository_Get(t *testing.T) {
 				err:     errors.New("invalid project returned: description missing"),
 			},
 		},
-		"Missing stack fails": {
+		"Missing tags fails": {
 			given: Given{
 				id: id,
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
@@ -651,7 +651,7 @@ func TestProjectRepository_Get(t *testing.T) {
 							Title:       validProject.Title,
 							SubTitle:    validProject.SubTitle,
 							Description: validProject.Description,
-							Stack:       nil,
+							Tags:        nil,
 							Type:        validProject.Type,
 							Link:        validProject.Link,
 							CreatedAt:   validProject.CreatedAt,
@@ -661,7 +661,7 @@ func TestProjectRepository_Get(t *testing.T) {
 			},
 			expected: Expected{
 				project: nil,
-				err:     errors.New("invalid project returned: stack missing"),
+				err:     errors.New("invalid project returned: tags missing"),
 			},
 		},
 		"Missing type fails": {
@@ -677,7 +677,7 @@ func TestProjectRepository_Get(t *testing.T) {
 							Title:       validProject.Title,
 							SubTitle:    validProject.SubTitle,
 							Description: validProject.Description,
-							Stack:       validProject.Stack,
+							Tags:        validProject.Tags,
 							Type:        "",
 							Link:        validProject.Link,
 							CreatedAt:   validProject.CreatedAt,
@@ -703,7 +703,7 @@ func TestProjectRepository_Get(t *testing.T) {
 							Title:       validProject.Title,
 							SubTitle:    validProject.SubTitle,
 							Description: validProject.Description,
-							Stack:       validProject.Stack,
+							Tags:        validProject.Tags,
 							Type:        validProject.Type,
 							Link:        "",
 							CreatedAt:   validProject.CreatedAt,
@@ -729,7 +729,7 @@ func TestProjectRepository_Get(t *testing.T) {
 							Title:       validProject.Title,
 							SubTitle:    validProject.SubTitle,
 							Description: validProject.Description,
-							Stack:       validProject.Stack,
+							Tags:        validProject.Tags,
 							Type:        validProject.Type,
 							Link:        validProject.Link,
 							CreatedAt:   time.Time{},
@@ -755,7 +755,7 @@ func TestProjectRepository_Get(t *testing.T) {
 							Title:       validProject.Title,
 							SubTitle:    validProject.SubTitle,
 							Description: validProject.Description,
-							Stack:       validProject.Stack,
+							Tags:        validProject.Tags,
 							Type:        validProject.Type,
 							Link:        validProject.Link,
 							CreatedAt:   validProject.CreatedAt,
@@ -805,7 +805,7 @@ func TestProjectRepository_Update(t *testing.T) {
 		Title:       "test-title",
 		SubTitle:    "test-subtitle",
 		Description: "test-description",
-		Stack:       []string{"stack1"},
+		Tags:        []string{"tags1"},
 		Type:        domain.Web,
 		Link:        "http://example.com",
 	}
@@ -877,7 +877,7 @@ func TestProjectRepository_Update(t *testing.T) {
 					Title:       validProject.Title,
 					SubTitle:    validProject.SubTitle,
 					Description: validProject.Description,
-					Stack:       validProject.Stack,
+					Tags:        validProject.Tags,
 					Type:        validProject.Type,
 					Link:        validProject.Link,
 				},
@@ -897,7 +897,7 @@ func TestProjectRepository_Update(t *testing.T) {
 					Title:       validProject.Title,
 					SubTitle:    validProject.SubTitle,
 					Description: validProject.Description,
-					Stack:       validProject.Stack,
+					Tags:        validProject.Tags,
 					Type:        validProject.Type,
 					Link:        validProject.Link,
 				},
@@ -917,7 +917,7 @@ func TestProjectRepository_Update(t *testing.T) {
 					Title:       "",
 					SubTitle:    validProject.SubTitle,
 					Description: validProject.Description,
-					Stack:       validProject.Stack,
+					Tags:        validProject.Tags,
 					Type:        validProject.Type,
 					Link:        validProject.Link,
 				},
@@ -937,7 +937,7 @@ func TestProjectRepository_Update(t *testing.T) {
 					Title:       validProject.Title,
 					SubTitle:    "",
 					Description: validProject.Description,
-					Stack:       validProject.Stack,
+					Tags:        validProject.Tags,
 					Type:        validProject.Type,
 					Link:        validProject.Link,
 				},
@@ -957,7 +957,7 @@ func TestProjectRepository_Update(t *testing.T) {
 					Title:       validProject.Title,
 					SubTitle:    validProject.SubTitle,
 					Description: "",
-					Stack:       validProject.Stack,
+					Tags:        validProject.Tags,
 					Type:        validProject.Type,
 					Link:        validProject.Link,
 				},
@@ -968,7 +968,7 @@ func TestProjectRepository_Update(t *testing.T) {
 				err:            errors.New("failed to validate project: description missing"),
 			},
 		},
-		"Missing stack fails": {
+		"Missing tags fails": {
 			given: Given{
 				project: domain.Project{
 					Id:          validProject.Id,
@@ -977,7 +977,7 @@ func TestProjectRepository_Update(t *testing.T) {
 					Title:       validProject.Title,
 					SubTitle:    validProject.SubTitle,
 					Description: validProject.Description,
-					Stack:       []string{},
+					Tags:        []string{},
 					Type:        validProject.Type,
 					Link:        validProject.Link,
 				},
@@ -985,10 +985,10 @@ func TestProjectRepository_Update(t *testing.T) {
 			},
 			expected: Expected{
 				updatedProject: nil,
-				err:            errors.New("failed to validate project: stack missing"),
+				err:            errors.New("failed to validate project: tags missing"),
 			},
 		},
-		"Stack contains empty string fails": {
+		"Tags contains empty string fails": {
 			given: Given{
 				project: domain.Project{
 					Id:          validProject.Id,
@@ -997,7 +997,7 @@ func TestProjectRepository_Update(t *testing.T) {
 					Title:       validProject.Title,
 					SubTitle:    validProject.SubTitle,
 					Description: validProject.Description,
-					Stack:       []string{"stack1", "", "stack3"},
+					Tags:        []string{"tags1", "", "tags3"},
 					Type:        validProject.Type,
 					Link:        validProject.Link,
 				},
@@ -1005,7 +1005,7 @@ func TestProjectRepository_Update(t *testing.T) {
 			},
 			expected: Expected{
 				updatedProject: nil,
-				err:            errors.New("failed to validate project: stack[1] is empty"),
+				err:            errors.New("failed to validate project: tag[1] is empty"),
 			},
 		},
 		"Missing type fails": {
@@ -1017,7 +1017,7 @@ func TestProjectRepository_Update(t *testing.T) {
 					Title:       validProject.Title,
 					SubTitle:    validProject.SubTitle,
 					Description: validProject.Description,
-					Stack:       validProject.Stack,
+					Tags:        validProject.Tags,
 					Type:        "",
 					Link:        validProject.Link,
 				},
@@ -1037,7 +1037,7 @@ func TestProjectRepository_Update(t *testing.T) {
 					Title:       validProject.Title,
 					SubTitle:    validProject.SubTitle,
 					Description: validProject.Description,
-					Stack:       validProject.Stack,
+					Tags:        validProject.Tags,
 					Type:        validProject.Type,
 					Link:        "",
 				},
@@ -1177,7 +1177,7 @@ func TestProjectRepository_List(t *testing.T) {
 		Title:       "test-title",
 		SubTitle:    "test-subtitle",
 		Description: "test-description",
-		Stack:       []string{"stack1"},
+		Tags:        []string{"tags1"},
 		Type:        domain.Web,
 		Link:        "http://example.com",
 		CreatedAt:   fixedTime,
