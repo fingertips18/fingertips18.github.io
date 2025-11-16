@@ -107,7 +107,7 @@ export function Tags<T extends FieldValues>({
       name={name}
       render={({ field }) => {
         const { ref, ...fields } = field;
-        void ref;
+        void ref; // Explicitly ignore react-hook-form ref; using triggerRef instead
 
         return (
           <FormItem>
