@@ -22,7 +22,7 @@ type Project struct {
 	Title       string      `json:"title"`
 	SubTitle    string      `json:"sub_title"`
 	Description string      `json:"description"`
-	Stack       []string    `json:"stack"`
+	Tags        []string    `json:"tags"`
 	Type        ProjectType `json:"type"`
 	Link        string      `json:"link"`
 	EducationID string      `json:"education_id,omitempty"`
@@ -67,12 +67,12 @@ func (p Project) ValidatePayload() error {
 	if p.Description == "" {
 		return errors.New("description missing")
 	}
-	if len(p.Stack) == 0 {
-		return errors.New("stack missing")
+	if len(p.Tags) == 0 {
+		return errors.New("tags missing")
 	}
-	for i, item := range p.Stack {
+	for i, item := range p.Tags {
 		if strings.TrimSpace(item) == "" {
-			return fmt.Errorf("stack[%d] is empty", i)
+			return fmt.Errorf("tag[%d] is empty", i)
 		}
 	}
 	if p.Type == "" {

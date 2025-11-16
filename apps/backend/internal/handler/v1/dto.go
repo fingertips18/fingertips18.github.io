@@ -9,7 +9,7 @@ type ProjectDTO struct {
 	Title       string    `json:"title"`
 	SubTitle    string    `json:"sub_title"`
 	Description string    `json:"description"`
-	Stack       []string  `json:"stack"`
+	Tags        []string  `json:"tags"`
 	Type        string    `json:"type"`
 	Link        string    `json:"link"`
 	EducationID string    `json:"education_id,omitempty"`
@@ -23,7 +23,7 @@ type CreateProjectRequest struct {
 	Title       string   `json:"title"`
 	SubTitle    string   `json:"sub_title"`
 	Description string   `json:"description"`
-	Stack       []string `json:"stack"`
+	Tags        []string `json:"tags"`
 	Type        string   `json:"type"`
 	Link        string   `json:"link"`
 	EducationID string   `json:"education_id,omitempty"`

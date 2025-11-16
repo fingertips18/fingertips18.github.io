@@ -1058,14 +1058,14 @@ const docTemplate = `{
                 "preview": {
                     "type": "string"
                 },
-                "stack": {
+                "sub_title": {
+                    "type": "string"
+                },
+                "tags": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
-                },
-                "sub_title": {
-                    "type": "string"
                 },
                 "title": {
                     "type": "string"
@@ -1164,14 +1164,14 @@ const docTemplate = `{
                 "preview": {
                     "type": "string"
                 },
-                "stack": {
+                "sub_title": {
+                    "type": "string"
+                },
+                "tags": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
-                },
-                "sub_title": {
-                    "type": "string"
                 },
                 "title": {
                     "type": "string"
