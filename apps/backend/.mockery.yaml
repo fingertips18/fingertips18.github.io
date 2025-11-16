@@ -15,6 +15,7 @@ packages:
       ProjectRepository: {}
       EducationRepository: {}
       SkillRepository: {}
+      ImageRepository: {}
   github.com/fingertips18/fingertips18.github.io/backend/internal/handler/v1:
     interfaces:
       AnalyticsHandler: {}
