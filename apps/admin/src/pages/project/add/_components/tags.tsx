@@ -9,6 +9,7 @@ import {
   FormItem,
   FormMessage,
 } from '@/components/shadcn/form';
+import { APIRoute } from '@/constants/api';
 import { useFetch } from '@/hooks/useFetch';
 
 type GitHubResponse = { items: { topics: string[] }[] };
@@ -79,10 +80,7 @@ export function Tags<T extends FieldValues>({
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   const { data, loading } = useFetch<[GitHubResponse, DevToTag[]]>({
-    url: [
-      '/github/search/repositories?q=stars:>500&sort=stars&order=desc',
-      'https://dev.to/api/tags',
-    ],
+    url: [APIRoute.githubTags, APIRoute.devToTags],
     method: 'GET',
     toastOptions: {
       errorTitle: 'Failed to load tags suggestions',

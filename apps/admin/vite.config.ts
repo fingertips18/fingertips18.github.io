@@ -32,6 +32,16 @@ export default defineConfig(({ mode }) => {
             });
           },
         },
+        '/api': {
+          target: env.BACKEND_API,
+          changeOrigin: true,
+          rewrite: (requestPath) => requestPath.replace(/^\/api/, ''), // remove /api prefix
+          configure: (proxy) => {
+            proxy.on('proxyReq', (proxyReq) => {
+              proxyReq.setHeader('Authorization', `Bearer ${env.AUTH_TOKEN}`);
+            });
+          },
+        },
       },
     },
   };

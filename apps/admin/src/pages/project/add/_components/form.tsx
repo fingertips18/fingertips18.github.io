@@ -3,31 +3,18 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Back } from '@/components/common/back';
-import { Dropdown } from '@/components/common/dropdown';
 import { Button } from '@/components/shadcn/button';
-import {
-  Form as ShadcnForm,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/shadcn/form';
-import { Input } from '@/components/shadcn/input';
-import { SelectItem } from '@/components/shadcn/select';
-import { Textarea } from '@/components/shadcn/textarea';
+import { Form as BaseForm } from '@/components/shadcn/form';
+import { MAX_BYTES } from '@/constants/sizes';
+import { ProjectType } from '@/types/project';
 
+import { Description } from './description';
+import { Link } from './link';
 import { Preview } from './preview';
+import { Subtitle } from './subtitle';
 import { Tags } from './tags';
-
-const ProjectType = {
-  web: 'web',
-  mobile: 'mobile',
-  game: 'game',
-} as const;
-
-const MAX_BYTES = 10 * 1024 * 1024; // 10MB
+import { Title } from './title';
+import { Type } from './type';
 
 const formSchema = z.object({
   preview: z
@@ -111,7 +98,7 @@ export function Form() {
   };
 
   return (
-    <ShadcnForm {...form}>
+    <BaseForm {...form}>
       <form
         onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}
         className='flex-1 space-y-6'
@@ -119,7 +106,6 @@ export function Form() {
         <Preview
           control={form.control}
           name='preview'
-          maxSize={MAX_BYTES}
           onBlurhashChange={(blurhash: string) =>
             form.setValue('blurhash', blurhash)
           }
@@ -128,62 +114,11 @@ export function Form() {
         />
 
         <div className='flex-center flex-col xl:flex-row gap-x-4 gap-y-6'>
-          <FormField
-            control={form.control}
-            name='title'
-            render={({ field }) => (
-              <FormItem className='w-full'>
-                <FormLabel className='w-fit'>Title</FormLabel>
-                <FormDescription>
-                  A short, descriptive name for your project.
-                </FormDescription>
-                <FormControl>
-                  <Input placeholder='e.g. WebNexus' {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='subTitle'
-            render={({ field }) => (
-              <FormItem className='w-full'>
-                <FormLabel className='w-fit'>Subtitle</FormLabel>
-                <FormDescription>
-                  Add a short tagline or secondary title that describes your
-                  project.
-                </FormDescription>
-                <FormControl>
-                  <Input placeholder='e.g. The Pulse of the Web' {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <Title control={form.control} name='title' />
+          <Subtitle control={form.control} name='subTitle' />
         </div>
 
-        <FormField
-          control={form.control}
-          name='description'
-          render={({ field }) => (
-            <FormItem className='w-full'>
-              <FormLabel className='w-fit'>Description</FormLabel>
-              <FormDescription>
-                Write a brief summary of your project — what it does, its
-                purpose, or main features.
-              </FormDescription>
-              <FormControl>
-                <Textarea
-                  placeholder='e.g. A web app that helps teams manage tasks efficiently.'
-                  className='resize-none h-32'
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <Description control={form.control} name='description' />
 
         <Tags
           control={form.control}
@@ -191,56 +126,13 @@ export function Form() {
           hasError={!!form.formState.errors.tags}
         />
 
-        <FormField
+        <Type
           control={form.control}
           name='type'
-          render={({ field }) => {
-            const { onChange, ...fields } = field;
-
-            return (
-              <FormItem className='w-full'>
-                <FormLabel className='w-fit'>Type</FormLabel>
-                <FormDescription>
-                  Select the main platform or category your project belongs to.
-                </FormDescription>
-                <FormControl>
-                  <Dropdown
-                    label='Project Type'
-                    placeholder='Select a type'
-                    onValueChange={onChange}
-                    {...fields}
-                    hasError={!!form.formState.errors.type}
-                  >
-                    {Object.values(ProjectType).map((t) => (
-                      <SelectItem key={t} value={t} className='capitalize'>
-                        {t}
-                      </SelectItem>
-                    ))}
-                  </Dropdown>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            );
-          }}
+          hasError={!!form.formState.errors.type}
         />
 
-        <FormField
-          control={form.control}
-          name='link'
-          render={({ field }) => (
-            <FormItem className='w-full'>
-              <FormLabel className='w-fit'>Link</FormLabel>
-              <FormDescription>
-                Enter the full URL for the deployed project (e.g.,
-                https://example.com)
-              </FormDescription>
-              <FormControl>
-                <Input placeholder='https://example.com' {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <Link control={form.control} name='link' />
 
         <div className='flex-end flex-col-reverse sm:flex-row gap-2'>
           <Back
@@ -255,6 +147,6 @@ export function Form() {
           </Button>
         </div>
       </form>
-    </ShadcnForm>
+    </BaseForm>
   );
 }
