@@ -7,6 +7,18 @@ import { defineConfig, loadEnv } from 'vite';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
+  // Validate required environment variables
+  if (!env.BACKEND_API) {
+    throw new Error(
+      'BACKEND_API environment variable is required for /api proxy',
+    );
+  }
+  if (!env.AUTH_TOKEN) {
+    throw new Error(
+      'AUTH_TOKEN environment variable is required for /api proxy',
+    );
+  }
+
   return {
     plugins: [react(), tailwindcss()],
     resolve: {
@@ -29,6 +41,16 @@ export default defineConfig(({ mode }) => {
                 );
               }
               proxyReq.setHeader('Accept', 'application/vnd.github+json');
+            });
+          },
+        },
+        '/api': {
+          target: env.BACKEND_API,
+          changeOrigin: true,
+          rewrite: (requestPath) => requestPath.replace(/^\/api/, ''), // remove /api prefix
+          configure: (proxy) => {
+            proxy.on('proxyReq', (proxyReq) => {
+              proxyReq.setHeader('Authorization', `Bearer ${env.AUTH_TOKEN}`);
             });
           },
         },

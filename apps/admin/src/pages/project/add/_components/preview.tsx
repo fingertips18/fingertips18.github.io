@@ -11,6 +11,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/shadcn/form';
+import { MAX_BYTES } from '@/constants/sizes';
 import {
   decodeBlurhashToBase64URL,
   encodeImageToBlurhash,
@@ -22,7 +23,6 @@ import { cn } from '@/lib/utils';
 interface PreviewProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T>;
-  maxSize: number;
   onBlurhashChange: (blurhash: string) => void;
   previewHasError?: boolean;
   blurError?: string;
@@ -31,7 +31,6 @@ interface PreviewProps<T extends FieldValues> {
 export function Preview<T extends FieldValues>({
   control,
   name,
-  maxSize,
   onBlurhashChange,
   previewHasError = false,
   blurError,
@@ -91,7 +90,7 @@ export function Preview<T extends FieldValues>({
                 }}
                 {...fields}
                 maxFiles={1}
-                maxSize={maxSize}
+                maxSize={MAX_BYTES}
                 hasError={previewHasError}
                 className='h-[312px]'
               />
