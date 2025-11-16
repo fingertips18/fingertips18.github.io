@@ -1,5 +1,5 @@
 import { Check, ChevronsUpDown, X } from 'lucide-react';
-import { type ComponentProps, useMemo, useState } from 'react';
+import { type ComponentProps, type Ref, useMemo, useState } from 'react';
 
 import { Badge } from '@/components/shadcn/badge';
 import { Button } from '@/components/shadcn/button';
@@ -19,7 +19,10 @@ import {
 import { cn } from '@/lib/utils';
 
 interface ComboboxProps
-  extends Omit<ComponentProps<'input'>, 'value' | 'onChange' | 'onKeyDown'> {
+  extends Omit<
+    ComponentProps<typeof CommandInput>,
+    'value' | 'onChange' | 'onKeyDown'
+  > {
   value?: string[];
   onChange?: (tags: string[]) => void;
   suggestions?: string[];
@@ -28,6 +31,7 @@ interface ComboboxProps
   emptyMessage?: string;
   selectPlaceholder?: string;
   hasError?: boolean;
+  triggerRef?: Ref<HTMLButtonElement>;
 }
 
 /**
@@ -42,6 +46,7 @@ export function Combobox({
   emptyMessage = 'No results found.',
   selectPlaceholder = 'Select...',
   hasError,
+  triggerRef,
   ...props
 }: ComboboxProps) {
   const [input, setInput] = useState<string>('');
@@ -99,12 +104,14 @@ export function Combobox({
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
+              data-state={open ? 'open' : 'closed'}
+              ref={triggerRef}
               type='button'
               variant='outline'
               role='combobox'
               aria-expanded={open}
               className={cn(
-                'justify-between flex-1 text-muted-foreground',
+                'justify-between flex-1 text-muted-foreground data-[state=open]:border-ring data-[state=open]:ring-ring/50 data-[state=open]:ring-[3px]',
                 hasError && 'border-destructive',
               )}
             >

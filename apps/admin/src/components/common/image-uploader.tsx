@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 
 interface ImageUploaderProps
   extends Omit<DropzoneProps, 'accept' | 'onDrop' | 'src' | 'className'> {
+  id?: string;
   accept?: Accept;
   className?: string;
   value?: FileList;
@@ -19,6 +20,7 @@ interface ImageUploaderProps
 }
 
 export function ImageUploader({
+  id,
   accept,
   className,
   value,
@@ -67,6 +69,7 @@ export function ImageUploader({
   return (
     <div onBlur={onBlur}>
       <Dropzone
+        id={id}
         accept={accept || { 'image/webp': ['.webp'] }}
         onDrop={(props) => void handleDrop(props)}
         src={value ? Array.from(value) : undefined}

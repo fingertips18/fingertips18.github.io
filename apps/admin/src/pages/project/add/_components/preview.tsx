@@ -24,7 +24,8 @@ interface PreviewProps<T extends FieldValues> {
   name: Path<T>;
   maxSize: number;
   onBlurhashChange: (blurhash: string) => void;
-  hasError?: boolean;
+  previewHasError?: boolean;
+  blurError?: string;
 }
 
 export function Preview<T extends FieldValues>({
@@ -32,7 +33,8 @@ export function Preview<T extends FieldValues>({
   name,
   maxSize,
   onBlurhashChange,
-  hasError = false,
+  previewHasError = false,
+  blurError,
 }: PreviewProps<T>) {
   const [base64, setBase64] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -46,7 +48,7 @@ export function Preview<T extends FieldValues>({
 
         return (
           <FormItem className='w-full'>
-            <FormLabel>Preview</FormLabel>
+            <FormLabel className='w-fit'>Preview</FormLabel>
             <FormDescription>
               Provide a preview image for your project.
             </FormDescription>
@@ -90,13 +92,18 @@ export function Preview<T extends FieldValues>({
                 {...fields}
                 maxFiles={1}
                 maxSize={maxSize}
-                hasError={hasError}
+                hasError={previewHasError}
                 className='h-[312px]'
               />
             </FormControl>
             <FormMessage />
             <div className='flex flex-col gap-y-2 mt-4 w-full'>
-              <h6 className='text-sm leading-none font-medium'>Blurhash</h6>
+              <h6
+                data-error={!!blurError}
+                className='text-sm leading-none font-medium data-[error=true]:text-destructive'
+              >
+                Blurhash
+              </h6>
               <p className='text-muted-foreground text-sm'>
                 A small, blurred preview generated from your image.
               </p>
@@ -105,6 +112,7 @@ export function Preview<T extends FieldValues>({
                   'h-[312px] relative aspect-square lg:aspect-video rounded-md overflow-hidden',
                   (loading || !base64) &&
                     'border border-dashed border-border flex-center',
+                  blurError && 'border-destructive',
                 )}
               >
                 {loading && (
@@ -130,6 +138,14 @@ export function Preview<T extends FieldValues>({
                   </div>
                 )}
               </div>
+              {blurError && (
+                <p
+                  data-slot='form-message'
+                  className={cn('text-destructive text-sm')}
+                >
+                  {blurError}
+                </p>
+              )}
             </div>
           </FormItem>
         );
