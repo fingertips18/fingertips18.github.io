@@ -39,7 +39,7 @@ func (_m *MockImageRepository) EXPECT() *MockImageRepository_Expecter {
 }
 
 // Upload provides a mock function for the type MockImageRepository
-func (_mock *MockImageRepository) Upload(ctx context.Context, image *domain.UploadRequest) (string, error) {
+func (_mock *MockImageRepository) Upload(ctx context.Context, image *domain.ImageUploadRequest) (string, error) {
 	ret := _mock.Called(ctx, image)
 
 	if len(ret) == 0 {
@@ -48,15 +48,15 @@ func (_mock *MockImageRepository) Upload(ctx context.Context, image *domain.Uplo
 
 	var r0 string
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.UploadRequest) (string, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.ImageUploadRequest) (string, error)); ok {
 		return returnFunc(ctx, image)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.UploadRequest) string); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.ImageUploadRequest) string); ok {
 		r0 = returnFunc(ctx, image)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *domain.UploadRequest) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *domain.ImageUploadRequest) error); ok {
 		r1 = returnFunc(ctx, image)
 	} else {
 		r1 = ret.Error(1)
@@ -71,20 +71,20 @@ type MockImageRepository_Upload_Call struct {
 
 // Upload is a helper method to define mock.On call
 //   - ctx context.Context
-//   - image *domain.UploadRequest
+//   - image *domain.ImageUploadRequest
 func (_e *MockImageRepository_Expecter) Upload(ctx interface{}, image interface{}) *MockImageRepository_Upload_Call {
 	return &MockImageRepository_Upload_Call{Call: _e.mock.On("Upload", ctx, image)}
 }
 
-func (_c *MockImageRepository_Upload_Call) Run(run func(ctx context.Context, image *domain.UploadRequest)) *MockImageRepository_Upload_Call {
+func (_c *MockImageRepository_Upload_Call) Run(run func(ctx context.Context, image *domain.ImageUploadRequest)) *MockImageRepository_Upload_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 *domain.UploadRequest
+		var arg1 *domain.ImageUploadRequest
 		if args[1] != nil {
-			arg1 = args[1].(*domain.UploadRequest)
+			arg1 = args[1].(*domain.ImageUploadRequest)
 		}
 		run(
 			arg0,
@@ -99,7 +99,7 @@ func (_c *MockImageRepository_Upload_Call) Return(s string, err error) *MockImag
 	return _c
 }
 
-func (_c *MockImageRepository_Upload_Call) RunAndReturn(run func(ctx context.Context, image *domain.UploadRequest) (string, error)) *MockImageRepository_Upload_Call {
+func (_c *MockImageRepository_Upload_Call) RunAndReturn(run func(ctx context.Context, image *domain.ImageUploadRequest) (string, error)) *MockImageRepository_Upload_Call {
 	_c.Call.Return(run)
 	return _c
 }

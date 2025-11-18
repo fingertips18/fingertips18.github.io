@@ -39,19 +39,19 @@ func newImageHandlerTestFixture(t *testing.T) *imageHandlerTestFixture {
 }
 
 func TestImageServiceHandler_Upload(t *testing.T) {
-	validFile := FilesDTO{
+	validFile := FileDTO{
 		Name: "profile.jpg",
 		Size: 1024,
 		Type: "image/jpeg",
 	}
 
-	validReq := UploadRequestDTO{
-		Files: []FilesDTO{validFile},
+	validReq := ImageUploadRequestDTO{
+		Files: []FileDTO{validFile},
 	}
 	validBody, _ := json.Marshal(validReq)
 
 	expectedURL := "https://uploadthing.com/f/abc123.jpg"
-	validResp, _ := json.Marshal(UploadResponseDTO{URL: expectedURL})
+	validResp, _ := json.Marshal(ImageUploadResponseDTO{URL: expectedURL})
 
 	type Given struct {
 		method   string
@@ -73,7 +73,7 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 				body:   string(validBody),
 				mockRepo: func(m *mockRepo.MockImageRepository) {
 					m.EXPECT().
-						Upload(mock.Anything, mock.MatchedBy(func(req *domain.UploadRequest) bool {
+						Upload(mock.Anything, mock.MatchedBy(func(req *domain.ImageUploadRequest) bool {
 							return len(req.Files) == 1 &&
 								req.Files[0].Name == "profile.jpg" &&
 								req.Files[0].Size == 1024 &&
@@ -136,8 +136,8 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 			given: Given{
 				method: http.MethodPost,
 				body: func() string {
-					req := UploadRequestDTO{
-						Files: []FilesDTO{
+					req := ImageUploadRequestDTO{
+						Files: []FileDTO{
 							{Name: "image1.jpg", Size: 1024, Type: "image/jpeg"},
 							{Name: "image2.png", Size: 2048, Type: "image/png"},
 							{Name: "image3.gif", Size: 512, Type: "image/gif"},
@@ -148,7 +148,7 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 				}(),
 				mockRepo: func(m *mockRepo.MockImageRepository) {
 					m.EXPECT().
-						Upload(mock.Anything, mock.MatchedBy(func(req *domain.UploadRequest) bool {
+						Upload(mock.Anything, mock.MatchedBy(func(req *domain.ImageUploadRequest) bool {
 							return len(req.Files) == 3 &&
 								req.Files[0].Name == "image1.jpg" &&
 								req.Files[1].Name == "image2.png" &&
@@ -166,15 +166,15 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 			given: Given{
 				method: http.MethodPost,
 				body: func() string {
-					req := UploadRequestDTO{
-						Files: []FilesDTO{},
+					req := ImageUploadRequestDTO{
+						Files: []FileDTO{},
 					}
 					b, _ := json.Marshal(req)
 					return string(b)
 				}(),
 				mockRepo: func(m *mockRepo.MockImageRepository) {
 					m.EXPECT().
-						Upload(mock.Anything, mock.MatchedBy(func(req *domain.UploadRequest) bool {
+						Upload(mock.Anything, mock.MatchedBy(func(req *domain.ImageUploadRequest) bool {
 							return len(req.Files) == 0
 						})).
 						Return(expectedURL, nil)
@@ -191,8 +191,8 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 				body: func() string {
 					acl := "public-read"
 					contentDisposition := "inline"
-					req := UploadRequestDTO{
-						Files:              []FilesDTO{validFile},
+					req := ImageUploadRequestDTO{
+						Files:              []FileDTO{validFile},
 						ACL:                &acl,
 						ContentDisposition: &contentDisposition,
 						Metadata: map[string]string{
@@ -205,7 +205,7 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 				}(),
 				mockRepo: func(m *mockRepo.MockImageRepository) {
 					m.EXPECT().
-						Upload(mock.Anything, mock.MatchedBy(func(req *domain.UploadRequest) bool {
+						Upload(mock.Anything, mock.MatchedBy(func(req *domain.ImageUploadRequest) bool {
 							return req.ACL != nil &&
 								*req.ACL == "public-read" &&
 								req.ContentDisposition != nil &&
@@ -225,8 +225,8 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 				method: http.MethodPost,
 				body: func() string {
 					customID := "custom-file-id-123"
-					req := UploadRequestDTO{
-						Files: []FilesDTO{
+					req := ImageUploadRequestDTO{
+						Files: []FileDTO{
 							{
 								Name:     "profile.jpg",
 								Size:     1024,
@@ -240,7 +240,7 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 				}(),
 				mockRepo: func(m *mockRepo.MockImageRepository) {
 					m.EXPECT().
-						Upload(mock.Anything, mock.MatchedBy(func(req *domain.UploadRequest) bool {
+						Upload(mock.Anything, mock.MatchedBy(func(req *domain.ImageUploadRequest) bool {
 							return len(req.Files) == 1 &&
 								req.Files[0].CustomID != nil &&
 								*req.Files[0].CustomID == "custom-file-id-123"
@@ -257,8 +257,8 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 			given: Given{
 				method: http.MethodPost,
 				body: func() string {
-					req := UploadRequestDTO{
-						Files: []FilesDTO{
+					req := ImageUploadRequestDTO{
+						Files: []FileDTO{
 							{
 								Name: "large-image.jpg",
 								Size: 104857600, // 100MB
@@ -271,7 +271,7 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 				}(),
 				mockRepo: func(m *mockRepo.MockImageRepository) {
 					m.EXPECT().
-						Upload(mock.Anything, mock.MatchedBy(func(req *domain.UploadRequest) bool {
+						Upload(mock.Anything, mock.MatchedBy(func(req *domain.ImageUploadRequest) bool {
 							return len(req.Files) == 1 && req.Files[0].Size == 104857600
 						})).
 						Return(expectedURL, nil)
@@ -286,8 +286,8 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 			given: Given{
 				method: http.MethodPost,
 				body: func() string {
-					req := UploadRequestDTO{
-						Files: []FilesDTO{
+					req := ImageUploadRequestDTO{
+						Files: []FileDTO{
 							{
 								Name: "画像ファイル-🖼️.jpg",
 								Size: 1024,
@@ -300,7 +300,7 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 				}(),
 				mockRepo: func(m *mockRepo.MockImageRepository) {
 					m.EXPECT().
-						Upload(mock.Anything, mock.MatchedBy(func(req *domain.UploadRequest) bool {
+						Upload(mock.Anything, mock.MatchedBy(func(req *domain.ImageUploadRequest) bool {
 							return len(req.Files) == 1 &&
 								strings.Contains(req.Files[0].Name, "画像ファイル")
 						})).
@@ -316,8 +316,8 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 			given: Given{
 				method: http.MethodPost,
 				body: func() string {
-					req := UploadRequestDTO{
-						Files: []FilesDTO{
+					req := ImageUploadRequestDTO{
+						Files: []FileDTO{
 							{
 								Name: strings.Repeat("a", 500) + ".jpg",
 								Size: 1024,
@@ -330,7 +330,7 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 				}(),
 				mockRepo: func(m *mockRepo.MockImageRepository) {
 					m.EXPECT().
-						Upload(mock.Anything, mock.MatchedBy(func(req *domain.UploadRequest) bool {
+						Upload(mock.Anything, mock.MatchedBy(func(req *domain.ImageUploadRequest) bool {
 							return len(req.Files) == 1 && len(req.Files[0].Name) > 500
 						})).
 						Return(expectedURL, nil)
@@ -345,8 +345,8 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 			given: Given{
 				method: http.MethodPost,
 				body: func() string {
-					req := UploadRequestDTO{
-						Files: []FilesDTO{
+					req := ImageUploadRequestDTO{
+						Files: []FileDTO{
 							{Name: "image.jpg", Size: 1024, Type: "image/jpeg"},
 							{Name: "image.png", Size: 2048, Type: "image/png"},
 							{Name: "image.gif", Size: 512, Type: "image/gif"},
@@ -359,7 +359,7 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 				}(),
 				mockRepo: func(m *mockRepo.MockImageRepository) {
 					m.EXPECT().
-						Upload(mock.Anything, mock.MatchedBy(func(req *domain.UploadRequest) bool {
+						Upload(mock.Anything, mock.MatchedBy(func(req *domain.ImageUploadRequest) bool {
 							return len(req.Files) == 5
 						})).
 						Return(expectedURL, nil)
@@ -389,8 +389,8 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 			given: Given{
 				method: http.MethodPost,
 				body: func() string {
-					req := UploadRequestDTO{
-						Files: []FilesDTO{
+					req := ImageUploadRequestDTO{
+						Files: []FileDTO{
 							{
 								Name: "empty.jpg",
 								Size: 0,
@@ -403,7 +403,7 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 				}(),
 				mockRepo: func(m *mockRepo.MockImageRepository) {
 					m.EXPECT().
-						Upload(mock.Anything, mock.MatchedBy(func(req *domain.UploadRequest) bool {
+						Upload(mock.Anything, mock.MatchedBy(func(req *domain.ImageUploadRequest) bool {
 							return len(req.Files) == 1 && req.Files[0].Size == 0
 						})).
 						Return(expectedURL, nil)
@@ -418,8 +418,8 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 			given: Given{
 				method: http.MethodPost,
 				body: func() string {
-					req := UploadRequestDTO{
-						Files: []FilesDTO{validFile},
+					req := ImageUploadRequestDTO{
+						Files: []FileDTO{validFile},
 						Metadata: map[string]interface{}{
 							"user": map[string]string{
 								"id":   "123",
@@ -435,7 +435,7 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 				}(),
 				mockRepo: func(m *mockRepo.MockImageRepository) {
 					m.EXPECT().
-						Upload(mock.Anything, mock.MatchedBy(func(req *domain.UploadRequest) bool {
+						Upload(mock.Anything, mock.MatchedBy(func(req *domain.ImageUploadRequest) bool {
 							return req.Metadata != nil
 						})).
 						Return(expectedURL, nil)
@@ -479,25 +479,25 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 }
 
 func TestImageServiceHandler_Upload_Routing(t *testing.T) {
-	validFile := FilesDTO{
+	validFile := FileDTO{
 		Name: "profile.jpg",
 		Size: 1024,
 		Type: "image/jpeg",
 	}
 
-	validReq := UploadRequestDTO{
-		Files: []FilesDTO{validFile},
+	validReq := ImageUploadRequestDTO{
+		Files: []FileDTO{validFile},
 	}
 	validBody, _ := json.Marshal(validReq)
 
 	expectedURL := "https://uploadthing.com/f/abc123.jpg"
-	expectedResp, _ := json.Marshal(UploadResponseDTO{URL: expectedURL})
+	expectedResp, _ := json.Marshal(ImageUploadResponseDTO{URL: expectedURL})
 
 	f := newImageHandlerTestFixture(t)
 
 	// Mock expectation
 	f.mockImageRepo.EXPECT().
-		Upload(mock.Anything, mock.MatchedBy(func(req *domain.UploadRequest) bool {
+		Upload(mock.Anything, mock.MatchedBy(func(req *domain.ImageUploadRequest) bool {
 			return len(req.Files) == 1 &&
 				req.Files[0].Name == "profile.jpg"
 		})).
@@ -557,25 +557,25 @@ func TestImageServiceHandler_ServeHTTP_NotFound(t *testing.T) {
 }
 
 func TestImageServiceHandler_ServeHTTP_TrailingSlash(t *testing.T) {
-	validFile := FilesDTO{
+	validFile := FileDTO{
 		Name: "profile.jpg",
 		Size: 1024,
 		Type: "image/jpeg",
 	}
 
-	validReq := UploadRequestDTO{
-		Files: []FilesDTO{validFile},
+	validReq := ImageUploadRequestDTO{
+		Files: []FileDTO{validFile},
 	}
 	validBody, _ := json.Marshal(validReq)
 
 	expectedURL := "https://uploadthing.com/f/abc123.jpg"
-	expectedResp, _ := json.Marshal(UploadResponseDTO{URL: expectedURL})
+	expectedResp, _ := json.Marshal(ImageUploadResponseDTO{URL: expectedURL})
 
 	f := newImageHandlerTestFixture(t)
 
 	// Mock expectation
 	f.mockImageRepo.EXPECT().
-		Upload(mock.Anything, mock.MatchedBy(func(req *domain.UploadRequest) bool {
+		Upload(mock.Anything, mock.MatchedBy(func(req *domain.ImageUploadRequest) bool {
 			return len(req.Files) == 1
 		})).
 		Return(expectedURL, nil)

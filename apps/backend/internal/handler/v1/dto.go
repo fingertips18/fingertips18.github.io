@@ -130,21 +130,21 @@ type SkillFilterRequest struct {
 	Category      string `json:"category"`
 }
 
-type FilesDTO struct {
+type FileDTO struct {
 	Name     string  `json:"name"`
 	Size     int64   `json:"size"`
 	Type     string  `json:"type"`
 	CustomID *string `json:"custom_id,omitempty"`
 }
 
-type UploadRequestDTO struct {
-	Files              []FilesDTO `json:"files"`
-	ACL                *string    `json:"acl,omitempty"`
-	Metadata           any        `json:"metadata,omitempty"`
-	ContentDisposition *string    `json:"content_disposition,omitempty"`
+type ImageUploadRequestDTO struct {
+	Files              []FileDTO `json:"files"`
+	ACL                *string   `json:"acl,omitempty"`
+	Metadata           any       `json:"metadata,omitempty"`
+	ContentDisposition *string   `json:"content_disposition,omitempty"`
 }
 
-type UploadResponseDTO struct {
+type ImageUploadResponseDTO struct {
 	URL string `json:"url"`
 }
 

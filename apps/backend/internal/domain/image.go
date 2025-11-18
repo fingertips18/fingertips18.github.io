@@ -6,21 +6,21 @@ import (
 	"strconv"
 )
 
-type Files struct {
+type File struct {
 	Name     string  `json:"name"`
 	Size     int64   `json:"size"`
 	Type     string  `json:"type"`
 	CustomID *string `json:"customId,omitempty"`
 }
 
-type UploadRequest struct {
-	Files              []Files `json:"files"`
+type ImageUploadRequest struct {
+	Files              []File  `json:"files"`
 	ACL                *string `json:"acl,omitempty"`
 	Metadata           any     `json:"metadata,omitempty"`
 	ContentDisposition *string `json:"contentDisposition,omitempty"`
 }
 
-func (i UploadRequest) Validate() error {
+func (i ImageUploadRequest) Validate() error {
 	// Files cannot be empty
 	if len(i.Files) == 0 {
 		return errors.New("files missing")
@@ -55,55 +55,37 @@ func (i UploadRequest) Validate() error {
 	return nil
 }
 
-type UploadData struct {
-	Key      string  `json:"key"`
-	URL      string  `json:"url"`
-	AppURL   string  `json:"appUrl"`
-	Name     string  `json:"name"`
-	Size     int64   `json:"size"`
-	CustomId *string `json:"customId,omitempty"`
+type ImageUploadFile struct {
+	Key                string                 `json:"key"`
+	FileName           string                 `json:"fileName"`
+	FileType           string                 `json:"fileType"`
+	FileUrl            string                 `json:"fileUrl"`
+	ContentDisposition string                 `json:"contentDisposition"`
+	PollingJwt         string                 `json:"pollingJwt"`
+	PollingUrl         string                 `json:"pollingUrl"`
+	CustomId           *string                `json:"customId,omitempty"`
+	URL                string                 `json:"url"` // signed URL to upload
+	Fields             map[string]interface{} `json:"fields,omitempty"`
 }
 
-type UploadError struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-	Data    any    `json:"data,omitempty"`
+type ImageUploadResponse struct {
+	Data []ImageUploadFile `json:"data"`
 }
 
-type UploadFileResponse struct {
-	Data  *UploadData  `json:"data"`
-	Error *UploadError `json:"error"`
-}
-
-type UploadResponse struct {
-	Data []UploadFileResponse `json:"data"`
-}
-
-func (r UploadResponse) Validate() error {
+func (r ImageUploadResponse) Validate() error {
 	if len(r.Data) == 0 {
 		return errors.New("uploadthing: response returned no files")
 	}
 
 	for idx, f := range r.Data {
-		prefix := "uploadthing: data[" + strconv.Itoa(idx) + "]"
+		prefix := fmt.Sprintf("uploadthing: data[%d]", idx)
 
-		// Check if this file had an error
-		if f.Error != nil {
-			return fmt.Errorf("%s error: %s (code: %s)",
-				prefix, f.Error.Message, f.Error.Code)
+		if f.Key == "" {
+			return fmt.Errorf("%s.key missing", prefix)
 		}
-
-		// Validate success data
-		if f.Data == nil {
-			return errors.New(prefix + ": data missing")
+		if f.URL == "" {
+			return fmt.Errorf("%s.url missing", prefix)
 		}
-		if f.Data.Key == "" {
-			return errors.New(prefix + ".key missing")
-		}
-		if f.Data.URL == "" {
-			return errors.New(prefix + ".url missing")
-		}
-
 	}
 
 	return nil

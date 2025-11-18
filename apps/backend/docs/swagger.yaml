@@ -94,7 +94,7 @@ definitions:
       error:
         type: string
     type: object
-  v1.FilesDTO:
+  v1.FileDTO:
     properties:
       custom_id:
         type: string
@@ -108,6 +108,23 @@ definitions:
   v1.IDResponse:
     properties:
       id:
+        type: string
+    type: object
+  v1.ImageUploadRequestDTO:
+    properties:
+      acl:
+        type: string
+      content_disposition:
+        type: string
+      files:
+        items:
+          $ref: '#/definitions/v1.FileDTO'
+        type: array
+      metadata: {}
+    type: object
+  v1.ImageUploadResponseDTO:
+    properties:
+      url:
         type: string
     type: object
   v1.ProjectDTO:
@@ -236,23 +253,6 @@ definitions:
       label:
         type: string
       updated_at:
-        type: string
-    type: object
-  v1.UploadRequestDTO:
-    properties:
-      acl:
-        type: string
-      content_disposition:
-        type: string
-      files:
-        items:
-          $ref: '#/definitions/v1.FilesDTO'
-        type: array
-      metadata: {}
-    type: object
-  v1.UploadResponseDTO:
-    properties:
-      url:
         type: string
     type: object
 info:
@@ -529,14 +529,14 @@ paths:
         name: imageUpload
         required: true
         schema:
-          $ref: '#/definitions/v1.UploadRequestDTO'
+          $ref: '#/definitions/v1.ImageUploadRequestDTO'
       produces:
       - application/json
       responses:
         "202":
-          description: Confirmation message
+          description: Image upload URL
           schema:
-            $ref: '#/definitions/v1.UploadResponseDTO'
+            $ref: '#/definitions/v1.ImageUploadResponseDTO'
         "400":
           description: Bad Request
           schema:
