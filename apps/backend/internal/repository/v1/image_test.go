@@ -24,8 +24,8 @@ type imageRepositoryTestFixture struct {
 func newImageRepositoryTestFixture(t *testing.T) *imageRepositoryTestFixture {
 	mockHttpAPI := client.NewMockHttpAPI(t)
 	imageRepository := &imageRepository{
-		uploadthingToken: "test_token_xxx",
-		httpAPI:          mockHttpAPI,
+		uploadthingSecretKey: "test_token_xxx",
+		httpAPI:              mockHttpAPI,
 	}
 
 	return &imageRepositoryTestFixture{
@@ -51,8 +51,8 @@ func TestImageRepository_Upload(t *testing.T) {
 	contentDisposition := "inline"
 	invalidContentDisposition := "invalid-disposition"
 
-	validPayload := &domain.UploadRequest{
-		Files: []domain.Files{
+	validPayload := &domain.ImageUploadRequest{
+		Files: []domain.File{
 			{
 				Name:     "test-image.jpg",
 				Size:     1024,
@@ -65,8 +65,25 @@ func TestImageRepository_Upload(t *testing.T) {
 		ContentDisposition: &contentDisposition,
 	}
 
+	successResponse := `{
+    "data": [
+        {
+            "key": "abc123",
+            "url": "https://utfs.io/f/abc123",
+            "fileName": "test-image.jpg",
+            "fileSize": "1024",
+            "fileType": "image/jpeg",
+            "fileUrl": "https://uploadthing.com/f/abc123",
+            "contentDisposition": "inline",
+            "pollingJwt": "jwt_token",
+            "pollingUrl": "https://uploadthing.com/api/poll",
+            "customId": "custom-123"
+        }
+    ]
+}`
+
 	type Given struct {
-		payload    *domain.UploadRequest
+		payload    *domain.ImageUploadRequest
 		mockUpload func(m *client.MockHttpAPI)
 	}
 
@@ -83,21 +100,7 @@ func TestImageRepository_Upload(t *testing.T) {
 			given: Given{
 				payload: validPayload,
 				mockUpload: func(m *client.MockHttpAPI) {
-					successResponse := `{
-						"data": [
-							{
-								"data": {
-									"key": "abc123",
-									"url": "https://utfs.io/f/abc123",
-									"appUrl": "https://uploadthing.com/f/abc123",
-									"name": "test-image.jpg",
-									"size": 1024,
-									"customId": "custom-123"
-								},
-								"error": null
-							}
-						]
-					}`
+					successResponse := successResponse
 					m.EXPECT().Do(mock.AnythingOfType("*http.Request")).
 						Return(&http.Response{
 							StatusCode: 200,
@@ -112,8 +115,8 @@ func TestImageRepository_Upload(t *testing.T) {
 		},
 		"Successful upload with defaults applied": {
 			given: Given{
-				payload: &domain.UploadRequest{
-					Files: []domain.Files{
+				payload: &domain.ImageUploadRequest{
+					Files: []domain.File{
 						{
 							Name: "test.png",
 							Size: 2048,
@@ -122,20 +125,7 @@ func TestImageRepository_Upload(t *testing.T) {
 					},
 				},
 				mockUpload: func(m *client.MockHttpAPI) {
-					successResponse := `{
-						"data": [
-							{
-								"data": {
-									"key": "def456",
-									"url": "https://utfs.io/f/def456",
-									"appUrl": "https://uploadthing.com/f/def456",
-									"name": "test.png",
-									"size": 2048
-								},
-								"error": null
-							}
-						]
-					}`
+					successResponse := successResponse
 					m.EXPECT().Do(mock.AnythingOfType("*http.Request")).
 						Return(&http.Response{
 							StatusCode: 200,
@@ -144,14 +134,14 @@ func TestImageRepository_Upload(t *testing.T) {
 				},
 			},
 			expected: Expected{
-				url: "https://utfs.io/f/def456",
+				url: "https://utfs.io/f/abc123",
 				err: nil,
 			},
 		},
 		"Successful upload with private ACL": {
 			given: Given{
-				payload: &domain.UploadRequest{
-					Files: []domain.Files{
+				payload: &domain.ImageUploadRequest{
+					Files: []domain.File{
 						{
 							Name: "private.jpg",
 							Size: 512,
@@ -161,20 +151,7 @@ func TestImageRepository_Upload(t *testing.T) {
 					ACL: &privateACL,
 				},
 				mockUpload: func(m *client.MockHttpAPI) {
-					successResponse := `{
-						"data": [
-							{
-								"data": {
-									"key": "ghi789",
-									"url": "https://utfs.io/f/ghi789",
-									"appUrl": "https://uploadthing.com/f/ghi789",
-									"name": "private.jpg",
-									"size": 512
-								},
-								"error": null
-							}
-						]
-					}`
+					successResponse := successResponse
 					m.EXPECT().Do(mock.AnythingOfType("*http.Request")).
 						Return(&http.Response{
 							StatusCode: 200,
@@ -183,7 +160,7 @@ func TestImageRepository_Upload(t *testing.T) {
 				},
 			},
 			expected: Expected{
-				url: "https://utfs.io/f/ghi789",
+				url: "https://utfs.io/f/abc123",
 				err: nil,
 			},
 		},
@@ -239,18 +216,16 @@ func TestImageRepository_Upload(t *testing.T) {
 			given: Given{
 				payload: validPayload,
 				mockUpload: func(m *client.MockHttpAPI) {
+					// Note: UploadThing returns errors as HTTP error codes, not embedded error objects
+					// This simulates a response where the data is malformed
 					errorResponse := `{
-						"data": [
-							{
-								"data": null,
-								"error": {
-									"code": "FILE_TOO_LARGE",
-									"message": "File size exceeds limit",
-									"data": {}
-								}
-							}
-						]
-					}`
+                "data": [
+                    {
+                        "key": "",
+                        "url": ""
+                    }
+                ]
+            }`
 					m.EXPECT().Do(mock.AnythingOfType("*http.Request")).
 						Return(&http.Response{
 							StatusCode: 200,
@@ -260,7 +235,7 @@ func TestImageRepository_Upload(t *testing.T) {
 			},
 			expected: Expected{
 				url: "",
-				err: errors.New("invalid uploadthing response: uploadthing: data[0] error: File size exceeds limit (code: FILE_TOO_LARGE)"),
+				err: errors.New("invalid uploadthing response: uploadthing: data[0].key missing"),
 			},
 		},
 		"Response with missing data": {
@@ -268,13 +243,13 @@ func TestImageRepository_Upload(t *testing.T) {
 				payload: validPayload,
 				mockUpload: func(m *client.MockHttpAPI) {
 					invalidResponse := `{
-						"data": [
-							{
-								"data": null,
-								"error": null
-							}
-						]
-					}`
+                "data": [
+                    {
+                        "key": "",
+                        "url": "https://utfs.io/f/abc123"
+                    }
+                ]
+            }`
 					m.EXPECT().Do(mock.AnythingOfType("*http.Request")).
 						Return(&http.Response{
 							StatusCode: 200,
@@ -284,7 +259,7 @@ func TestImageRepository_Upload(t *testing.T) {
 			},
 			expected: Expected{
 				url: "",
-				err: errors.New("invalid uploadthing response: uploadthing: data[0]: data missing"),
+				err: errors.New("invalid uploadthing response: uploadthing: data[0].key missing"),
 			},
 		},
 		"Response with missing key": {
@@ -322,19 +297,13 @@ func TestImageRepository_Upload(t *testing.T) {
 				payload: validPayload,
 				mockUpload: func(m *client.MockHttpAPI) {
 					invalidResponse := `{
-						"data": [
-							{
-								"data": {
-									"key": "abc123",
-									"url": "",
-									"appUrl": "https://uploadthing.com/f/abc123",
-									"name": "test.jpg",
-									"size": 1024
-								},
-								"error": null
-							}
-						]
-					}`
+                "data": [
+                    {
+                        "key": "abc123",
+                        "url": ""
+                    }
+                ]
+            }`
 					m.EXPECT().Do(mock.AnythingOfType("*http.Request")).
 						Return(&http.Response{
 							StatusCode: 200,
@@ -366,8 +335,8 @@ func TestImageRepository_Upload(t *testing.T) {
 		},
 		"Validation error: missing files": {
 			given: Given{
-				payload: &domain.UploadRequest{
-					Files: []domain.Files{},
+				payload: &domain.ImageUploadRequest{
+					Files: []domain.File{},
 				},
 				mockUpload: nil,
 			},
@@ -378,8 +347,8 @@ func TestImageRepository_Upload(t *testing.T) {
 		},
 		"Validation error: missing file name": {
 			given: Given{
-				payload: &domain.UploadRequest{
-					Files: []domain.Files{
+				payload: &domain.ImageUploadRequest{
+					Files: []domain.File{
 						{
 							Name: "",
 							Size: 1024,
@@ -396,8 +365,8 @@ func TestImageRepository_Upload(t *testing.T) {
 		},
 		"Validation error: invalid file size": {
 			given: Given{
-				payload: &domain.UploadRequest{
-					Files: []domain.Files{
+				payload: &domain.ImageUploadRequest{
+					Files: []domain.File{
 						{
 							Name: "test.jpg",
 							Size: 0,
@@ -414,8 +383,8 @@ func TestImageRepository_Upload(t *testing.T) {
 		},
 		"Validation error: missing file type": {
 			given: Given{
-				payload: &domain.UploadRequest{
-					Files: []domain.Files{
+				payload: &domain.ImageUploadRequest{
+					Files: []domain.File{
 						{
 							Name: "test.jpg",
 							Size: 1024,
@@ -432,8 +401,8 @@ func TestImageRepository_Upload(t *testing.T) {
 		},
 		"Validation error: invalid ACL": {
 			given: Given{
-				payload: &domain.UploadRequest{
-					Files: []domain.Files{
+				payload: &domain.ImageUploadRequest{
+					Files: []domain.File{
 						{
 							Name: "test.jpg",
 							Size: 1024,
@@ -451,8 +420,8 @@ func TestImageRepository_Upload(t *testing.T) {
 		},
 		"Validation error: invalid content disposition": {
 			given: Given{
-				payload: &domain.UploadRequest{
-					Files: []domain.Files{
+				payload: &domain.ImageUploadRequest{
+					Files: []domain.File{
 						{
 							Name: "test.jpg",
 							Size: 1024,
@@ -499,8 +468,8 @@ func TestNewImageRepository(t *testing.T) {
 		// Arrange
 		mockHttpAPI := client.NewMockHttpAPI(t)
 		cfg := ImageRepositoryConfig{
-			UploadthingToken: "test_token",
-			httpAPI:          mockHttpAPI,
+			UploadthingSecretKey: "test_token",
+			httpAPI:              mockHttpAPI,
 		}
 
 		// Act
@@ -510,15 +479,15 @@ func TestNewImageRepository(t *testing.T) {
 		assert.NotNil(t, repo)
 		concreteRepo, ok := repo.(*imageRepository)
 		assert.True(t, ok)
-		assert.Equal(t, "test_token", concreteRepo.uploadthingToken)
+		assert.Equal(t, "test_token", concreteRepo.uploadthingSecretKey)
 		assert.Equal(t, mockHttpAPI, concreteRepo.httpAPI)
 	})
 
 	t.Run("Creates repository with default httpAPI when nil", func(t *testing.T) {
 		// Arrange
 		cfg := ImageRepositoryConfig{
-			UploadthingToken: "test_token",
-			httpAPI:          nil,
+			UploadthingSecretKey: "test_token",
+			httpAPI:              nil,
 		}
 
 		// Act
@@ -528,7 +497,7 @@ func TestNewImageRepository(t *testing.T) {
 		assert.NotNil(t, repo)
 		concreteRepo, ok := repo.(*imageRepository)
 		assert.True(t, ok)
-		assert.Equal(t, "test_token", concreteRepo.uploadthingToken)
+		assert.Equal(t, "test_token", concreteRepo.uploadthingSecretKey)
 		assert.NotNil(t, concreteRepo.httpAPI)
 	})
 }

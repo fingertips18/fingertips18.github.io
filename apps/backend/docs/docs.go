@@ -430,15 +430,15 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/v1.UploadRequestDTO"
+                            "$ref": "#/definitions/v1.ImageUploadRequestDTO"
                         }
                     }
                 ],
                 "responses": {
                     "202": {
-                        "description": "Confirmation message",
+                        "description": "Image upload URL",
                         "schema": {
-                            "$ref": "#/definitions/v1.UploadResponseDTO"
+                            "$ref": "#/definitions/v1.ImageUploadResponseDTO"
                         }
                     },
                     "400": {
@@ -1183,7 +1183,7 @@ const docTemplate = `{
                 }
             }
         },
-        "v1.FilesDTO": {
+        "v1.FileDTO": {
             "type": "object",
             "properties": {
                 "custom_id": {
@@ -1204,6 +1204,32 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.ImageUploadRequestDTO": {
+            "type": "object",
+            "properties": {
+                "acl": {
+                    "type": "string"
+                },
+                "content_disposition": {
+                    "type": "string"
+                },
+                "files": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/v1.FileDTO"
+                    }
+                },
+                "metadata": {}
+            }
+        },
+        "v1.ImageUploadResponseDTO": {
+            "type": "object",
+            "properties": {
+                "url": {
                     "type": "string"
                 }
             }
@@ -1398,32 +1424,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "v1.UploadRequestDTO": {
-            "type": "object",
-            "properties": {
-                "acl": {
-                    "type": "string"
-                },
-                "content_disposition": {
-                    "type": "string"
-                },
-                "files": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/v1.FilesDTO"
-                    }
-                },
-                "metadata": {}
-            }
-        },
-        "v1.UploadResponseDTO": {
-            "type": "object",
-            "properties": {
-                "url": {
                     "type": "string"
                 }
             }

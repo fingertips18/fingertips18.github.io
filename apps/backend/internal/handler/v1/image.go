@@ -16,7 +16,7 @@ type ImageHandler interface {
 }
 
 type ImageServiceConfig struct {
-	UploadthingToken string
+	UploadthingSecretKey string
 
 	imageRepo v1.ImageRepository
 }
@@ -27,14 +27,14 @@ type imageServiceHandler struct {
 
 // NewImageServiceHandler returns an ImageHandler configured from the provided cfg.
 // If cfg.imageRepo is nil, a default v1.ImageRepository is created using
-// cfg.UploadthingToken. The resulting ImageHandler is an *imageServiceHandler
+// cfg.UploadthingSecretKey. The resulting ImageHandler is an *imageServiceHandler
 // whose imageRepo field is set to the provided or constructed repository.
 func NewImageServiceHandler(cfg ImageServiceConfig) ImageHandler {
 	imageRepo := cfg.imageRepo
 	if imageRepo == nil {
 		imageRepo = v1.NewImageRepository(
 			v1.ImageRepositoryConfig{
-				UploadthingToken: cfg.UploadthingToken,
+				UploadthingSecretKey: cfg.UploadthingSecretKey,
 			},
 		)
 	}
@@ -75,8 +75,8 @@ func (h *imageServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 // @Tags image
 // @Accept json
 // @Produce json
-// @Param imageUpload body UploadRequestDTO true "Image upload payload"
-// @Success 202 {object} UploadResponseDTO "Confirmation message"
+// @Param imageUpload body ImageUploadRequestDTO true "Image upload payload"
+// @Success 202 {object} ImageUploadResponseDTO "Image upload URL"
 // @Failure 400 {object} domain.ErrorResponse
 // @Failure 500 {object} domain.ErrorResponse
 // @Router /image/upload [post]
@@ -88,22 +88,22 @@ func (h *imageServiceHandler) Upload(w http.ResponseWriter, r *http.Request) {
 
 	defer r.Body.Close()
 
-	var req UploadRequestDTO
+	var req ImageUploadRequestDTO
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid JSON in request body", http.StatusBadRequest)
 		return
 	}
 
-	var files []domain.Files
+	var files []domain.File
 	for _, f := range req.Files {
-		files = append(files, domain.Files{
+		files = append(files, domain.File{
 			Name:     f.Name,
 			Size:     f.Size,
 			Type:     f.Type,
 			CustomID: f.CustomID,
 		})
 	}
-	upload := domain.UploadRequest{
+	upload := domain.ImageUploadRequest{
 		Files:              files,
 		ACL:                req.ACL,
 		Metadata:           req.Metadata,
@@ -112,11 +112,18 @@ func (h *imageServiceHandler) Upload(w http.ResponseWriter, r *http.Request) {
 
 	url, err := h.imageRepo.Upload(r.Context(), &upload)
 	if err != nil {
-		http.Error(w, "Failed to upload image: "+err.Error(), http.StatusInternalServerError)
+		// The error in the repo is comprehensive enough
+		// Ensure that the first letter is capitalize
+		msg := err.Error()
+		if len(msg) > 0 {
+			msg = strings.ToUpper(msg[:1]) + msg[1:]
+		}
+
+		http.Error(w, msg, http.StatusInternalServerError)
 		return
 	}
 
-	resp := UploadResponseDTO{
+	resp := ImageUploadResponseDTO{
 		URL: url,
 	}
 

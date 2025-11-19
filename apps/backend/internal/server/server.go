@@ -20,20 +20,20 @@ type Server struct {
 }
 
 type Config struct {
-	ClientURL           string
-	Environment         string
-	Port                string
-	AuthToken           string
-	EmailJSServiceID    string
-	EmailJSTemplateID   string
-	EmailJSPublicKey    string
-	EmailJSPrivateKey   string
-	GoogleMeasurementID string
-	GoogleAPISecret     string
-	Username            string
-	Password            string
-	UploadthingToken    string
-	DatabaseAPI         database.DatabaseAPI
+	ClientURL            string
+	Environment          string
+	Port                 string
+	AuthToken            string
+	EmailJSServiceID     string
+	EmailJSTemplateID    string
+	EmailJSPublicKey     string
+	EmailJSPrivateKey    string
+	GoogleMeasurementID  string
+	GoogleAPISecret      string
+	Username             string
+	Password             string
+	UploadthingSecretKey string
+	DatabaseAPI          database.DatabaseAPI
 }
 
 type handlerConfig struct {
@@ -133,7 +133,7 @@ func createHandlers(cfg Config) []handlerConfig {
 
 	imageHandler := v1.NewImageServiceHandler(
 		v1.ImageServiceConfig{
-			UploadthingToken: cfg.UploadthingToken,
+			UploadthingSecretKey: cfg.UploadthingSecretKey,
 		},
 	)
 

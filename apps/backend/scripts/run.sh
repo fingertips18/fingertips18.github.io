@@ -21,4 +21,5 @@ set +a
   --google-api-secret="${GOOGLE_API_SECRET}" \
   --database-url="${DATABASE_URL}" \
   --username="${USERNAME}" \
-  --password="${PASSWORD}"
+  --password="${PASSWORD}" \
+  --uploadthing-secret-key="${UPLOADTHING_SECRET_KEY}"

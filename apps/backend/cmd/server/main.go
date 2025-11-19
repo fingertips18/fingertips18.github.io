@@ -19,20 +19,20 @@ import (
 
 // Define constants for flags to improve manageability
 const (
-	FlagEnv                 = "env"
-	FlagClientURL           = "client-url"
-	FlagPort                = "port"
-	FlagAuthToken           = "auth-token"
-	FlagEmailJSServiceID    = "emailjs-service-id"
-	FlagEmailJSTemplateID   = "emailjs-template-id"
-	FlagEmailJSPublicKey    = "emailjs-public-key"
-	FlagEmailJSPrivateKey   = "emailjs-private-key"
-	FlagGoogleMeasurementID = "google-measurement-id"
-	FlagGoogleAPISecret     = "google-api-secret" // #nosec
-	FlagDatabaseURL         = "database-url"
-	FlagUsername            = "username"
-	FlagPassword            = "password"
-	FlagUploadthingToken    = "uploadthing-token"
+	FlagEnv                  = "env"
+	FlagClientURL            = "client-url"
+	FlagPort                 = "port"
+	FlagAuthToken            = "auth-token"
+	FlagEmailJSServiceID     = "emailjs-service-id"
+	FlagEmailJSTemplateID    = "emailjs-template-id"
+	FlagEmailJSPublicKey     = "emailjs-public-key"
+	FlagEmailJSPrivateKey    = "emailjs-private-key"
+	FlagGoogleMeasurementID  = "google-measurement-id"
+	FlagGoogleAPISecret      = "google-api-secret" // #nosec
+	FlagDatabaseURL          = "database-url"
+	FlagUsername             = "username"
+	FlagPassword             = "password"
+	FlagUploadthingSecretKey = "uploadthing-secret-key"
 )
 
 // @title Portfolio Backend API
@@ -47,20 +47,20 @@ const (
 // @name Authorization
 func main() {
 	var (
-		flagEnvironment         = flag.String(FlagEnv, "local", "Environment")
-		flagClientURL           = flag.String(FlagClientURL, "http://localhost:5378", "Client URL")
-		flagPort                = flag.String(FlagPort, "8080", "Port server")
-		flagAuthToken           = flag.String(FlagAuthToken, "", "Basic token auth")
-		flagEmailJSServiceID    = flag.String(FlagEmailJSServiceID, "", "EmailJS Service ID")
-		flagEmailJSTemplateID   = flag.String(FlagEmailJSTemplateID, "", "EmailJS Template ID")
-		flagEmailJSPublicKey    = flag.String(FlagEmailJSPublicKey, "", "EmailJS Public Key")
-		flagEmailJSPrivateKey   = flag.String(FlagEmailJSPrivateKey, "", "EmailJS Private Key")
-		flagGoogleMeasurementID = flag.String(FlagGoogleMeasurementID, "", "Google Measurement ID")
-		flagGoogleAPISecret     = flag.String(FlagGoogleAPISecret, "", "Google API Secret")
-		flagDatabaseURL         = flag.String(FlagDatabaseURL, "", "Postgres Database URL")
-		flagUsername            = flag.String(FlagUsername, "", "Backend Username Access")
-		flagPassword            = flag.String(FlagPassword, "", "Backend Password Access")
-		flagUploadthingToken    = flag.String(FlagUploadthingToken, "", "Uploadthing Secret Token")
+		flagEnvironment          = flag.String(FlagEnv, "local", "Environment")
+		flagClientURL            = flag.String(FlagClientURL, "http://localhost:5378", "Client URL")
+		flagPort                 = flag.String(FlagPort, "8080", "Port server")
+		flagAuthToken            = flag.String(FlagAuthToken, "", "Basic token auth")
+		flagEmailJSServiceID     = flag.String(FlagEmailJSServiceID, "", "EmailJS Service ID")
+		flagEmailJSTemplateID    = flag.String(FlagEmailJSTemplateID, "", "EmailJS Template ID")
+		flagEmailJSPublicKey     = flag.String(FlagEmailJSPublicKey, "", "EmailJS Public Key")
+		flagEmailJSPrivateKey    = flag.String(FlagEmailJSPrivateKey, "", "EmailJS Private Key")
+		flagGoogleMeasurementID  = flag.String(FlagGoogleMeasurementID, "", "Google Measurement ID")
+		flagGoogleAPISecret      = flag.String(FlagGoogleAPISecret, "", "Google API Secret")
+		flagDatabaseURL          = flag.String(FlagDatabaseURL, "", "Postgres Database URL")
+		flagUsername             = flag.String(FlagUsername, "", "Backend Username Access")
+		flagPassword             = flag.String(FlagPassword, "", "Backend Password Access")
+		flagUploadthingSecretKey = flag.String(FlagUploadthingSecretKey, "", "Uploadthing Secret Key")
 	)
 
 	flag.Parse()
@@ -75,7 +75,7 @@ func main() {
 		FlagDatabaseURL,
 		FlagUsername,
 		FlagPassword,
-		FlagUploadthingToken,
+		FlagUploadthingSecretKey,
 	)
 
 	err := godotenv.Load()
@@ -96,7 +96,7 @@ func main() {
 	databaseURL := *flagDatabaseURL
 	username := *flagUsername
 	password := *flagPassword
-	uploadthingToken := *flagUploadthingToken
+	uploadthingSecretKey := *flagUploadthingSecretKey
 	if *flagEnvironment != "local" {
 		data, err := os.ReadFile(*flagPort)
 		if err != nil {
@@ -182,11 +182,11 @@ func main() {
 			password = string(data)
 		}
 
-		data, err = os.ReadFile(*flagUploadthingToken)
+		data, err = os.ReadFile(*flagUploadthingSecretKey)
 		if err != nil {
-			log.Printf("Failed to read uploadthing token from file, using flag value: %v", *flagUploadthingToken)
+			log.Printf("Failed to read uploadthing secret key from file, using flag value: %v", *flagUploadthingSecretKey)
 		} else {
-			uploadthingToken = string(data)
+			uploadthingSecretKey = string(data)
 		}
 	} else {
 		if port == "" {
@@ -237,8 +237,8 @@ func main() {
 			password = os.Getenv("PASSWORD")
 		}
 
-		if uploadthingToken == "" {
-			uploadthingToken = os.Getenv("UPLOADTHING_TOKEN")
+		if uploadthingSecretKey == "" {
+			uploadthingSecretKey = os.Getenv("UPLOADTHING_SECRET_KEY")
 		}
 	}
 
@@ -248,20 +248,20 @@ func main() {
 	// Setup server
 	s := server.New(
 		server.Config{
-			Environment:         *flagEnvironment,
-			ClientURL:           clientURL,
-			Port:                port,
-			AuthToken:           authToken,
-			EmailJSServiceID:    emailJSServiceID,
-			EmailJSTemplateID:   emailJSTemplateID,
-			EmailJSPublicKey:    emailJSPublicKey,
-			EmailJSPrivateKey:   emailJSPrivateKey,
-			GoogleMeasurementID: googleMeasurementID,
-			GoogleAPISecret:     googleAPISecret,
-			Username:            username,
-			Password:            password,
-			UploadthingToken:    uploadthingToken,
-			DatabaseAPI:         database,
+			Environment:          *flagEnvironment,
+			ClientURL:            clientURL,
+			Port:                 port,
+			AuthToken:            authToken,
+			EmailJSServiceID:     emailJSServiceID,
+			EmailJSTemplateID:    emailJSTemplateID,
+			EmailJSPublicKey:     emailJSPublicKey,
+			EmailJSPrivateKey:    emailJSPrivateKey,
+			GoogleMeasurementID:  googleMeasurementID,
+			GoogleAPISecret:      googleAPISecret,
+			Username:             username,
+			Password:             password,
+			UploadthingSecretKey: uploadthingSecretKey,
+			DatabaseAPI:          database,
 		},
 	)
 
