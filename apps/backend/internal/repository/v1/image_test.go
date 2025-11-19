@@ -65,6 +65,23 @@ func TestImageRepository_Upload(t *testing.T) {
 		ContentDisposition: &contentDisposition,
 	}
 
+	successResponse := `{
+    "data": [
+        {
+            "key": "abc123",
+            "url": "https://utfs.io/f/abc123",
+            "fileName": "test-image.jpg",
+            "fileSize": "1024",
+            "fileType": "image/jpeg",
+            "fileUrl": "https://uploadthing.com/f/abc123",
+            "contentDisposition": "inline",
+            "pollingJwt": "jwt_token",
+            "pollingUrl": "https://uploadthing.com/api/poll",
+            "customId": "custom-123"
+        }
+    ]
+}`
+
 	type Given struct {
 		payload    *domain.ImageUploadRequest
 		mockUpload func(m *client.MockHttpAPI)
@@ -83,21 +100,7 @@ func TestImageRepository_Upload(t *testing.T) {
 			given: Given{
 				payload: validPayload,
 				mockUpload: func(m *client.MockHttpAPI) {
-					successResponse := `{
-						"data": [
-							{
-								"data": {
-									"key": "abc123",
-									"url": "https://utfs.io/f/abc123",
-									"appUrl": "https://uploadthing.com/f/abc123",
-									"name": "test-image.jpg",
-									"size": 1024,
-									"customId": "custom-123"
-								},
-								"error": null
-							}
-						]
-					}`
+					successResponse := successResponse
 					m.EXPECT().Do(mock.AnythingOfType("*http.Request")).
 						Return(&http.Response{
 							StatusCode: 200,
@@ -122,20 +125,7 @@ func TestImageRepository_Upload(t *testing.T) {
 					},
 				},
 				mockUpload: func(m *client.MockHttpAPI) {
-					successResponse := `{
-						"data": [
-							{
-								"data": {
-									"key": "def456",
-									"url": "https://utfs.io/f/def456",
-									"appUrl": "https://uploadthing.com/f/def456",
-									"name": "test.png",
-									"size": 2048
-								},
-								"error": null
-							}
-						]
-					}`
+					successResponse := successResponse
 					m.EXPECT().Do(mock.AnythingOfType("*http.Request")).
 						Return(&http.Response{
 							StatusCode: 200,
@@ -144,7 +134,7 @@ func TestImageRepository_Upload(t *testing.T) {
 				},
 			},
 			expected: Expected{
-				url: "https://utfs.io/f/def456",
+				url: "https://utfs.io/f/abc123",
 				err: nil,
 			},
 		},
@@ -161,20 +151,7 @@ func TestImageRepository_Upload(t *testing.T) {
 					ACL: &privateACL,
 				},
 				mockUpload: func(m *client.MockHttpAPI) {
-					successResponse := `{
-						"data": [
-							{
-								"data": {
-									"key": "ghi789",
-									"url": "https://utfs.io/f/ghi789",
-									"appUrl": "https://uploadthing.com/f/ghi789",
-									"name": "private.jpg",
-									"size": 512
-								},
-								"error": null
-							}
-						]
-					}`
+					successResponse := successResponse
 					m.EXPECT().Do(mock.AnythingOfType("*http.Request")).
 						Return(&http.Response{
 							StatusCode: 200,
@@ -183,7 +160,7 @@ func TestImageRepository_Upload(t *testing.T) {
 				},
 			},
 			expected: Expected{
-				url: "https://utfs.io/f/ghi789",
+				url: "https://utfs.io/f/abc123",
 				err: nil,
 			},
 		},

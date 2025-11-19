@@ -123,7 +123,7 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 				body:   string(validBody),
 				mockRepo: func(m *mockRepo.MockImageRepository) {
 					m.EXPECT().
-						Upload(mock.Anything, mock.AnythingOfType("*domain.UploadRequest")).
+						Upload(mock.Anything, mock.AnythingOfType("*domain.ImageUploadRequest")).
 						Return("", errors.New("upload failed"))
 				},
 			},
@@ -376,7 +376,7 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 				body:   `{"files":[{"name":"test.jpg","size":1024,"type":"image/jpeg"}],"extra_field":"ignored"}`,
 				mockRepo: func(m *mockRepo.MockImageRepository) {
 					m.EXPECT().
-						Upload(mock.Anything, mock.AnythingOfType("*domain.UploadRequest")).
+						Upload(mock.Anything, mock.AnythingOfType("*domain.ImageUploadRequest")).
 						Return(expectedURL, nil)
 				},
 			},
