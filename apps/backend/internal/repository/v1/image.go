@@ -59,7 +59,7 @@ func NewImageRepository(cfg ImageRepositoryConfig) ImageRepository {
 //     with the provided ctx.
 //   - Treats any non-200 (OK) response as an error and includes the response status and body
 //     in the returned error for diagnostics.
-//   - Decodes the successful response into domain.UploadResponse, validates it,
+//   - Decodes the successful response into domain.ImageUploadResponse, validates it,
 //     and returns the URL of the first returned file (uploadResp.Data[0].URL).
 //   - All underlying errors are wrapped with context for easier debugging.
 //
