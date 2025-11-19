@@ -216,18 +216,16 @@ func TestImageRepository_Upload(t *testing.T) {
 			given: Given{
 				payload: validPayload,
 				mockUpload: func(m *client.MockHttpAPI) {
+					// Note: UploadThing returns errors as HTTP error codes, not embedded error objects
+					// This simulates a response where the data is malformed
 					errorResponse := `{
-						"data": [
-							{
-								"data": null,
-								"error": {
-									"code": "FILE_TOO_LARGE",
-									"message": "File size exceeds limit",
-									"data": {}
-								}
-							}
-						]
-					}`
+                "data": [
+                    {
+                        "key": "",
+                        "url": ""
+                    }
+                ]
+            }`
 					m.EXPECT().Do(mock.AnythingOfType("*http.Request")).
 						Return(&http.Response{
 							StatusCode: 200,
@@ -237,7 +235,7 @@ func TestImageRepository_Upload(t *testing.T) {
 			},
 			expected: Expected{
 				url: "",
-				err: errors.New("invalid uploadthing response: uploadthing: data[0] error: File size exceeds limit (code: FILE_TOO_LARGE)"),
+				err: errors.New("invalid uploadthing response: uploadthing: data[0].key missing"),
 			},
 		},
 		"Response with missing data": {
@@ -245,13 +243,13 @@ func TestImageRepository_Upload(t *testing.T) {
 				payload: validPayload,
 				mockUpload: func(m *client.MockHttpAPI) {
 					invalidResponse := `{
-						"data": [
-							{
-								"data": null,
-								"error": null
-							}
-						]
-					}`
+                "data": [
+                    {
+                        "key": "",
+                        "url": "https://utfs.io/f/abc123"
+                    }
+                ]
+            }`
 					m.EXPECT().Do(mock.AnythingOfType("*http.Request")).
 						Return(&http.Response{
 							StatusCode: 200,
@@ -261,7 +259,7 @@ func TestImageRepository_Upload(t *testing.T) {
 			},
 			expected: Expected{
 				url: "",
-				err: errors.New("invalid uploadthing response: uploadthing: data[0]: data missing"),
+				err: errors.New("invalid uploadthing response: uploadthing: data[0].key missing"),
 			},
 		},
 		"Response with missing key": {
@@ -299,19 +297,13 @@ func TestImageRepository_Upload(t *testing.T) {
 				payload: validPayload,
 				mockUpload: func(m *client.MockHttpAPI) {
 					invalidResponse := `{
-						"data": [
-							{
-								"data": {
-									"key": "abc123",
-									"url": "",
-									"appUrl": "https://uploadthing.com/f/abc123",
-									"name": "test.jpg",
-									"size": 1024
-								},
-								"error": null
-							}
-						]
-					}`
+                "data": [
+                    {
+                        "key": "abc123",
+                        "url": ""
+                    }
+                ]
+            }`
 					m.EXPECT().Do(mock.AnythingOfType("*http.Request")).
 						Return(&http.Response{
 							StatusCode: 200,

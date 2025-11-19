@@ -129,7 +129,7 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 			},
 			expected: Expected{
 				code: http.StatusInternalServerError,
-				body: "Failed to upload image: upload failed\n",
+				body: "Upload failed\n",
 			},
 		},
 		"multiple files": {
