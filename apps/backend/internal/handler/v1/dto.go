@@ -5,7 +5,7 @@ import "time"
 type ProjectDTO struct {
 	Id          string    `json:"id"`
 	Preview     string    `json:"preview"`
-	BlurHash    string    `json:"blur_hash"`
+	BlurHash    string    `json:"blurhash"`
 	Title       string    `json:"title"`
 	SubTitle    string    `json:"sub_title"`
 	Description string    `json:"description"`
@@ -19,7 +19,7 @@ type ProjectDTO struct {
 
 type CreateProjectRequest struct {
 	Preview     string   `json:"preview"`
-	BlurHash    string   `json:"blur_hash"`
+	BlurHash    string   `json:"blurhash"`
 	Title       string   `json:"title"`
 	SubTitle    string   `json:"sub_title"`
 	Description string   `json:"description"`
@@ -145,16 +145,16 @@ type ImageUploadRequestDTO struct {
 }
 
 type ImageUploadFileDTO struct {
-	Key                string                 `json:"key"`
-	FileName           string                 `json:"file_name"`
-	FileType           string                 `json:"file_type"`
-	FileUrl            string                 `json:"file_url"`
-	ContentDisposition string                 `json:"content_disposition"`
-	PollingJwt         string                 `json:"polling_jwt"`
-	PollingUrl         string                 `json:"polling_url"`
-	CustomId           *string                `json:"custom_id,omitempty"`
-	URL                string                 `json:"url"` // signed URL to upload
-	Fields             map[string]interface{} `json:"fields,omitempty"`
+	Key                string         `json:"key"`
+	FileName           string         `json:"file_name"`
+	FileType           string         `json:"file_type"`
+	FileUrl            string         `json:"file_url"`
+	ContentDisposition string         `json:"content_disposition"`
+	PollingJwt         string         `json:"polling_jwt"`
+	PollingUrl         string         `json:"polling_url"`
+	CustomId           *string        `json:"custom_id,omitempty"`
+	URL                string         `json:"url"` // signed URL to upload
+	Fields             map[string]any `json:"fields,omitempty"`
 }
 
 type ImageUploadResponseDTO struct {

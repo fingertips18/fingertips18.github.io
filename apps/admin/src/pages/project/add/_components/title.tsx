@@ -9,26 +9,35 @@ import {
   FormMessage,
 } from '@/components/shadcn/form';
 import { Input } from '@/components/shadcn/input';
+import { cn } from '@/lib/utils';
 
 interface TitleProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T>;
+  disabled?: boolean;
 }
 
-export function Title<T extends FieldValues>({ control, name }: TitleProps<T>) {
+export function Title<T extends FieldValues>({
+  control,
+  name,
+  disabled,
+}: TitleProps<T>) {
   return (
     <FormField
       control={control}
       name={name}
+      disabled={disabled}
       render={({ field }) => (
         <FormItem className='w-full'>
           <FormLabel className='w-fit'>Title</FormLabel>
           <FormDescription>
             A short, descriptive name for your project.
           </FormDescription>
-          <FormControl>
-            <Input placeholder='e.g. WebNexus' {...field} />
-          </FormControl>
+          <div className={cn(disabled && 'cursor-not-allowed')}>
+            <FormControl>
+              <Input placeholder='e.g. WebNexus' {...field} />
+            </FormControl>
+          </div>
           <FormMessage />
         </FormItem>
       )}

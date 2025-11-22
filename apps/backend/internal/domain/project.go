@@ -18,7 +18,7 @@ const (
 type Project struct {
 	Id          string      `json:"id"`
 	Preview     string      `json:"preview"`
-	BlurHash    string      `json:"blur_hash"`
+	BlurHash    string      `json:"blurhash"`
 	Title       string      `json:"title"`
 	SubTitle    string      `json:"sub_title"`
 	Description string      `json:"description"`

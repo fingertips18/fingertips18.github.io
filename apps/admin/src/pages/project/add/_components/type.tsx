@@ -1,4 +1,4 @@
-import type { Control, FieldValues, Path } from 'react-hook-form';
+import type { Control, FieldErrors, FieldValues, Path } from 'react-hook-form';
 
 import { Dropdown } from '@/components/common/dropdown';
 import {
@@ -15,18 +15,23 @@ import { ProjectType } from '@/types/project';
 interface TypeProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T>;
-  hasError?: boolean;
+  errors: FieldErrors<T>;
+  disabled?: boolean;
 }
 
 export function Type<T extends FieldValues>({
   control,
   name,
-  hasError,
+  errors,
+  disabled,
 }: TypeProps<T>) {
+  const hasError = !!errors[name];
+
   return (
     <FormField
       control={control}
       name={name}
+      disabled={disabled}
       render={({ field }) => {
         const { onChange, ...fields } = field;
 

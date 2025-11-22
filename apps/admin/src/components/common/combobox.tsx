@@ -47,6 +47,7 @@ export function Combobox({
   selectPlaceholder = 'Select...',
   hasError,
   triggerRef,
+  disabled,
   ...props
 }: ComboboxProps) {
   const [input, setInput] = useState<string>('');
@@ -100,7 +101,9 @@ export function Combobox({
         ))}
       </div>
 
-      <div className='flex-center gap-x-2'>
+      <div
+        className={cn('flex-center gap-x-2', disabled && 'cursor-not-allowed')}
+      >
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -110,6 +113,7 @@ export function Combobox({
               variant='outline'
               role='combobox'
               aria-expanded={open}
+              disabled={disabled}
               className={cn(
                 'justify-between flex-1 text-muted-foreground data-[state=open]:border-ring data-[state=open]:ring-ring/50 data-[state=open]:ring-[3px]',
                 hasError && 'border-destructive',

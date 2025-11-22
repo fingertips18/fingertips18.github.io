@@ -10,6 +10,7 @@ import { Form as BaseForm } from '@/components/shadcn/form';
 import { MAX_BYTES } from '@/constants/sizes';
 import { toast } from '@/lib/toast';
 import { ImageService } from '@/services/image';
+import { ProjectService } from '@/services/project';
 import { ProjectType } from '@/types/project';
 
 import { Description } from './description';
@@ -83,7 +84,8 @@ const formSchema = z.object({
 type Schema = z.infer<typeof formSchema>;
 
 export function Form() {
-  const [loading, setLoading] = useState<boolean>(false);
+  const [imageLoading, setImageLoading] = useState<boolean>(false);
+  const [projectLoading, setProjectLoading] = useState<boolean>(false);
   const form = useForm<Schema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -106,34 +108,87 @@ export function Form() {
   }, []);
 
   const onSubmit = async (values: Schema) => {
-    setLoading(true);
+    let imageURL: string | null;
 
     try {
+      setImageLoading(true);
+
       const preview = values.preview[0];
 
-      const imageURL = await ImageService.upload({
+      const url = await ImageService.upload({
         file: preview,
         signal: abortRef.current?.signal,
       });
-      if (!imageURL) {
+      if (!url) {
         throw new Error('Image URL undefined');
       }
 
+      imageURL = url;
       toast({
         level: 'success',
-        title: 'Upload complete 🎉',
+        title: 'Image upload complete 🎉',
         description: `${preview.name} uploaded successfully!`,
       });
     } catch {
+      imageURL = null;
       toast({
         level: 'error',
         title: 'Upload failed',
         description: 'We couldn’t upload your image. Please try again.',
       });
     } finally {
-      setLoading(false);
+      setImageLoading(false);
     }
+
+    if (!imageURL) {
+      setProjectLoading(false);
+      return;
+    }
+
+    // Proceed with the rest of the form submission using imageURL
+
+    try {
+      setProjectLoading(true);
+
+      const projectId = await ProjectService.create({
+        project: {
+          preview: imageURL,
+          blurhash: values.blurhash,
+          title: values.title,
+          subTitle: values.subTitle,
+          description: values.description,
+          tags: values.tags,
+          type: values.type,
+          link: values.link,
+        },
+        signal: abortRef.current?.signal,
+      });
+
+      if (!projectId) {
+        throw new Error('Project ID undefined');
+      }
+
+      toast({
+        level: 'success',
+        title: 'Project upload complete 🎉',
+        description: `${values.title} uploaded successfully!`,
+      });
+    } catch {
+      toast({
+        level: 'error',
+        title: 'Upload failed',
+        description: 'We couldn’t upload your project. Please try again.',
+      });
+    } finally {
+      setProjectLoading(false);
+    }
+
+    form.reset();
   };
+
+  const loading = imageLoading || projectLoading;
+  const previewIsEmpty =
+    !form.getValues('preview') || form.getValues('preview').length === 0;
 
   return (
     <BaseForm {...form}>
@@ -147,30 +202,37 @@ export function Form() {
           onBlurhashChange={(blurhash: string) =>
             form.setValue('blurhash', blurhash)
           }
-          previewHasError={!!form.formState.errors.preview}
-          blurError={form.formState.errors.blurhash?.message}
+          errors={form.formState.errors}
+          isEmpty={previewIsEmpty}
+          disabled={loading}
         />
 
         <div className='flex-center flex-col xl:flex-row gap-x-4 gap-y-6'>
-          <Title control={form.control} name='title' />
-          <Subtitle control={form.control} name='subTitle' />
+          <Title control={form.control} name='title' disabled={loading} />
+          <Subtitle control={form.control} name='subTitle' disabled={loading} />
         </div>
 
-        <Description control={form.control} name='description' />
+        <Description
+          control={form.control}
+          name='description'
+          disabled={loading}
+        />
 
         <Tags
           control={form.control}
           name='tags'
-          hasError={!!form.formState.errors.tags}
+          errors={form.formState.errors}
+          disabled={loading}
         />
 
         <Type
           control={form.control}
           name='type'
-          hasError={!!form.formState.errors.type}
+          errors={form.formState.errors}
+          disabled={loading}
         />
 
-        <Link control={form.control} name='link' />
+        <Link control={form.control} name='link' disabled={loading} />
 
         <div className='flex-end flex-col-reverse sm:flex-row gap-2'>
           <Back
@@ -185,7 +247,7 @@ export function Form() {
             type='submit'
             disabled={loading}
             aria-label={loading ? 'Uploading image, please wait' : 'Submit'}
-            className='w-full sm:w-fit cursor-pointer'
+            className='w-full sm:w-fit cursor-pointer min-w-[78.85px]'
           >
             {loading ? (
               <Loader aria-hidden='true' className='size-4 animate-spin' />

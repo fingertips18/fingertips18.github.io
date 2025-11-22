@@ -1219,7 +1219,7 @@ const docTemplate = `{
                 },
                 "fields": {
                     "type": "object",
-                    "additionalProperties": true
+                    "additionalProperties": {}
                 },
                 "file_name": {
                     "type": "string"
