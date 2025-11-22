@@ -28,6 +28,14 @@ export function mapProject(dto: unknown): Project {
 
   const d = dto as Record<string, unknown>;
 
+  const typeValue = ensureString(
+    d.type,
+    'type',
+  ) as (typeof ProjectType)[keyof typeof ProjectType];
+  if (!Object.values(ProjectType).includes(typeValue)) {
+    throw new Error(`Invalid project type: ${typeValue}`);
+  }
+
   return {
     id: ensureString(d.id, 'id'),
     preview: ensureString(d.preview, 'preview'),
@@ -38,24 +46,33 @@ export function mapProject(dto: unknown): Project {
     tags: Array.isArray(d.tags)
       ? d.tags.map((tag, index) => ensureString(tag, `tags[${index}]`))
       : [],
-    type: ensureString(
-      d.type,
-      'type',
-    ) as (typeof ProjectType)[keyof typeof ProjectType],
+    type: typeValue,
     link: ensureString(d.link, 'link'),
     educationId:
       d.education_id != null
         ? ensureString(d.education_id, 'education_id')
         : undefined,
-    createdAt: new Date(ensureString(d.created_at, 'created_at')),
-    updatedAt: new Date(ensureString(d.updated_at, 'updated_at')),
+    createdAt: (() => {
+      const date = new Date(ensureString(d.created_at, 'created_at'));
+      if (isNaN(date.getTime())) {
+        throw new Error('Invalid created_at date');
+      }
+      return date;
+    })(),
+    updatedAt: (() => {
+      const date = new Date(ensureString(d.updated_at, 'updated_at'));
+      if (isNaN(date.getTime())) {
+        throw new Error('Invalid updated_at date');
+      }
+      return date;
+    })(),
   };
 }
 
 export function toJSONProject(
   project: Partial<Project>,
 ): Record<string, unknown> {
-  return {
+  const result: Record<string, unknown> = {
     id: project.id,
     preview: project.preview,
     blurhash: project.blurhash,
@@ -69,4 +86,9 @@ export function toJSONProject(
     created_at: project.createdAt ? project.createdAt.toISOString() : undefined,
     updated_at: project.updatedAt ? project.updatedAt.toISOString() : undefined,
   };
+
+  // Filter out undefined values
+  return Object.fromEntries(
+    Object.entries(result).filter(([, v]) => v !== undefined),
+  );
 }

@@ -92,6 +92,7 @@ export function Combobox({
             <button
               type='button'
               onClick={() => removeTag(tag)}
+              disabled={disabled}
               aria-label={`Remove ${tag}`}
               className='p-1 rounded-full size-5 flex-center cursor-pointer hover:bg-accent/25 transition-colors'
             >
@@ -167,7 +168,7 @@ export function Combobox({
         <Button
           type='button'
           onClick={() => addTag(input)}
-          disabled={!input.trim()}
+          disabled={disabled || !input.trim()}
           className='cursor-pointer'
         >
           Add Tag

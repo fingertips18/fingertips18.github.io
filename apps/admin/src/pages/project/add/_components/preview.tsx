@@ -41,7 +41,8 @@ export function Preview<T extends FieldValues>({
   const [loading, setLoading] = useState<boolean>(false);
 
   const previewHasError = !!errors[name];
-  const blurHasError = !!errors['blurhash'];
+  const blurhashError = errors['blurhash'] as { message?: string } | undefined;
+  const blurHasError = !!blurhashError;
 
   useEffect(() => {
     if (blurHasError || isEmpty) {
@@ -156,7 +157,7 @@ export function Preview<T extends FieldValues>({
                   data-slot='form-message'
                   className={cn('text-destructive text-sm')}
                 >
-                  {blurHasError}
+                  {blurhashError?.message}
                 </p>
               )}
             </div>

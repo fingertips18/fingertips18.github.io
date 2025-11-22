@@ -1094,7 +1094,7 @@ const docTemplate = `{
         "v1.CreateProjectRequest": {
             "type": "object",
             "properties": {
-                "blur_hash": {
+                "blurhash": {
                     "type": "string"
                 },
                 "description": {
@@ -1274,7 +1274,7 @@ const docTemplate = `{
         "v1.ProjectDTO": {
             "type": "object",
             "properties": {
-                "blur_hash": {
+                "blurhash": {
                     "type": "string"
                 },
                 "created_at": {

@@ -144,7 +144,11 @@ export function Form() {
     }
 
     if (!imageURL) {
-      setProjectLoading(false);
+      toast({
+        level: 'error',
+        title: 'Upload failed',
+        description: 'We couldn’t upload your project. Please try again.',
+      });
       return;
     }
 
@@ -177,6 +181,7 @@ export function Form() {
         description: `${values.title} uploaded successfully!`,
       });
 
+      form.reset();
       void navigate(Route.project);
     } catch {
       toast({
@@ -187,13 +192,16 @@ export function Form() {
     } finally {
       setProjectLoading(false);
     }
-
-    form.reset();
   };
 
   const loading = imageLoading || projectLoading;
   const previewIsEmpty =
     !form.getValues('preview') || form.getValues('preview').length === 0;
+  const ariaLabel = imageLoading
+    ? 'Uploading image, please wait'
+    : projectLoading
+    ? 'Creating project, please wait'
+    : 'Submit';
 
   return (
     <BaseForm {...form}>
@@ -251,7 +259,7 @@ export function Form() {
           <Button
             type='submit'
             disabled={loading}
-            aria-label={loading ? 'Uploading image, please wait' : 'Submit'}
+            aria-label={ariaLabel}
             className='w-full sm:w-fit cursor-pointer min-w-[78.85px]'
           >
             {loading ? (
