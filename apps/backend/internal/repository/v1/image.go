@@ -60,13 +60,13 @@ func NewImageRepository(cfg ImageRepositoryConfig) ImageRepository {
 //   - Treats any non-200 (OK) response as an error and includes the response status and body
 //     in the returned error for diagnostics.
 //   - Decodes the successful response into domain.ImageUploadResponse, validates it,
-//     and returns the URL of the first returned file (uploadResp.Data[0].URL).
+//     and returns the file metadata of the first returned file (uploadResp.Data[0]).
 //   - All underlying errors are wrapped with context for easier debugging.
 //
 // Logging: the method logs the upload attempt and the resulting uploaded file URL on success.
 //
 // Return values:
-// - string: the URL of the uploaded file on success, or an empty string on failure.
+// - *domain.ImageUploadFile: the file metadata on success, or nil on failure.
 // - error: non-nil if validation, marshaling, network, decoding, or response validation fails.
 func (r *imageRepository) Upload(ctx context.Context, image *domain.ImageUploadRequest) (*domain.ImageUploadFile, error) {
 	// Validate request structure

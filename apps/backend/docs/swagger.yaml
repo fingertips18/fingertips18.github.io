@@ -116,7 +116,9 @@ definitions:
         type: string
       custom_id:
         type: string
-      fields: {}
+      fields:
+        additionalProperties: true
+        type: object
       file_name:
         type: string
       file_type:

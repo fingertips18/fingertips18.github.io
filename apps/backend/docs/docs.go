@@ -1217,7 +1217,10 @@ const docTemplate = `{
                 "custom_id": {
                     "type": "string"
                 },
-                "fields": {},
+                "fields": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
                 "file_name": {
                     "type": "string"
                 },
