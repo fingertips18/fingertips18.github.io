@@ -9,6 +9,7 @@ import { Back } from '@/components/common/back';
 import { Button } from '@/components/shadcn/button';
 import { Form as BaseForm } from '@/components/shadcn/form';
 import { MAX_BYTES } from '@/constants/sizes';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { toast } from '@/lib/toast';
 import { Route } from '@/routes/route';
 import { ImageService } from '@/services/image';
@@ -103,6 +104,7 @@ export function Form() {
   });
   const abortRef = useRef<AbortController | null>(null);
   const navigate = useNavigate();
+  useUnsavedChanges({ hasUnsavedChanges: form.formState.isDirty });
 
   useEffect(() => {
     abortRef.current = new AbortController();
