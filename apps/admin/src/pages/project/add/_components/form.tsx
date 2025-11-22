@@ -1,4 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader } from 'lucide-react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -6,6 +8,8 @@ import { Back } from '@/components/common/back';
 import { Button } from '@/components/shadcn/button';
 import { Form as BaseForm } from '@/components/shadcn/form';
 import { MAX_BYTES } from '@/constants/sizes';
+import { toast } from '@/lib/toast';
+import { ImageService } from '@/services/image';
 import { ProjectType } from '@/types/project';
 
 import { Description } from './description';
@@ -79,6 +83,7 @@ const formSchema = z.object({
 type Schema = z.infer<typeof formSchema>;
 
 export function Form() {
+  const [loading, setLoading] = useState<boolean>(false);
   const form = useForm<Schema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -93,8 +98,31 @@ export function Form() {
     },
   });
 
-  const onSubmit = (values: Schema) => {
-    console.log(values);
+  const onSubmit = async (values: Schema) => {
+    setLoading(true);
+
+    try {
+      const preview = values.preview[0];
+
+      const imageURL = await ImageService.upload({ file: preview });
+      if (!imageURL) {
+        throw new Error('Image URL undefined');
+      }
+
+      toast({
+        level: 'success',
+        title: 'Upload complete 🎉',
+        description: `${preview.name} uploaded successfully!`,
+      });
+    } catch {
+      toast({
+        level: 'error',
+        title: 'Upload failed',
+        description: 'We couldn’t upload your image. Please try again.',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -140,10 +168,19 @@ export function Form() {
             variant='outline'
             label='Cancel'
             withIcon={false}
+            disabled={loading}
             className='w-full sm:w-fit'
           />
-          <Button type='submit' className='w-full sm:w-fit cursor-pointer'>
-            Submit
+          <Button
+            type='submit'
+            disabled={loading}
+            className='w-full sm:w-fit cursor-pointer'
+          >
+            {loading ? (
+              <Loader aria-hidden='true' className='size-4 animate-spin' />
+            ) : (
+              'Submit'
+            )}
           </Button>
         </div>
       </form>
