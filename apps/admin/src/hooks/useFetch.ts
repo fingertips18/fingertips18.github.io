@@ -17,8 +17,7 @@ interface FetchProps extends Omit<RequestInit, 'signal'> {
  *
  * @param {FetchProps} props - Configuration object for the fetch request.
  * @param {string | string[]} props.url - Single URL or array of URLs to fetch from.
- * @param {ToastOptions} [props.toastOptions] - Optional configuration for error toast notifications.
- * @param {...any} props - Additional fetch options (headers, method, etc.) passed to the fetch API.
+ * @param {{ errorTitle?: string; errorMessage?: string }} [props.toastOptions] - Optional configuration for error toast notifications.
  *
  * @returns {Object} Fetch state object.
  * @returns {T | null} data - The fetched data, or null if not yet loaded or an error occurred.
