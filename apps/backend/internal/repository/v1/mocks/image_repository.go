@@ -39,22 +39,24 @@ func (_m *MockImageRepository) EXPECT() *MockImageRepository_Expecter {
 }
 
 // Upload provides a mock function for the type MockImageRepository
-func (_mock *MockImageRepository) Upload(ctx context.Context, image *domain.ImageUploadRequest) (string, error) {
+func (_mock *MockImageRepository) Upload(ctx context.Context, image *domain.ImageUploadRequest) (*domain.ImageUploadFile, error) {
 	ret := _mock.Called(ctx, image)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Upload")
 	}
 
-	var r0 string
+	var r0 *domain.ImageUploadFile
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.ImageUploadRequest) (string, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.ImageUploadRequest) (*domain.ImageUploadFile, error)); ok {
 		return returnFunc(ctx, image)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.ImageUploadRequest) string); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.ImageUploadRequest) *domain.ImageUploadFile); ok {
 		r0 = returnFunc(ctx, image)
 	} else {
-		r0 = ret.Get(0).(string)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.ImageUploadFile)
+		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, *domain.ImageUploadRequest) error); ok {
 		r1 = returnFunc(ctx, image)
@@ -94,12 +96,12 @@ func (_c *MockImageRepository_Upload_Call) Run(run func(ctx context.Context, ima
 	return _c
 }
 
-func (_c *MockImageRepository_Upload_Call) Return(s string, err error) *MockImageRepository_Upload_Call {
-	_c.Call.Return(s, err)
+func (_c *MockImageRepository_Upload_Call) Return(imageUploadFile *domain.ImageUploadFile, err error) *MockImageRepository_Upload_Call {
+	_c.Call.Return(imageUploadFile, err)
 	return _c
 }
 
-func (_c *MockImageRepository_Upload_Call) RunAndReturn(run func(ctx context.Context, image *domain.ImageUploadRequest) (string, error)) *MockImageRepository_Upload_Call {
+func (_c *MockImageRepository_Upload_Call) RunAndReturn(run func(ctx context.Context, image *domain.ImageUploadRequest) (*domain.ImageUploadFile, error)) *MockImageRepository_Upload_Call {
 	_c.Call.Return(run)
 	return _c
 }
