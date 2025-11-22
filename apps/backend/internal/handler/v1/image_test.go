@@ -50,8 +50,34 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 	}
 	validBody, _ := json.Marshal(validReq)
 
-	expectedURL := "https://uploadthing.com/f/abc123.jpg"
-	validResp, _ := json.Marshal(ImageUploadResponseDTO{URL: expectedURL})
+	customID := "custom-123"
+	expectedImageUploadFile := &domain.ImageUploadFile{
+		Key:                "abc123",
+		FileName:           "profile.jpg",
+		FileType:           "image/jpeg",
+		FileUrl:            "https://uploadthing.com/f/abc123",
+		ContentDisposition: "inline",
+		PollingJwt:         "jwt_token",
+		PollingUrl:         "https://uploadthing.com/api/poll",
+		CustomId:           &customID,
+		URL:                "https://utfs.io/f/abc123",
+		Fields:             map[string]interface{}{"key": "value"},
+	}
+
+	expectedResp, _ := json.Marshal(ImageUploadResponseDTO{
+		File: ImageUploadFileDTO{
+			Key:                expectedImageUploadFile.Key,
+			FileName:           expectedImageUploadFile.FileName,
+			FileType:           expectedImageUploadFile.FileType,
+			FileUrl:            expectedImageUploadFile.FileUrl,
+			ContentDisposition: expectedImageUploadFile.ContentDisposition,
+			PollingJwt:         expectedImageUploadFile.PollingJwt,
+			PollingUrl:         expectedImageUploadFile.PollingUrl,
+			CustomId:           expectedImageUploadFile.CustomId,
+			URL:                expectedImageUploadFile.URL,
+			Fields:             expectedImageUploadFile.Fields,
+		},
+	})
 
 	type Given struct {
 		method   string
@@ -79,12 +105,12 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 								req.Files[0].Size == 1024 &&
 								req.Files[0].Type == "image/jpeg"
 						})).
-						Return(expectedURL, nil)
+						Return(expectedImageUploadFile, nil)
 				},
 			},
 			expected: Expected{
 				code: http.StatusAccepted,
-				body: string(validResp),
+				body: string(expectedResp),
 			},
 		},
 		"invalid method": {
@@ -124,7 +150,7 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 				mockRepo: func(m *mockRepo.MockImageRepository) {
 					m.EXPECT().
 						Upload(mock.Anything, mock.AnythingOfType("*domain.ImageUploadRequest")).
-						Return("", errors.New("upload failed"))
+						Return(nil, errors.New("upload failed"))
 				},
 			},
 			expected: Expected{
@@ -154,12 +180,12 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 								req.Files[1].Name == "image2.png" &&
 								req.Files[2].Name == "image3.gif"
 						})).
-						Return(expectedURL, nil)
+						Return(expectedImageUploadFile, nil)
 				},
 			},
 			expected: Expected{
 				code: http.StatusAccepted,
-				body: string(validResp),
+				body: string(expectedResp),
 			},
 		},
 		"empty files array": {
@@ -177,12 +203,12 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 						Upload(mock.Anything, mock.MatchedBy(func(req *domain.ImageUploadRequest) bool {
 							return len(req.Files) == 0
 						})).
-						Return(expectedURL, nil)
+						Return(expectedImageUploadFile, nil)
 				},
 			},
 			expected: Expected{
 				code: http.StatusAccepted,
-				body: string(validResp),
+				body: string(expectedResp),
 			},
 		},
 		"with all optional fields": {
@@ -212,12 +238,12 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 								*req.ContentDisposition == "inline" &&
 								req.Metadata != nil
 						})).
-						Return(expectedURL, nil)
+						Return(expectedImageUploadFile, nil)
 				},
 			},
 			expected: Expected{
 				code: http.StatusAccepted,
-				body: string(validResp),
+				body: string(expectedResp),
 			},
 		},
 		"with custom_id": {
@@ -245,12 +271,12 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 								req.Files[0].CustomID != nil &&
 								*req.Files[0].CustomID == "custom-file-id-123"
 						})).
-						Return(expectedURL, nil)
+						Return(expectedImageUploadFile, nil)
 				},
 			},
 			expected: Expected{
 				code: http.StatusAccepted,
-				body: string(validResp),
+				body: string(expectedResp),
 			},
 		},
 		"large file size": {
@@ -274,12 +300,12 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 						Upload(mock.Anything, mock.MatchedBy(func(req *domain.ImageUploadRequest) bool {
 							return len(req.Files) == 1 && req.Files[0].Size == 104857600
 						})).
-						Return(expectedURL, nil)
+						Return(expectedImageUploadFile, nil)
 				},
 			},
 			expected: Expected{
 				code: http.StatusAccepted,
-				body: string(validResp),
+				body: string(expectedResp),
 			},
 		},
 		"unicode filename": {
@@ -304,12 +330,12 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 							return len(req.Files) == 1 &&
 								strings.Contains(req.Files[0].Name, "画像ファイル")
 						})).
-						Return(expectedURL, nil)
+						Return(expectedImageUploadFile, nil)
 				},
 			},
 			expected: Expected{
 				code: http.StatusAccepted,
-				body: string(validResp),
+				body: string(expectedResp),
 			},
 		},
 		"very long filename": {
@@ -333,12 +359,12 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 						Upload(mock.Anything, mock.MatchedBy(func(req *domain.ImageUploadRequest) bool {
 							return len(req.Files) == 1 && len(req.Files[0].Name) > 500
 						})).
-						Return(expectedURL, nil)
+						Return(expectedImageUploadFile, nil)
 				},
 			},
 			expected: Expected{
 				code: http.StatusAccepted,
-				body: string(validResp),
+				body: string(expectedResp),
 			},
 		},
 		"various image types": {
@@ -362,12 +388,12 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 						Upload(mock.Anything, mock.MatchedBy(func(req *domain.ImageUploadRequest) bool {
 							return len(req.Files) == 5
 						})).
-						Return(expectedURL, nil)
+						Return(expectedImageUploadFile, nil)
 				},
 			},
 			expected: Expected{
 				code: http.StatusAccepted,
-				body: string(validResp),
+				body: string(expectedResp),
 			},
 		},
 		"malformed JSON with extra fields": {
@@ -377,12 +403,12 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 				mockRepo: func(m *mockRepo.MockImageRepository) {
 					m.EXPECT().
 						Upload(mock.Anything, mock.AnythingOfType("*domain.ImageUploadRequest")).
-						Return(expectedURL, nil)
+						Return(expectedImageUploadFile, nil)
 				},
 			},
 			expected: Expected{
 				code: http.StatusAccepted,
-				body: string(validResp),
+				body: string(expectedResp),
 			},
 		},
 		"zero size file": {
@@ -406,12 +432,12 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 						Upload(mock.Anything, mock.MatchedBy(func(req *domain.ImageUploadRequest) bool {
 							return len(req.Files) == 1 && req.Files[0].Size == 0
 						})).
-						Return(expectedURL, nil)
+						Return(expectedImageUploadFile, nil)
 				},
 			},
 			expected: Expected{
 				code: http.StatusAccepted,
-				body: string(validResp),
+				body: string(expectedResp),
 			},
 		},
 		"complex metadata": {
@@ -438,12 +464,12 @@ func TestImageServiceHandler_Upload(t *testing.T) {
 						Upload(mock.Anything, mock.MatchedBy(func(req *domain.ImageUploadRequest) bool {
 							return req.Metadata != nil
 						})).
-						Return(expectedURL, nil)
+						Return(expectedImageUploadFile, nil)
 				},
 			},
 			expected: Expected{
 				code: http.StatusAccepted,
-				body: string(validResp),
+				body: string(expectedResp),
 			},
 		},
 	}
@@ -490,8 +516,34 @@ func TestImageServiceHandler_Upload_Routing(t *testing.T) {
 	}
 	validBody, _ := json.Marshal(validReq)
 
-	expectedURL := "https://uploadthing.com/f/abc123.jpg"
-	expectedResp, _ := json.Marshal(ImageUploadResponseDTO{URL: expectedURL})
+	customID := "custom-123"
+	expectedImageUploadFile := &domain.ImageUploadFile{
+		Key:                "abc123",
+		FileName:           "profile.jpg",
+		FileType:           "image/jpeg",
+		FileUrl:            "https://uploadthing.com/f/abc123",
+		ContentDisposition: "inline",
+		PollingJwt:         "jwt_token",
+		PollingUrl:         "https://uploadthing.com/api/poll",
+		CustomId:           &customID,
+		URL:                "https://utfs.io/f/abc123",
+		Fields:             map[string]interface{}{"key": "value"},
+	}
+
+	expectedResp, _ := json.Marshal(ImageUploadResponseDTO{
+		File: ImageUploadFileDTO{
+			Key:                expectedImageUploadFile.Key,
+			FileName:           expectedImageUploadFile.FileName,
+			FileType:           expectedImageUploadFile.FileType,
+			FileUrl:            expectedImageUploadFile.FileUrl,
+			ContentDisposition: expectedImageUploadFile.ContentDisposition,
+			PollingJwt:         expectedImageUploadFile.PollingJwt,
+			PollingUrl:         expectedImageUploadFile.PollingUrl,
+			CustomId:           expectedImageUploadFile.CustomId,
+			URL:                expectedImageUploadFile.URL,
+			Fields:             expectedImageUploadFile.Fields,
+		},
+	})
 
 	f := newImageHandlerTestFixture(t)
 
@@ -501,7 +553,7 @@ func TestImageServiceHandler_Upload_Routing(t *testing.T) {
 			return len(req.Files) == 1 &&
 				req.Files[0].Name == "profile.jpg"
 		})).
-		Return(expectedURL, nil)
+		Return(expectedImageUploadFile, nil)
 
 	// Create request
 	req := httptest.NewRequest(http.MethodPost, "/image/upload", bytes.NewReader(validBody))
@@ -568,8 +620,34 @@ func TestImageServiceHandler_ServeHTTP_TrailingSlash(t *testing.T) {
 	}
 	validBody, _ := json.Marshal(validReq)
 
-	expectedURL := "https://uploadthing.com/f/abc123.jpg"
-	expectedResp, _ := json.Marshal(ImageUploadResponseDTO{URL: expectedURL})
+	customID := "custom-123"
+	expectedImageUploadFile := &domain.ImageUploadFile{
+		Key:                "abc123",
+		FileName:           "profile.jpg",
+		FileType:           "image/jpeg",
+		FileUrl:            "https://uploadthing.com/f/abc123",
+		ContentDisposition: "inline",
+		PollingJwt:         "jwt_token",
+		PollingUrl:         "https://uploadthing.com/api/poll",
+		CustomId:           &customID,
+		URL:                "https://utfs.io/f/abc123",
+		Fields:             map[string]interface{}{"key": "value"},
+	}
+
+	expectedResp, _ := json.Marshal(ImageUploadResponseDTO{
+		File: ImageUploadFileDTO{
+			Key:                expectedImageUploadFile.Key,
+			FileName:           expectedImageUploadFile.FileName,
+			FileType:           expectedImageUploadFile.FileType,
+			FileUrl:            expectedImageUploadFile.FileUrl,
+			ContentDisposition: expectedImageUploadFile.ContentDisposition,
+			PollingJwt:         expectedImageUploadFile.PollingJwt,
+			PollingUrl:         expectedImageUploadFile.PollingUrl,
+			CustomId:           expectedImageUploadFile.CustomId,
+			URL:                expectedImageUploadFile.URL,
+			Fields:             expectedImageUploadFile.Fields,
+		},
+	})
 
 	f := newImageHandlerTestFixture(t)
 
@@ -578,7 +656,7 @@ func TestImageServiceHandler_ServeHTTP_TrailingSlash(t *testing.T) {
 		Upload(mock.Anything, mock.MatchedBy(func(req *domain.ImageUploadRequest) bool {
 			return len(req.Files) == 1
 		})).
-		Return(expectedURL, nil)
+		Return(expectedImageUploadFile, nil)
 
 	// Create request with trailing slash
 	req := httptest.NewRequest(http.MethodPost, "/image/upload/", bytes.NewReader(validBody))

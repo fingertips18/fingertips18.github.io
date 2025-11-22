@@ -15,7 +15,7 @@ import (
 )
 
 type ImageRepository interface {
-	Upload(ctx context.Context, image *domain.ImageUploadRequest) (string, error)
+	Upload(ctx context.Context, image *domain.ImageUploadRequest) (*domain.ImageUploadFile, error)
 }
 
 type ImageRepositoryConfig struct {
@@ -60,18 +60,18 @@ func NewImageRepository(cfg ImageRepositoryConfig) ImageRepository {
 //   - Treats any non-200 (OK) response as an error and includes the response status and body
 //     in the returned error for diagnostics.
 //   - Decodes the successful response into domain.ImageUploadResponse, validates it,
-//     and returns the URL of the first returned file (uploadResp.Data[0].URL).
+//     and returns the file metadata of the first returned file (uploadResp.Data[0]).
 //   - All underlying errors are wrapped with context for easier debugging.
 //
 // Logging: the method logs the upload attempt and the resulting uploaded file URL on success.
 //
 // Return values:
-// - string: the URL of the uploaded file on success, or an empty string on failure.
+// - *domain.ImageUploadFile: the file metadata on success, or nil on failure.
 // - error: non-nil if validation, marshaling, network, decoding, or response validation fails.
-func (r *imageRepository) Upload(ctx context.Context, image *domain.ImageUploadRequest) (string, error) {
+func (r *imageRepository) Upload(ctx context.Context, image *domain.ImageUploadRequest) (*domain.ImageUploadFile, error) {
 	// Validate request structure
 	if err := image.Validate(); err != nil {
-		return "", fmt.Errorf("failed to validate image: %w", err)
+		return nil, fmt.Errorf("failed to validate image: %w", err)
 	}
 
 	log.Println("Attempting to upload the image...")
@@ -91,7 +91,7 @@ func (r *imageRepository) Upload(ctx context.Context, image *domain.ImageUploadR
 	// Marshal request payload
 	body, err := json.Marshal(payload)
 	if err != nil {
-		return "", fmt.Errorf("failed to marshal payload: %w", err)
+		return nil, fmt.Errorf("failed to marshal payload: %w", err)
 	}
 
 	// Build HTTP request
@@ -102,7 +102,7 @@ func (r *imageRepository) Upload(ctx context.Context, image *domain.ImageUploadR
 		bytes.NewBuffer(body),
 	)
 	if err != nil {
-		return "", fmt.Errorf("failed to create HTTP request: %w", err)
+		return nil, fmt.Errorf("failed to create HTTP request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -111,7 +111,7 @@ func (r *imageRepository) Upload(ctx context.Context, image *domain.ImageUploadR
 	// Execute request
 	resp, err := r.httpAPI.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("failed to send HTTP request: %w", err)
+		return nil, fmt.Errorf("failed to send HTTP request: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -121,7 +121,7 @@ func (r *imageRepository) Upload(ctx context.Context, image *domain.ImageUploadR
 		if readErr != nil {
 			log.Printf("failed to read error response body: %v", readErr)
 		}
-		return "", fmt.Errorf(
+		return nil, fmt.Errorf(
 			"failed to upload image: status=%s message=%s",
 			resp.Status,
 			respBody,
@@ -131,18 +131,18 @@ func (r *imageRepository) Upload(ctx context.Context, image *domain.ImageUploadR
 	// Decode UploadThing success response
 	var uploadResp domain.ImageUploadResponse
 	if err := json.NewDecoder(resp.Body).Decode(&uploadResp); err != nil {
-		return "", fmt.Errorf("failed to decode uploadthing response: %w", err)
+		return nil, fmt.Errorf("failed to decode uploadthing response: %w", err)
 	}
 
 	// Make sure at least one file was returned
 	if err := uploadResp.Validate(); err != nil {
-		return "", fmt.Errorf("invalid uploadthing response: %w", err)
+		return nil, fmt.Errorf("invalid uploadthing response: %w", err)
 	}
 
 	// Extract file URL
-	fileUrl := uploadResp.Data[0].URL
+	data := uploadResp.Data[0]
 
-	log.Println("Image uploaded successfully:", fileUrl)
+	log.Println("Image uploaded successfully:", data.FileName)
 
-	return fileUrl, nil
+	return &data, nil
 }

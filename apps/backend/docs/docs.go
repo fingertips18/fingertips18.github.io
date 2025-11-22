@@ -1208,6 +1208,43 @@ const docTemplate = `{
                 }
             }
         },
+        "v1.ImageUploadFileDTO": {
+            "type": "object",
+            "properties": {
+                "content_disposition": {
+                    "type": "string"
+                },
+                "custom_id": {
+                    "type": "string"
+                },
+                "fields": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "file_name": {
+                    "type": "string"
+                },
+                "file_type": {
+                    "type": "string"
+                },
+                "file_url": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "polling_jwt": {
+                    "type": "string"
+                },
+                "polling_url": {
+                    "type": "string"
+                },
+                "url": {
+                    "description": "signed URL to upload",
+                    "type": "string"
+                }
+            }
+        },
         "v1.ImageUploadRequestDTO": {
             "type": "object",
             "properties": {
@@ -1229,8 +1266,8 @@ const docTemplate = `{
         "v1.ImageUploadResponseDTO": {
             "type": "object",
             "properties": {
-                "url": {
-                    "type": "string"
+                "file": {
+                    "$ref": "#/definitions/v1.ImageUploadFileDTO"
                 }
             }
         },

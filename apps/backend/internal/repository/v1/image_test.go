@@ -88,8 +88,8 @@ func TestImageRepository_Upload(t *testing.T) {
 	}
 
 	type Expected struct {
-		url string
-		err error
+		data *domain.ImageUploadFile
+		err  error
 	}
 
 	tests := map[string]struct {
@@ -109,7 +109,17 @@ func TestImageRepository_Upload(t *testing.T) {
 				},
 			},
 			expected: Expected{
-				url: "https://utfs.io/f/abc123",
+				data: &domain.ImageUploadFile{
+					Key:                "abc123",
+					URL:                "https://utfs.io/f/abc123",
+					FileName:           "test-image.jpg",
+					FileType:           "image/jpeg",
+					FileUrl:            "https://uploadthing.com/f/abc123",
+					ContentDisposition: "inline",
+					PollingJwt:         "jwt_token",
+					PollingUrl:         "https://uploadthing.com/api/poll",
+					CustomId:           &customID,
+				},
 				err: nil,
 			},
 		},
@@ -134,7 +144,17 @@ func TestImageRepository_Upload(t *testing.T) {
 				},
 			},
 			expected: Expected{
-				url: "https://utfs.io/f/abc123",
+				data: &domain.ImageUploadFile{
+					Key:                "abc123",
+					URL:                "https://utfs.io/f/abc123",
+					FileName:           "test-image.jpg",
+					FileType:           "image/jpeg",
+					FileUrl:            "https://uploadthing.com/f/abc123",
+					ContentDisposition: "inline",
+					PollingJwt:         "jwt_token",
+					PollingUrl:         "https://uploadthing.com/api/poll",
+					CustomId:           &customID,
+				},
 				err: nil,
 			},
 		},
@@ -160,7 +180,17 @@ func TestImageRepository_Upload(t *testing.T) {
 				},
 			},
 			expected: Expected{
-				url: "https://utfs.io/f/abc123",
+				data: &domain.ImageUploadFile{
+					Key:                "abc123",
+					URL:                "https://utfs.io/f/abc123",
+					FileName:           "test-image.jpg",
+					FileType:           "image/jpeg",
+					FileUrl:            "https://uploadthing.com/f/abc123",
+					ContentDisposition: "inline",
+					PollingJwt:         "jwt_token",
+					PollingUrl:         "https://uploadthing.com/api/poll",
+					CustomId:           &customID,
+				},
 				err: nil,
 			},
 		},
@@ -175,8 +205,8 @@ func TestImageRepository_Upload(t *testing.T) {
 				},
 			},
 			expected: Expected{
-				url: "",
-				err: fmt.Errorf("failed to send HTTP request: %w", httpErr),
+				data: nil,
+				err:  fmt.Errorf("failed to send HTTP request: %w", httpErr),
 			},
 		},
 		"Non-200 response from server": {
@@ -192,8 +222,8 @@ func TestImageRepository_Upload(t *testing.T) {
 				},
 			},
 			expected: Expected{
-				url: "",
-				err: errors.New("failed to upload image: status=400 Bad Request message={\"error\": \"invalid request\"}"),
+				data: nil,
+				err:  errors.New("failed to upload image: status=400 Bad Request message={\"error\": \"invalid request\"}"),
 			},
 		},
 		"Invalid JSON response": {
@@ -208,8 +238,8 @@ func TestImageRepository_Upload(t *testing.T) {
 				},
 			},
 			expected: Expected{
-				url: "",
-				err: errors.New("failed to decode uploadthing response:"),
+				data: nil,
+				err:  errors.New("failed to decode uploadthing response:"),
 			},
 		},
 		"Response with error from UploadThing": {
@@ -234,8 +264,8 @@ func TestImageRepository_Upload(t *testing.T) {
 				},
 			},
 			expected: Expected{
-				url: "",
-				err: errors.New("invalid uploadthing response: uploadthing: data[0].key missing"),
+				data: nil,
+				err:  errors.New("invalid uploadthing response: uploadthing: data[0].key missing"),
 			},
 		},
 		"Response with missing data": {
@@ -258,8 +288,8 @@ func TestImageRepository_Upload(t *testing.T) {
 				},
 			},
 			expected: Expected{
-				url: "",
-				err: errors.New("invalid uploadthing response: uploadthing: data[0].key missing"),
+				data: nil,
+				err:  errors.New("invalid uploadthing response: uploadthing: data[0].key missing"),
 			},
 		},
 		"Response with missing key": {
@@ -288,8 +318,8 @@ func TestImageRepository_Upload(t *testing.T) {
 				},
 			},
 			expected: Expected{
-				url: "",
-				err: errors.New("invalid uploadthing response: uploadthing: data[0].key missing"),
+				data: nil,
+				err:  errors.New("invalid uploadthing response: uploadthing: data[0].key missing"),
 			},
 		},
 		"Response with missing URL": {
@@ -312,8 +342,8 @@ func TestImageRepository_Upload(t *testing.T) {
 				},
 			},
 			expected: Expected{
-				url: "",
-				err: errors.New("invalid uploadthing response: uploadthing: data[0].url missing"),
+				data: nil,
+				err:  errors.New("invalid uploadthing response: uploadthing: data[0].url missing"),
 			},
 		},
 		"Response with empty data array": {
@@ -329,8 +359,8 @@ func TestImageRepository_Upload(t *testing.T) {
 				},
 			},
 			expected: Expected{
-				url: "",
-				err: errors.New("invalid uploadthing response: uploadthing: response returned no files"),
+				data: nil,
+				err:  errors.New("invalid uploadthing response: uploadthing: response returned no files"),
 			},
 		},
 		"Validation error: missing files": {
@@ -341,8 +371,8 @@ func TestImageRepository_Upload(t *testing.T) {
 				mockUpload: nil,
 			},
 			expected: Expected{
-				url: "",
-				err: missingFilesErr,
+				data: nil,
+				err:  missingFilesErr,
 			},
 		},
 		"Validation error: missing file name": {
@@ -359,8 +389,8 @@ func TestImageRepository_Upload(t *testing.T) {
 				mockUpload: nil,
 			},
 			expected: Expected{
-				url: "",
-				err: missingNameErr,
+				data: nil,
+				err:  missingNameErr,
 			},
 		},
 		"Validation error: invalid file size": {
@@ -377,8 +407,8 @@ func TestImageRepository_Upload(t *testing.T) {
 				mockUpload: nil,
 			},
 			expected: Expected{
-				url: "",
-				err: invalidSizeErr,
+				data: nil,
+				err:  invalidSizeErr,
 			},
 		},
 		"Validation error: missing file type": {
@@ -395,8 +425,8 @@ func TestImageRepository_Upload(t *testing.T) {
 				mockUpload: nil,
 			},
 			expected: Expected{
-				url: "",
-				err: missingTypeErr,
+				data: nil,
+				err:  missingTypeErr,
 			},
 		},
 		"Validation error: invalid ACL": {
@@ -414,8 +444,8 @@ func TestImageRepository_Upload(t *testing.T) {
 				mockUpload: nil,
 			},
 			expected: Expected{
-				url: "",
-				err: invalidACLErr,
+				data: nil,
+				err:  invalidACLErr,
 			},
 		},
 		"Validation error: invalid content disposition": {
@@ -433,8 +463,8 @@ func TestImageRepository_Upload(t *testing.T) {
 				mockUpload: nil,
 			},
 			expected: Expected{
-				url: "",
-				err: invalidContentDispositionErr,
+				data: nil,
+				err:  invalidContentDispositionErr,
 			},
 		},
 	}
@@ -448,16 +478,20 @@ func TestImageRepository_Upload(t *testing.T) {
 			}
 
 			// Act
-			url, err := fixture.imageRepository.Upload(context.Background(), tc.given.payload)
+			data, err := fixture.imageRepository.Upload(context.Background(), tc.given.payload)
 
 			// Assert
 			if tc.expected.err != nil {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), tc.expected.err.Error())
-				assert.Empty(t, url)
+				assert.Nil(t, data)
 			} else {
 				assert.NoError(t, err)
-				assert.Equal(t, tc.expected.url, url)
+				assert.NotNil(t, data)
+				assert.Equal(t, tc.expected.data.Key, data.Key)
+				assert.Equal(t, tc.expected.data.URL, data.URL)
+				assert.Equal(t, tc.expected.data.FileName, data.FileName)
+				assert.Equal(t, tc.expected.data.FileType, data.FileType)
 			}
 		})
 	}

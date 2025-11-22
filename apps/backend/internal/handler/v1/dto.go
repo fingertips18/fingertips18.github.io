@@ -144,8 +144,21 @@ type ImageUploadRequestDTO struct {
 	ContentDisposition *string   `json:"content_disposition,omitempty"`
 }
 
+type ImageUploadFileDTO struct {
+	Key                string                 `json:"key"`
+	FileName           string                 `json:"file_name"`
+	FileType           string                 `json:"file_type"`
+	FileUrl            string                 `json:"file_url"`
+	ContentDisposition string                 `json:"content_disposition"`
+	PollingJwt         string                 `json:"polling_jwt"`
+	PollingUrl         string                 `json:"polling_url"`
+	CustomId           *string                `json:"custom_id,omitempty"`
+	URL                string                 `json:"url"` // signed URL to upload
+	Fields             map[string]interface{} `json:"fields,omitempty"`
+}
+
 type ImageUploadResponseDTO struct {
-	URL string `json:"url"`
+	File ImageUploadFileDTO `json:"file"`
 }
 
 type IDResponse struct {

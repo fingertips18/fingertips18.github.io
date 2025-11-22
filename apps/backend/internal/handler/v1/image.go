@@ -110,7 +110,7 @@ func (h *imageServiceHandler) Upload(w http.ResponseWriter, r *http.Request) {
 		ContentDisposition: req.ContentDisposition,
 	}
 
-	url, err := h.imageRepo.Upload(r.Context(), &upload)
+	image, err := h.imageRepo.Upload(r.Context(), &upload)
 	if err != nil {
 		// The error in the repo is comprehensive enough
 		// Ensure that the first letter is capitalize
@@ -123,8 +123,21 @@ func (h *imageServiceHandler) Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	file := ImageUploadFileDTO{
+		Key:                image.Key,
+		FileName:           image.FileName,
+		FileType:           image.FileType,
+		FileUrl:            image.FileUrl,
+		ContentDisposition: image.ContentDisposition,
+		PollingJwt:         image.PollingJwt,
+		PollingUrl:         image.PollingUrl,
+		CustomId:           image.CustomId,
+		URL:                image.URL,
+		Fields:             image.Fields,
+	}
+
 	resp := ImageUploadResponseDTO{
-		URL: url,
+		File: file,
 	}
 
 	var buf bytes.Buffer
