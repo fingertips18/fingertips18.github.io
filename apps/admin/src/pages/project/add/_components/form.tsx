@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 
 import { Back } from '@/components/common/back';
@@ -9,6 +10,7 @@ import { Button } from '@/components/shadcn/button';
 import { Form as BaseForm } from '@/components/shadcn/form';
 import { MAX_BYTES } from '@/constants/sizes';
 import { toast } from '@/lib/toast';
+import { Route } from '@/routes/route';
 import { ImageService } from '@/services/image';
 import { ProjectService } from '@/services/project';
 import { ProjectType } from '@/types/project';
@@ -100,6 +102,7 @@ export function Form() {
     },
   });
   const abortRef = useRef<AbortController | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     abortRef.current = new AbortController();
@@ -173,6 +176,8 @@ export function Form() {
         title: 'Project upload complete 🎉',
         description: `${values.title} uploaded successfully!`,
       });
+
+      void navigate(Route.project);
     } catch {
       toast({
         level: 'error',
