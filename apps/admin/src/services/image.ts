@@ -43,10 +43,17 @@ export const ImageService = {
       });
       formData.append('file', file, file.name);
 
-      await fetch(imageFile.URL, {
+      const uploadResponse = await fetch(imageFile.URL, {
         method: 'POST',
         body: formData,
+        signal,
       });
+
+      if (!uploadResponse.ok) {
+        throw new Error(
+          `failed to upload file to storage (status: ${uploadResponse.status})`,
+        );
+      }
 
       return imageFile.fileURL;
     } catch (error) {

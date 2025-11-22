@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -97,6 +97,13 @@ export function Form() {
       link: '',
     },
   });
+  const abortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    abortRef.current = new AbortController();
+
+    return () => abortRef.current?.abort();
+  }, []);
 
   const onSubmit = async (values: Schema) => {
     setLoading(true);
@@ -104,7 +111,10 @@ export function Form() {
     try {
       const preview = values.preview[0];
 
-      const imageURL = await ImageService.upload({ file: preview });
+      const imageURL = await ImageService.upload({
+        file: preview,
+        signal: abortRef.current?.signal,
+      });
       if (!imageURL) {
         throw new Error('Image URL undefined');
       }
