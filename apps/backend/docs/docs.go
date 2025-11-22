@@ -1094,7 +1094,7 @@ const docTemplate = `{
         "v1.CreateProjectRequest": {
             "type": "object",
             "properties": {
-                "blur_hash": {
+                "blurhash": {
                     "type": "string"
                 },
                 "description": {
@@ -1219,7 +1219,7 @@ const docTemplate = `{
                 },
                 "fields": {
                     "type": "object",
-                    "additionalProperties": true
+                    "additionalProperties": {}
                 },
                 "file_name": {
                     "type": "string"
@@ -1274,7 +1274,7 @@ const docTemplate = `{
         "v1.ProjectDTO": {
             "type": "object",
             "properties": {
-                "blur_hash": {
+                "blurhash": {
                     "type": "string"
                 },
                 "created_at": {
@@ -1318,7 +1318,7 @@ const docTemplate = `{
         "v1.SchoolPeriodDTO": {
             "type": "object",
             "properties": {
-                "blur_hash": {
+                "blurhash": {
                     "type": "string"
                 },
                 "description": {

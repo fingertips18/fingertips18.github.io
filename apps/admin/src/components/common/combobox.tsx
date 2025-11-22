@@ -47,6 +47,7 @@ export function Combobox({
   selectPlaceholder = 'Select...',
   hasError,
   triggerRef,
+  disabled,
   ...props
 }: ComboboxProps) {
   const [input, setInput] = useState<string>('');
@@ -86,11 +87,15 @@ export function Combobox({
     <div className='space-y-2'>
       <div className='flex flex-wrap gap-2'>
         {tags.map((tag) => (
-          <Badge key={tag} className='flex items-center'>
+          <Badge
+            key={tag}
+            className={cn('flex items-center', disabled && 'opacity-50')}
+          >
             {tag}
             <button
               type='button'
               onClick={() => removeTag(tag)}
+              disabled={disabled}
               aria-label={`Remove ${tag}`}
               className='p-1 rounded-full size-5 flex-center cursor-pointer hover:bg-accent/25 transition-colors'
             >
@@ -100,7 +105,9 @@ export function Combobox({
         ))}
       </div>
 
-      <div className='flex-center gap-x-2'>
+      <div
+        className={cn('flex-center gap-x-2', disabled && 'cursor-not-allowed')}
+      >
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -110,6 +117,7 @@ export function Combobox({
               variant='outline'
               role='combobox'
               aria-expanded={open}
+              disabled={disabled}
               className={cn(
                 'justify-between flex-1 text-muted-foreground data-[state=open]:border-ring data-[state=open]:ring-ring/50 data-[state=open]:ring-[3px]',
                 hasError && 'border-destructive',
@@ -163,7 +171,7 @@ export function Combobox({
         <Button
           type='button'
           onClick={() => addTag(input)}
-          disabled={!input.trim()}
+          disabled={disabled || !input.trim()}
           className='cursor-pointer'
         >
           Add Tag

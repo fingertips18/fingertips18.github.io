@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import type { Control, FieldValues, Path } from 'react-hook-form';
+import type { Control, FieldErrors, FieldValues, Path } from 'react-hook-form';
 
 import { Combobox } from '@/components/common/combobox';
 import {
@@ -69,13 +69,15 @@ const defaults = [
 interface TagsProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T>;
-  hasError?: boolean;
+  errors: FieldErrors<T>;
+  disabled?: boolean;
 }
 
 export function Tags<T extends FieldValues>({
   control,
   name,
-  hasError = false,
+  errors,
+  disabled,
 }: TagsProps<T>) {
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -99,12 +101,15 @@ export function Tags<T extends FieldValues>({
 
   const uniqueSuggestions = Array.from(new Set(suggestions));
 
+  const hasError = !!errors[name];
+
   return (
     <FormField
       control={control}
       name={name}
+      disabled={disabled}
       render={({ field }) => {
-        const { ref, ...fields } = field;
+        const { ref, disabled: fieldDisabled, ...fields } = field;
         void ref; // Explicitly ignore react-hook-form ref; using triggerRef instead
 
         return (
@@ -137,7 +142,7 @@ export function Tags<T extends FieldValues>({
                 defaultSuggestions={defaults}
                 emptyMessage='No tags found.'
                 selectPlaceholder='Select tags...'
-                disabled={loading}
+                disabled={loading || fieldDisabled}
                 hasError={hasError}
                 {...fields}
               />

@@ -1086,7 +1086,7 @@
         "v1.CreateProjectRequest": {
             "type": "object",
             "properties": {
-                "blur_hash": {
+                "blurhash": {
                     "type": "string"
                 },
                 "description": {
@@ -1211,7 +1211,7 @@
                 },
                 "fields": {
                     "type": "object",
-                    "additionalProperties": true
+                    "additionalProperties": {}
                 },
                 "file_name": {
                     "type": "string"
@@ -1266,7 +1266,7 @@
         "v1.ProjectDTO": {
             "type": "object",
             "properties": {
-                "blur_hash": {
+                "blurhash": {
                     "type": "string"
                 },
                 "created_at": {
@@ -1310,7 +1310,7 @@
         "v1.SchoolPeriodDTO": {
             "type": "object",
             "properties": {
-                "blur_hash": {
+                "blurhash": {
                     "type": "string"
                 },
                 "description": {

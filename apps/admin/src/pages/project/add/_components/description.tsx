@@ -13,16 +13,19 @@ import { Textarea } from '@/components/shadcn/textarea';
 interface DescriptionProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T>;
+  disabled?: boolean;
 }
 
 export function Description<T extends FieldValues>({
   control,
   name,
+  disabled,
 }: DescriptionProps<T>) {
   return (
     <FormField
       control={control}
       name={name}
+      disabled={disabled}
       render={({ field }) => (
         <FormItem className='w-full'>
           <FormLabel className='w-fit'>Description</FormLabel>

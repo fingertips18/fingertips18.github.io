@@ -36,7 +36,7 @@ definitions:
     type: object
   v1.CreateProjectRequest:
     properties:
-      blur_hash:
+      blurhash:
         type: string
       description:
         type: string
@@ -117,7 +117,7 @@ definitions:
       custom_id:
         type: string
       fields:
-        additionalProperties: true
+        additionalProperties: {}
         type: object
       file_name:
         type: string
@@ -154,7 +154,7 @@ definitions:
     type: object
   v1.ProjectDTO:
     properties:
-      blur_hash:
+      blurhash:
         type: string
       created_at:
         type: string
@@ -183,7 +183,7 @@ definitions:
     type: object
   v1.SchoolPeriodDTO:
     properties:
-      blur_hash:
+      blurhash:
         type: string
       description:
         type: string

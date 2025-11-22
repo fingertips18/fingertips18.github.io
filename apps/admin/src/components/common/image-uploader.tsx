@@ -26,6 +26,7 @@ export function ImageUploader({
   value,
   onChange,
   onBlur,
+  disabled,
   ...props
 }: ImageUploaderProps) {
   const [preview, setPreview] = useState<string | null>(null);
@@ -67,12 +68,13 @@ export function ImageUploader({
   };
 
   return (
-    <div onBlur={onBlur}>
+    <div onBlur={onBlur} className={cn(disabled && 'cursor-not-allowed')}>
       <Dropzone
         id={id}
         accept={accept || { 'image/webp': ['.webp'] }}
         onDrop={(props) => void handleDrop(props)}
         src={value ? Array.from(value) : undefined}
+        disabled={disabled}
         className={cn(preview && 'p-0', className)}
         {...props}
       >

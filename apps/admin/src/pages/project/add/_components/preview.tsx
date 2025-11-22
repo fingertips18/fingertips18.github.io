@@ -1,6 +1,6 @@
 import { Layers2, Loader } from 'lucide-react';
-import { useState } from 'react';
-import type { Control, FieldValues, Path } from 'react-hook-form';
+import { useEffect, useState } from 'react';
+import type { Control, FieldErrors, FieldValues, Path } from 'react-hook-form';
 
 import { ImageUploader } from '@/components/common/image-uploader';
 import {
@@ -24,24 +24,37 @@ interface PreviewProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T>;
   onBlurhashChange: (blurhash: string) => void;
-  previewHasError?: boolean;
-  blurError?: string;
+  errors: FieldErrors<T>;
+  isEmpty?: boolean;
+  disabled?: boolean;
 }
 
 export function Preview<T extends FieldValues>({
   control,
   name,
   onBlurhashChange,
-  previewHasError = false,
-  blurError,
+  errors,
+  isEmpty,
+  disabled,
 }: PreviewProps<T>) {
   const [base64, setBase64] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+
+  const previewHasError = !!errors[name];
+  const blurhashError = errors['blurhash'] as { message?: string } | undefined;
+  const blurHasError = !!blurhashError;
+
+  useEffect(() => {
+    if (blurHasError || isEmpty) {
+      setBase64(null);
+    }
+  }, [blurHasError, isEmpty]);
 
   return (
     <FormField
       control={control}
       name={name}
+      disabled={disabled}
       render={({ field }) => {
         const { onChange, ...fields } = field;
 
@@ -92,13 +105,14 @@ export function Preview<T extends FieldValues>({
                 maxFiles={1}
                 maxSize={MAX_BYTES}
                 hasError={previewHasError}
-                className='h-[312px]'
+                disabled={disabled}
+                className='h-[312px] disabled:cursor-not-allowed'
               />
             </FormControl>
             <FormMessage />
             <div className='flex flex-col gap-y-2 mt-4 w-full'>
               <h6
-                data-error={!!blurError}
+                data-error={!!blurHasError}
                 className='text-sm leading-none font-medium data-[error=true]:text-destructive'
               >
                 Blurhash
@@ -111,7 +125,8 @@ export function Preview<T extends FieldValues>({
                   'h-[312px] relative aspect-square lg:aspect-video rounded-md overflow-hidden',
                   (loading || !base64) &&
                     'border border-dashed border-border flex-center',
-                  blurError && 'border-destructive',
+                  blurHasError && 'border-destructive',
+                  disabled && 'opacity-50',
                 )}
               >
                 {loading && (
@@ -137,12 +152,12 @@ export function Preview<T extends FieldValues>({
                   </div>
                 )}
               </div>
-              {blurError && (
+              {blurHasError && (
                 <p
                   data-slot='form-message'
                   className={cn('text-destructive text-sm')}
                 >
-                  {blurError}
+                  {blurhashError?.message}
                 </p>
               )}
             </div>
