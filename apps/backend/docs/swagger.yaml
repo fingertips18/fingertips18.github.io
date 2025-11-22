@@ -183,7 +183,7 @@ definitions:
     type: object
   v1.SchoolPeriodDTO:
     properties:
-      blur_hash:
+      blurhash:
         type: string
       description:
         type: string

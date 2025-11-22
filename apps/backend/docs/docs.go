@@ -1318,7 +1318,7 @@ const docTemplate = `{
         "v1.SchoolPeriodDTO": {
             "type": "object",
             "properties": {
-                "blur_hash": {
+                "blurhash": {
                     "type": "string"
                 },
                 "description": {

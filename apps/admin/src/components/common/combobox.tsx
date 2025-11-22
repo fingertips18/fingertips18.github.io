@@ -87,7 +87,10 @@ export function Combobox({
     <div className='space-y-2'>
       <div className='flex flex-wrap gap-2'>
         {tags.map((tag) => (
-          <Badge key={tag} className='flex items-center'>
+          <Badge
+            key={tag}
+            className={cn('flex items-center', disabled && 'opacity-50')}
+          >
             {tag}
             <button
               type='button'

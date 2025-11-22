@@ -20,7 +20,7 @@ type SchoolPeriod struct {
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
 	Logo        string    `json:"logo"`
-	BlurHash    string    `json:"blur_hash"`
+	BlurHash    string    `json:"blurhash"`
 	Honor       string    `json:"honor,omitempty"`
 	StartDate   time.Time `json:"start_date"`
 	EndDate     time.Time `json:"end_date"`

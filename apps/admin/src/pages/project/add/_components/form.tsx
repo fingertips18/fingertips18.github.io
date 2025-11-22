@@ -144,11 +144,7 @@ export function Form() {
     }
 
     if (!imageURL) {
-      toast({
-        level: 'error',
-        title: 'Upload failed',
-        description: 'We couldn’t upload your project. Please try again.',
-      });
+      // Image upload already surfaced an error toast; skip project creation.
       return;
     }
 

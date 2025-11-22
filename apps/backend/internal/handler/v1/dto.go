@@ -42,7 +42,7 @@ type SchoolPeriodDTO struct {
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
 	Logo        string    `json:"logo"`
-	BlurHash    string    `json:"blur_hash"`
+	BlurHash    string    `json:"blurhash"`
 	Honor       string    `json:"honor,omitempty"`
 	StartDate   time.Time `json:"start_date" example:"2020-09-01T00:00:00Z"`
 	EndDate     time.Time `json:"end_date" example:"2024-06-01T00:00:00Z"`
