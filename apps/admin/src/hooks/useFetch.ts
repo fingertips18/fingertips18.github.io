@@ -10,11 +10,43 @@ interface FetchProps extends Omit<RequestInit, 'signal'> {
   };
 }
 
+/**
+ * Custom hook for fetching data from one or multiple URLs with error handling and loading states.
+ *
+ * @template T - The expected shape of the response data. Can be an array or object.
+ *
+ * @param {FetchProps} props - Configuration object for the fetch request.
+ * @param {string | string[]} props.url - Single URL or array of URLs to fetch from.
+ * @param {ToastOptions} [props.toastOptions] - Optional configuration for error toast notifications.
+ * @param {...any} props - Additional fetch options (headers, method, etc.) passed to the fetch API.
+ *
+ * @returns {Object} Fetch state object.
+ * @returns {T | null} data - The fetched data, or null if not yet loaded or an error occurred.
+ * @returns {boolean} loading - Loading state indicator.
+ * @returns {string | null} error - Error message if the fetch failed, or null if successful.
+ *
+ * @example
+ * const { data, loading, error } = useFetch<User>({
+ *   url: '/api/user',
+ *   toastOptions: { errorTitle: 'Failed to load user' }
+ * });
+ *
+ * @example
+ * const { data, loading, error } = useFetch<[Users[], Posts[]]>({
+ *   url: ['/api/users', '/api/posts']
+ * });
+ *
+ * @remarks
+ * - When multiple URLs are provided, responses are returned as a tuple.
+ * - Automatically aborts previous requests when component unmounts or dependencies change.
+ * - Refs are used to prevent unnecessary re-fetches due to object identity changes.
+ * - AbortErrors are silently ignored as they represent intentional request cancellations.
+ */
 export function useFetch<T extends unknown[] | object>({
   url,
   toastOptions,
   ...props
-}: FetchProps) {
+}: FetchProps): { data: T | null; loading: boolean; error: string | null } {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
