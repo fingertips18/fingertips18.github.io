@@ -184,6 +184,7 @@ export function Form() {
           <Button
             type='submit'
             disabled={loading}
+            aria-label={loading ? 'Uploading image, please wait' : 'Submit'}
             className='w-full sm:w-fit cursor-pointer'
           >
             {loading ? (
