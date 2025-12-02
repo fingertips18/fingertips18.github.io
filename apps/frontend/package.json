@@ -39,7 +39,7 @@
     "tailwindcss-animate": "^1.0.7",
     "typescript-eslint": "^8.48.0",
     "zod": "^4.1.13",
-    "zustand": "^5.0.8"
+    "zustand": "^5.0.9"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.17",
