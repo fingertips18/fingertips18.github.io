@@ -52,7 +52,7 @@ func NewProjectServiceHandler(cfg ProjectServiceConfig) ProjectHandler {
 		projectRepo = v1.NewProjectRepository(
 			v1.ProjectRepositoryConfig{
 				DatabaseAPI:  cfg.DatabaseAPI,
-				BlurhashAPI:  blurHashAPI,
+				BlurHashAPI:  blurHashAPI,
 				ProjectTable: "Project",
 			},
 		)
@@ -285,7 +285,7 @@ func (h *projectServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 		Preview:     updateReq.Preview,
 		BlurHash:    updateReq.BlurHash,
 		Title:       updateReq.Title,
-		Subtitle:    updateReq.SubTitle,
+		Subtitle:    updateReq.Subtitle,
 		Description: updateReq.Description,
 		Tags:        updateReq.Tags,
 		Type:        domain.ProjectType(updateReq.Type),

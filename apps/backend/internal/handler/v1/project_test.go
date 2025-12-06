@@ -19,6 +19,10 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+const (
+	validBlurHash = "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
+)
+
 // Helper to marshal JSON safely
 func toJSON(v any) string {
 	b, _ := json.Marshal(v)
@@ -27,22 +31,24 @@ func toJSON(v any) string {
 
 type projectHandlerTestFixture struct {
 	t               *testing.T
+	mockBlurHashAPI *metadata.MockBlurHashAPI
 	mockProjectRepo *mockRepo.MockProjectRepository
 	projectHandler  ProjectHandler
 }
 
 func newProjectHandlerTestFixture(t *testing.T) *projectHandlerTestFixture {
-	mockBlurHashRepo := new(metadata.MockBlurHashAPI)
+	mockBlurHashAPI := new(metadata.MockBlurHashAPI)
 	mockProjectRepo := new(mockRepo.MockProjectRepository)
 	projectHandler := NewProjectServiceHandler(
 		ProjectServiceConfig{
-			BlurHashAPI: mockBlurHashRepo,
+			BlurHashAPI: mockBlurHashAPI,
 			projectRepo: mockProjectRepo,
 		},
 	)
 
 	return &projectHandlerTestFixture{
 		t:               t,
+		mockBlurHashAPI: mockBlurHashAPI,
 		mockProjectRepo: mockProjectRepo,
 		projectHandler:  projectHandler,
 	}
@@ -55,9 +61,9 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 
 	createReq := ProjectDTO{
 		Preview:     "preview.png",
-		BlurHash:    "LFE.@D9F01_2%L%MIVD*9Goe-;WB",
+		BlurHash:    validBlurHash,
 		Title:       "title",
-		SubTitle:    "subtitle",
+		Subtitle:    "subtitle",
 		Description: "desc",
 		Tags:        []string{"go", "react"},
 		Type:        "web",
@@ -65,10 +71,23 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 	}
 	validBody, _ := json.Marshal(createReq)
 
+	invalidBlurHashReq := ProjectDTO{
+		Preview:     "preview.png",
+		BlurHash:    "invalid-hash", // Invalid blurhash
+		Title:       "title",
+		Subtitle:    "subtitle",
+		Description: "desc",
+		Tags:        []string{"go", "react"},
+		Type:        "web",
+		Link:        "http://example.com",
+	}
+	invalidBlurHashBody, _ := json.Marshal(invalidBlurHashReq)
+
 	type Given struct {
-		method   string
-		body     string
-		mockRepo func(m *mockRepo.MockProjectRepository)
+		method       string
+		body         string
+		mockBlurHash func(m *metadata.MockBlurHashAPI)
+		mockRepo     func(m *mockRepo.MockProjectRepository)
 	}
 	type Expected struct {
 		code int
@@ -83,6 +102,9 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 			given: Given{
 				method: http.MethodPost,
 				body:   string(validBody),
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.EXPECT().IsValid(validBlurHash).Return(true).Once()
+				},
 				mockRepo: func(m *mockRepo.MockProjectRepository) {
 					m.EXPECT().
 						Create(mock.Anything, mock.AnythingOfType("*domain.Project")).
@@ -92,6 +114,20 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 			expected: Expected{
 				code: http.StatusCreated,
 				body: string(validResp),
+			},
+		},
+		"invalid blurhash": {
+			given: Given{
+				method: http.MethodPost,
+				body:   string(invalidBlurHashBody),
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.EXPECT().IsValid("invalid-hash").Return(false).Once()
+				},
+				mockRepo: nil,
+			},
+			expected: Expected{
+				code: http.StatusBadRequest,
+				body: "Invalid blurhash\n",
 			},
 		},
 		"invalid method": {
@@ -137,6 +173,9 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			f := newProjectHandlerTestFixture(t)
 
+			if tt.given.mockBlurHash != nil {
+				tt.given.mockBlurHash(f.mockBlurHashAPI)
+			}
 			if tt.given.mockRepo != nil {
 				tt.given.mockRepo(f.mockProjectRepo)
 			}
@@ -159,6 +198,7 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 			}
 
 			f.mockProjectRepo.AssertExpectations(t)
+			f.mockBlurHashAPI.AssertExpectations(t)
 		})
 	}
 }
@@ -171,9 +211,9 @@ func TestProjectServiceHandler_Create_Routing(t *testing.T) {
 	// Setup valid input and expected output
 	createReq := ProjectDTO{
 		Preview:     "preview.png",
-		BlurHash:    "LFE.@D9F01_2%L%MIVD*9Goe-;WB",
+		BlurHash:    validBlurHash,
 		Title:       "title",
-		SubTitle:    "subtitle",
+		Subtitle:    "subtitle",
 		Description: "desc",
 		Tags:        []string{"go", "react"},
 		Type:        "web",
@@ -216,7 +256,7 @@ func TestProjectServiceHandler_Get(t *testing.T) {
 	validProject := &domain.Project{
 		Id:          fixedID,
 		Preview:     "preview.png",
-		BlurHash:    "LFE.@D9F01_2%L%MIVD*9Goe-;WB",
+		BlurHash:    validBlurHash,
 		Title:       "title",
 		Subtitle:    "subtitle",
 		Description: "desc",
@@ -339,7 +379,7 @@ func TestProjectServiceHandler_Get_Routing(t *testing.T) {
 	validProject := &domain.Project{
 		Id:          fixedID,
 		Preview:     "preview.png",
-		BlurHash:    "LFE.@D9F01_2%L%MIVD*9Goe-;WB",
+		BlurHash:    validBlurHash,
 		Title:       "title",
 		Subtitle:    "subtitle",
 		Description: "desc",
@@ -386,7 +426,7 @@ func TestProjectServiceHandler_Update(t *testing.T) {
 	validProject := &domain.Project{
 		Id:          fixedID,
 		Preview:     "preview.png",
-		BlurHash:    "LFE.@D9F01_2%L%MIVD*9Goe-;WB",
+		BlurHash:    validBlurHash,
 		Title:       "title",
 		Subtitle:    "subtitle",
 		Description: "desc",
@@ -515,7 +555,7 @@ func TestProjectServiceHandler_Update_Routing(t *testing.T) {
 	validProject := &domain.Project{
 		Id:          fixedID,
 		Preview:     "preview.png",
-		BlurHash:    "LFE.@D9F01_2%L%MIVD*9Goe-;WB",
+		BlurHash:    validBlurHash,
 		Title:       "title",
 		Subtitle:    "subtitle",
 		Description: "desc",

@@ -19,6 +19,7 @@ import (
 
 const (
 	testProjectTable = "test-projects"
+	validBlurHash    = "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
 )
 
 // projectFakeRow is for QueryRow
@@ -111,6 +112,7 @@ func (r *projectFakeRows) Close() {}
 type projectRepositoryTestFixture struct {
 	t                 *testing.T
 	databaseAPI       *database.MockDatabaseAPI
+	blurHashAPI       *metadata.MockBlurHashAPI
 	projectRepository *projectRepository
 }
 
@@ -127,6 +129,7 @@ func newProjectRepositoryTestFixture(t *testing.T, timeProvider func() time.Time
 	return &projectRepositoryTestFixture{
 		t:                 t,
 		databaseAPI:       mockDatabaseAPI,
+		blurHashAPI:       mockBlurHashAPI,
 		projectRepository: projectRepository,
 	}
 }
@@ -138,7 +141,7 @@ func TestProjectRepository_Create(t *testing.T) {
 
 	validProject := domain.Project{
 		Preview:     "test-preview",
-		BlurHash:    "LFE.@D9F01_2%L%MIVD*9Goe-;WB",
+		BlurHash:    validBlurHash,
 		Title:       "test-title",
 		Subtitle:    "test-subtitle",
 		Description: "test-description",
@@ -393,6 +396,8 @@ func TestProjectRepository_Create(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			f := newProjectRepositoryTestFixture(t, func() time.Time { return fixedTime })
 
+			f.blurHashAPI.On("IsValid", test.given.project.BlurHash).Return(true).Maybe()
+
 			if test.given.mockQueryRow != nil {
 				test.given.mockQueryRow(f.databaseAPI)
 			}
@@ -409,6 +414,7 @@ func TestProjectRepository_Create(t *testing.T) {
 			}
 
 			f.databaseAPI.AssertExpectations(t)
+			f.blurHashAPI.AssertExpectations(t)
 		})
 	}
 }
@@ -420,7 +426,7 @@ func TestProjectRepository_Get(t *testing.T) {
 	validProject := domain.Project{
 		Id:          id,
 		Preview:     "test-preview",
-		BlurHash:    "LFE.@D9F01_2%L%MIVD*9Goe-;WB",
+		BlurHash:    validBlurHash,
 		Title:       "test-title",
 		Subtitle:    "test-subtitle",
 		Description: "test-description",
@@ -804,7 +810,7 @@ func TestProjectRepository_Update(t *testing.T) {
 	validProject := &domain.Project{
 		Id:          "123-abc",
 		Preview:     "test-preview",
-		BlurHash:    "LFE.@D9F01_2%L%MIVD*9Goe-;WB",
+		BlurHash:    validBlurHash,
 		Title:       "test-title",
 		Subtitle:    "test-subtitle",
 		Description: "test-description",
@@ -1176,7 +1182,7 @@ func TestProjectRepository_List(t *testing.T) {
 	validProject := domain.Project{
 		Id:          "123-abc",
 		Preview:     "test-preview",
-		BlurHash:    "LFE.@D9F01_2%L%MIVD*9Goe-;WB",
+		BlurHash:    validBlurHash,
 		Title:       "test-title",
 		Subtitle:    "test-subtitle",
 		Description: "test-description",

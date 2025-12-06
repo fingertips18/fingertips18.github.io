@@ -27,7 +27,7 @@ type ProjectRepository interface {
 
 type ProjectRepositoryConfig struct {
 	DatabaseAPI  database.DatabaseAPI
-	BlurhashAPI  metadata.BlurHashAPI
+	BlurHashAPI  metadata.BlurHashAPI
 	ProjectTable string
 
 	timeProvider domain.TimeProvider
@@ -47,7 +47,7 @@ type projectRepository struct {
 //
 // Returns a ProjectRepository implementation.
 func NewProjectRepository(cfg ProjectRepositoryConfig) ProjectRepository {
-	blurHashAPI := cfg.BlurhashAPI
+	blurHashAPI := cfg.BlurHashAPI
 	if blurHashAPI == nil {
 		blurHashAPI = metadata.NewBlurHashAPI()
 	}
@@ -253,6 +253,10 @@ func (r *projectRepository) Update(ctx context.Context, project *domain.Project)
 			return nil, nil
 		}
 		return nil, fmt.Errorf("failed to update project: %w", err)
+	}
+
+	if err := updatedProject.ValidateResponse(r.blurHashAPI); err != nil {
+		return nil, fmt.Errorf("invalid project returned: %w", err)
 	}
 
 	return &updatedProject, nil
