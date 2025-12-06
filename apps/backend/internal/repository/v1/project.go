@@ -353,7 +353,7 @@ func (r *projectRepository) List(ctx context.Context, filter domain.ProjectFilte
 	}
 	defer rows.Close()
 
-	var projects []domain.Project
+	projects := []domain.Project{}
 	for rows.Next() {
 		var project domain.Project
 

@@ -33,6 +33,15 @@ export function List() {
     return params;
   }, [page, pageSize, sortOrder, type]);
 
+  // Memoize toastOptions to prevent useFetch from re-triggering
+  const toastOptions = useMemo(
+    () => ({
+      errorTitle: 'Failed to list projects',
+      errorMessage: 'Projects could not be loaded. Try again later.',
+    }),
+    [],
+  );
+
   useEffect(() => {
     if (searchParams.keys.length !== 0) return;
 
@@ -54,10 +63,7 @@ export function List() {
   const { data, loading, error } = useFetch<Project[]>({
     url: `${APIRoute.project}s?${newSearchParams.toString()}`,
     method: 'GET',
-    toastOptions: {
-      errorTitle: 'Failed to list projects',
-      errorMessage: 'Projects could not be loaded. Try again later.',
-    },
+    toastOptions,
   });
 
   if (loading) {
