@@ -909,6 +909,8 @@ func TestProjectRepository_Update(t *testing.T) {
 		Tags:        []string{"tags1"},
 		Type:        domain.Web,
 		Link:        "http://example.com",
+		CreatedAt:   fixedTime.Add(-24 * time.Hour), // Set a past time
+		UpdatedAt:   fixedTime,
 	}
 
 	type Given struct {
