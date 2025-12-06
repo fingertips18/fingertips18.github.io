@@ -97,9 +97,19 @@ export function getImageData(image: HTMLImageElement): ImageData {
  * @returns A promise that resolves to the loaded HTMLImageElement, or rejects with an error if the image fails to load
  * @throws {Error} When the image fails to load, with a message indicating the failed URL
  */
-export async function loadImage(imageURL: string): Promise<HTMLImageElement> {
+export async function loadImage({
+  imageURL,
+  options,
+}: {
+  imageURL: string;
+  options?: { crossOrigin?: '' | 'anonymous' | 'use-credentials' };
+}): Promise<HTMLImageElement> {
   return await new Promise((resolve, reject) => {
     const image = new Image();
+
+    if (options?.crossOrigin) {
+      image.crossOrigin = options.crossOrigin;
+    }
 
     image.onload = () => resolve(image);
 
@@ -129,7 +139,7 @@ export async function encodeImageToBlurhash(
   let imageData: ImageData;
 
   if (typeof data === 'string') {
-    const image = await loadImage(data);
+    const image = await loadImage({ imageURL: data });
     imageData = getImageData(image);
   } else {
     imageData = getImageData(data);
@@ -149,8 +159,8 @@ interface DecodeProps {
  *
  * @param props - The decode properties
  * @param props.hash - The blurhash string to decode
- * @param props.width - The width of the output image in pixels
- * @param props.height - The height of the output image in pixels
+ * @param props.width - Optional width of the output image in pixels (default: 32)
+ * @param props.height - Optional height of the output image in pixels (default: 32)
  * @returns A data URL string representing the decoded image in WebP format, or `undefined` if the hash is invalid or canvas context cannot be obtained
  *
  * @example
@@ -240,9 +250,10 @@ function rotateSize({
  * Callers should call `URL.revokeObjectURL(image.src)` when the image is no longer needed.
  *
  * @param options - Configuration object for image processing
- * @param options.url - The URL of the image to load
+ * @param options.image - The image to process, either a URL string or an HTMLImageElement
  * @param options.pixelCrop - The rectangular area to crop from the rotated image
  * @param options.rotation - The rotation angle in degrees (default: 0)
+ * @param options.flip - Optional flip configuration for horizontal/vertical mirroring
  *
  * @returns A promise that resolves to an HTMLImageElement with a blob URL (created via URL.createObjectURL) of the cropped image,
  *          or null if the canvas context could not be obtained
@@ -271,7 +282,7 @@ export async function loadCroppedImage({
   flip?: { horizontal: boolean; vertical: boolean };
 }): Promise<HTMLImageElement | null> {
   if (typeof image === 'string') {
-    image = await loadImage(image);
+    image = await loadImage({ imageURL: image });
   }
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
