@@ -1,6 +1,20 @@
 import { decode, encode, isBlurhashValid } from 'blurhash';
 import type { Area } from 'react-easy-crop';
 
+/**
+ * Converts an HTML image element to a File object by drawing it to a canvas and converting to WebP format.
+ *
+ * @param image - The HTMLImageElement to convert
+ * @param filename - The desired filename for the resulting File object
+ * @returns A Promise that resolves to a File object containing the WebP-encoded image data
+ * @throws {Error} If unable to get the 2D canvas context or create a Blob from the canvas
+ *
+ * @example
+ * ```typescript
+ * const img = document.querySelector('img') as HTMLImageElement;
+ * const file = await imageToFile({ image: img, filename: 'photo.webp' });
+ * ```
+ */
 export async function imageToFile({
   image,
   filename,
@@ -64,8 +78,8 @@ export async function fileToImage(file: File): Promise<HTMLImageElement> {
  */
 export function getImageData(image: HTMLImageElement): ImageData {
   const canvas = document.createElement('canvas');
-  canvas.width = image.width;
-  canvas.height = image.height;
+  canvas.width = image.naturalWidth;
+  canvas.height = image.naturalHeight;
 
   const context = canvas.getContext('2d');
   if (!context) {
@@ -74,7 +88,7 @@ export function getImageData(image: HTMLImageElement): ImageData {
 
   context.drawImage(image, 0, 0);
 
-  return context.getImageData(0, 0, image.width, image.height);
+  return context.getImageData(0, 0, image.naturalWidth, image.naturalHeight);
 }
 
 /**
@@ -170,6 +184,14 @@ export function decodeBlurhashToBase64URL({
   return canvas.toDataURL('image/webp'); // returns "data:image/webp;base64,..."
 }
 
+/**
+ * Converts an angle from degrees to radians.
+ * @param degree - The angle in degrees to convert.
+ * @returns The angle converted to radians.
+ * @example
+ * radianAngle(180) // returns Math.PI
+ * radianAngle(90)  // returns Math.PI / 2
+ */
 function radianAngle(degree: number): number {
   return (degree * Math.PI) / 180;
 }
@@ -212,6 +234,10 @@ function rotateSize({
 
 /**
  * Loads an image, applies rotation, and returns a cropped portion as a base64-encoded data URL.
+ *
+ * @remarks
+ * The returned image's `src` is an object URL created via `URL.createObjectURL`.
+ * Callers should call `URL.revokeObjectURL(image.src)` when the image is no longer needed.
  *
  * @param options - Configuration object for image processing
  * @param options.url - The URL of the image to load

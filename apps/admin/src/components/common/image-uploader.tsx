@@ -78,6 +78,15 @@ export function ImageUploader({
     };
   }, [value]);
 
+  // Revoking object URLs to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (editedImage?.startsWith('blob:')) {
+        URL.revokeObjectURL(editedImage);
+      }
+    };
+  }, [editedImage]);
+
   const handleDrop = async (files: File[]) => {
     setDroppedFiles(files);
 
@@ -109,7 +118,7 @@ export function ImageUploader({
   };
 
   const handleConfirmEditor = async () => {
-    if (droppedFiles.length == 0) {
+    if (droppedFiles.length === 0) {
       await handleCloseEditor();
       return;
     }
@@ -120,8 +129,8 @@ export function ImageUploader({
       const croppedImage = await loadCroppedImage({
         image,
         pixelCrop: croppedAreaPixels || {
-          x: image.x,
-          y: image.y,
+          x: 0,
+          y: 0,
           height: image.height,
           width: image.width,
         },
