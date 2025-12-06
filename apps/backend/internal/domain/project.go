@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/fingertips18/fingertips18.github.io/backend/pkg/metadata"
 )
 
 type ProjectType string
@@ -20,7 +22,7 @@ type Project struct {
 	Preview     string      `json:"preview"`
 	BlurHash    string      `json:"blurhash"`
 	Title       string      `json:"title"`
-	SubTitle    string      `json:"sub_title"`
+	Subtitle    string      `json:"sub_title"`
 	Description string      `json:"description"`
 	Tags        []string    `json:"tags"`
 	Type        ProjectType `json:"type"`
@@ -51,17 +53,20 @@ func (pt ProjectType) isValid() bool {
 	}
 }
 
-func (p Project) ValidatePayload() error {
+func (p Project) ValidatePayload(blurHashAPI metadata.BlurHashAPI) error {
 	if p.Preview == "" {
 		return errors.New("preview missing")
 	}
 	if p.BlurHash == "" {
 		return errors.New("blurHash missing")
 	}
+	if !blurHashAPI.IsValid(p.BlurHash) {
+		return errors.New("blurHash invalid")
+	}
 	if p.Title == "" {
 		return errors.New("title missing")
 	}
-	if p.SubTitle == "" {
+	if p.Subtitle == "" {
 		return errors.New("subTitle missing")
 	}
 	if p.Description == "" {
@@ -87,12 +92,12 @@ func (p Project) ValidatePayload() error {
 	return nil
 }
 
-func (p Project) ValidateResponse() error {
+func (p Project) ValidateResponse(blurHashAPI metadata.BlurHashAPI) error {
 	if p.Id == "" {
 		return errors.New("ID missing")
 	}
 
-	if err := p.ValidatePayload(); err != nil {
+	if err := p.ValidatePayload(blurHashAPI); err != nil {
 		return err
 	}
 

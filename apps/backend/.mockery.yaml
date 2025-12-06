@@ -27,3 +27,6 @@ packages:
   github.com/fingertips18/fingertips18.github.io/backend/internal/database:
     interfaces:
       DatabaseAPI: {}
+  github.com/fingertips18/fingertips18.github.io/backend/pkg/metadata:
+    interfaces:
+      BlurHashAPI: {}

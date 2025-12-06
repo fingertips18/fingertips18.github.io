@@ -11,6 +11,7 @@ import (
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
 	v1 "github.com/fingertips18/fingertips18.github.io/backend/internal/repository/v1"
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/utils"
+	"github.com/fingertips18/fingertips18.github.io/backend/pkg/metadata"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -25,11 +26,13 @@ type ProjectHandler interface {
 
 type ProjectServiceConfig struct {
 	DatabaseAPI database.DatabaseAPI
+	BlurHashAPI metadata.BlurHashAPI
 
 	projectRepo v1.ProjectRepository
 }
 
 type projectServiceHandler struct {
+	blurHashAPI metadata.BlurHashAPI
 	projectRepo v1.ProjectRepository
 }
 
@@ -39,17 +42,24 @@ type projectServiceHandler struct {
 // using the provided connection string and a default table name.
 // Returns a ProjectService implementation.
 func NewProjectServiceHandler(cfg ProjectServiceConfig) ProjectHandler {
+	blurHashAPI := cfg.BlurHashAPI
+	if blurHashAPI == nil {
+		blurHashAPI = metadata.NewBlurHashAPI()
+	}
+
 	projectRepo := cfg.projectRepo
 	if projectRepo == nil {
 		projectRepo = v1.NewProjectRepository(
 			v1.ProjectRepositoryConfig{
 				DatabaseAPI:  cfg.DatabaseAPI,
+				BlurhashAPI:  blurHashAPI,
 				ProjectTable: "Project",
 			},
 		)
 	}
 
 	return &projectServiceHandler{
+		blurHashAPI: blurHashAPI,
 		projectRepo: projectRepo,
 	}
 }
@@ -155,7 +165,7 @@ func (h *projectServiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Preview:     createReq.Preview,
 		BlurHash:    createReq.BlurHash,
 		Title:       createReq.Title,
-		SubTitle:    createReq.SubTitle,
+		Subtitle:    createReq.Subtitle,
 		Description: createReq.Description,
 		Tags:        createReq.Tags,
 		Type:        domain.ProjectType(createReq.Type),
@@ -164,7 +174,7 @@ func (h *projectServiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validate before calling repository
-	if err := project.ValidatePayload(); err != nil {
+	if err := project.ValidatePayload(h.blurHashAPI); err != nil {
 		http.Error(w, "Invalid project payload: "+err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -275,7 +285,7 @@ func (h *projectServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 		Preview:     updateReq.Preview,
 		BlurHash:    updateReq.BlurHash,
 		Title:       updateReq.Title,
-		SubTitle:    updateReq.SubTitle,
+		Subtitle:    updateReq.SubTitle,
 		Description: updateReq.Description,
 		Tags:        updateReq.Tags,
 		Type:        domain.ProjectType(updateReq.Type),
@@ -285,7 +295,7 @@ func (h *projectServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 		UpdatedAt:   updateReq.UpdatedAt,
 	}
 
-	if err := project.ValidatePayload(); err != nil {
+	if err := project.ValidatePayload(h.blurHashAPI); err != nil {
 		http.Error(w, "Invalid project payload: "+err.Error(), http.StatusBadRequest)
 		return
 	}

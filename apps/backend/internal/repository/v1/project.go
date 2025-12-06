@@ -11,6 +11,7 @@ import (
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/database"
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/utils"
+	"github.com/fingertips18/fingertips18.github.io/backend/pkg/metadata"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -26,6 +27,7 @@ type ProjectRepository interface {
 
 type ProjectRepositoryConfig struct {
 	DatabaseAPI  database.DatabaseAPI
+	BlurhashAPI  metadata.BlurHashAPI
 	ProjectTable string
 
 	timeProvider domain.TimeProvider
@@ -34,6 +36,7 @@ type ProjectRepositoryConfig struct {
 type projectRepository struct {
 	projectTable string
 	databaseAPI  database.DatabaseAPI
+	blurHashAPI  metadata.BlurHashAPI
 	timeProvider domain.TimeProvider
 }
 
@@ -44,6 +47,11 @@ type projectRepository struct {
 //
 // Returns a ProjectRepository implementation.
 func NewProjectRepository(cfg ProjectRepositoryConfig) ProjectRepository {
+	blurHashAPI := cfg.BlurhashAPI
+	if blurHashAPI == nil {
+		blurHashAPI = metadata.NewBlurHashAPI()
+	}
+
 	timeProvider := cfg.timeProvider
 	if timeProvider == nil {
 		timeProvider = time.Now
@@ -52,6 +60,7 @@ func NewProjectRepository(cfg ProjectRepositoryConfig) ProjectRepository {
 	return &projectRepository{
 		projectTable: cfg.ProjectTable,
 		databaseAPI:  cfg.DatabaseAPI,
+		blurHashAPI:  blurHashAPI,
 		timeProvider: timeProvider,
 	}
 }
@@ -73,7 +82,7 @@ func (r *projectRepository) Create(ctx context.Context, project *domain.Project)
 		return "", errors.New("failed to validate project: payload is nil")
 	}
 
-	if err := project.ValidatePayload(); err != nil {
+	if err := project.ValidatePayload(r.blurHashAPI); err != nil {
 		return "", fmt.Errorf("failed to validate project: %w", err)
 	}
 
@@ -99,7 +108,7 @@ func (r *projectRepository) Create(ctx context.Context, project *domain.Project)
 		project.Preview,
 		project.BlurHash,
 		project.Title,
-		project.SubTitle,
+		project.Subtitle,
 		project.Description,
 		project.Tags,
 		project.Type,
@@ -148,7 +157,7 @@ func (r *projectRepository) Get(ctx context.Context, id string) (*domain.Project
 		&project.Preview,
 		&project.BlurHash,
 		&project.Title,
-		&project.SubTitle,
+		&project.Subtitle,
 		&project.Description,
 		&project.Tags,
 		&project.Type,
@@ -164,7 +173,7 @@ func (r *projectRepository) Get(ctx context.Context, id string) (*domain.Project
 		return nil, fmt.Errorf("failed to scan project: %w", err)
 	}
 
-	if err := project.ValidateResponse(); err != nil {
+	if err := project.ValidateResponse(r.blurHashAPI); err != nil {
 		return nil, fmt.Errorf("invalid project returned: %w", err)
 	}
 
@@ -186,7 +195,7 @@ func (r *projectRepository) Update(ctx context.Context, project *domain.Project)
 		return nil, fmt.Errorf("failed to update project: ID missing")
 	}
 
-	if err := project.ValidatePayload(); err != nil {
+	if err := project.ValidatePayload(r.blurHashAPI); err != nil {
 		return nil, fmt.Errorf("failed to validate project: %w", err)
 	}
 
@@ -218,7 +227,7 @@ func (r *projectRepository) Update(ctx context.Context, project *domain.Project)
 		project.Preview,
 		project.BlurHash,
 		project.Title,
-		project.SubTitle,
+		project.Subtitle,
 		project.Description,
 		project.Tags,
 		project.Type,
@@ -230,7 +239,7 @@ func (r *projectRepository) Update(ctx context.Context, project *domain.Project)
 		&updatedProject.Preview,
 		&updatedProject.BlurHash,
 		&updatedProject.Title,
-		&updatedProject.SubTitle,
+		&updatedProject.Subtitle,
 		&updatedProject.Description,
 		&updatedProject.Tags,
 		&updatedProject.Type,
@@ -349,7 +358,7 @@ func (r *projectRepository) List(ctx context.Context, filter domain.ProjectFilte
 			&project.Preview,
 			&project.BlurHash,
 			&project.Title,
-			&project.SubTitle,
+			&project.Subtitle,
 			&project.Description,
 			&project.Tags,
 			&project.Type,
@@ -413,7 +422,7 @@ func (r *projectRepository) ListByEducationID(ctx context.Context, educationID s
 		var educationID sql.NullString
 
 		err := rows.Scan(
-			&p.Id, &p.Preview, &p.BlurHash, &p.Title, &p.SubTitle,
+			&p.Id, &p.Preview, &p.BlurHash, &p.Title, &p.Subtitle,
 			&p.Description, &p.Tags, &p.Type, &p.Link,
 			&educationID, &p.CreatedAt, &p.UpdatedAt,
 		)
@@ -468,7 +477,7 @@ func (r *projectRepository) ListByEducationIDs(ctx context.Context, educationIDs
 		var educationID sql.NullString
 
 		err := rows.Scan(
-			&p.Id, &p.Preview, &p.BlurHash, &p.Title, &p.SubTitle,
+			&p.Id, &p.Preview, &p.BlurHash, &p.Title, &p.Subtitle,
 			&p.Description, &p.Tags, &p.Type, &p.Link,
 			&educationID, &p.CreatedAt, &p.UpdatedAt,
 		)

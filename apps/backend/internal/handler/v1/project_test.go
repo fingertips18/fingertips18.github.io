@@ -13,6 +13,7 @@ import (
 
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
 	mockRepo "github.com/fingertips18/fingertips18.github.io/backend/internal/repository/v1/mocks"
+	metadata "github.com/fingertips18/fingertips18.github.io/backend/pkg/metadata/mocks"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -31,10 +32,11 @@ type projectHandlerTestFixture struct {
 }
 
 func newProjectHandlerTestFixture(t *testing.T) *projectHandlerTestFixture {
+	mockBlurHashRepo := new(metadata.MockBlurHashAPI)
 	mockProjectRepo := new(mockRepo.MockProjectRepository)
-
 	projectHandler := NewProjectServiceHandler(
 		ProjectServiceConfig{
+			BlurHashAPI: mockBlurHashRepo,
 			projectRepo: mockProjectRepo,
 		},
 	)
@@ -53,7 +55,7 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 
 	createReq := ProjectDTO{
 		Preview:     "preview.png",
-		BlurHash:    "hash",
+		BlurHash:    "LFE.@D9F01_2%L%MIVD*9Goe-;WB",
 		Title:       "title",
 		SubTitle:    "subtitle",
 		Description: "desc",
@@ -169,7 +171,7 @@ func TestProjectServiceHandler_Create_Routing(t *testing.T) {
 	// Setup valid input and expected output
 	createReq := ProjectDTO{
 		Preview:     "preview.png",
-		BlurHash:    "hash",
+		BlurHash:    "LFE.@D9F01_2%L%MIVD*9Goe-;WB",
 		Title:       "title",
 		SubTitle:    "subtitle",
 		Description: "desc",
@@ -214,9 +216,9 @@ func TestProjectServiceHandler_Get(t *testing.T) {
 	validProject := &domain.Project{
 		Id:          fixedID,
 		Preview:     "preview.png",
-		BlurHash:    "hash",
+		BlurHash:    "LFE.@D9F01_2%L%MIVD*9Goe-;WB",
 		Title:       "title",
-		SubTitle:    "subtitle",
+		Subtitle:    "subtitle",
 		Description: "desc",
 		Tags:        []string{"go", "react"},
 		Type:        domain.Web,
@@ -337,9 +339,9 @@ func TestProjectServiceHandler_Get_Routing(t *testing.T) {
 	validProject := &domain.Project{
 		Id:          fixedID,
 		Preview:     "preview.png",
-		BlurHash:    "hash",
+		BlurHash:    "LFE.@D9F01_2%L%MIVD*9Goe-;WB",
 		Title:       "title",
-		SubTitle:    "subtitle",
+		Subtitle:    "subtitle",
 		Description: "desc",
 		Tags:        []string{"go", "react"},
 		Type:        domain.Web,
@@ -384,9 +386,9 @@ func TestProjectServiceHandler_Update(t *testing.T) {
 	validProject := &domain.Project{
 		Id:          fixedID,
 		Preview:     "preview.png",
-		BlurHash:    "hash",
+		BlurHash:    "LFE.@D9F01_2%L%MIVD*9Goe-;WB",
 		Title:       "title",
-		SubTitle:    "subtitle",
+		Subtitle:    "subtitle",
 		Description: "desc",
 		Tags:        []string{"go", "react"},
 		Type:        domain.Web,
@@ -513,9 +515,9 @@ func TestProjectServiceHandler_Update_Routing(t *testing.T) {
 	validProject := &domain.Project{
 		Id:          fixedID,
 		Preview:     "preview.png",
-		BlurHash:    "hash",
+		BlurHash:    "LFE.@D9F01_2%L%MIVD*9Goe-;WB",
 		Title:       "title",
-		SubTitle:    "subtitle",
+		Subtitle:    "subtitle",
 		Description: "desc",
 		Tags:        []string{"go", "react"},
 		Type:        domain.Web,
@@ -700,7 +702,7 @@ func TestProjectServiceHandler_List(t *testing.T) {
 			Preview:     "preview1",
 			BlurHash:    "hash1",
 			Title:       "title1",
-			SubTitle:    "subtitle1",
+			Subtitle:    "subtitle1",
 			Description: "desc1",
 			Tags:        []string{"go"},
 			Type:        domain.Web,
@@ -713,7 +715,7 @@ func TestProjectServiceHandler_List(t *testing.T) {
 			Preview:     "preview2",
 			BlurHash:    "hash2",
 			Title:       "title2",
-			SubTitle:    "subtitle2",
+			Subtitle:    "subtitle2",
 			Description: "desc2",
 			Tags:        []string{"react"},
 			Type:        domain.Mobile,
@@ -853,7 +855,7 @@ func TestProjectServiceHandler_List_Routing(t *testing.T) {
 			Preview:     "preview1",
 			BlurHash:    "hash1",
 			Title:       "title1",
-			SubTitle:    "subtitle1",
+			Subtitle:    "subtitle1",
 			Description: "desc1",
 			Tags:        []string{"go"},
 			Type:        domain.Web,
@@ -866,7 +868,7 @@ func TestProjectServiceHandler_List_Routing(t *testing.T) {
 			Preview:     "preview2",
 			BlurHash:    "hash2",
 			Title:       "title2",
-			SubTitle:    "subtitle2",
+			Subtitle:    "subtitle2",
 			Description: "desc2",
 			Tags:        []string{"react"},
 			Type:        domain.Mobile,

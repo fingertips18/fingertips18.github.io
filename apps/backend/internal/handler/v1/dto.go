@@ -21,7 +21,7 @@ type CreateProjectRequest struct {
 	Preview     string   `json:"preview"`
 	BlurHash    string   `json:"blurhash"`
 	Title       string   `json:"title"`
-	SubTitle    string   `json:"sub_title"`
+	Subtitle    string   `json:"sub_title"`
 	Description string   `json:"description"`
 	Tags        []string `json:"tags"`
 	Type        string   `json:"type"`
