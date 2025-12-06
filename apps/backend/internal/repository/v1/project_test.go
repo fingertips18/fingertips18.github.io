@@ -632,6 +632,35 @@ func TestProjectRepository_Get(t *testing.T) {
 				err:     errors.New("invalid project returned: blurHash missing"),
 			},
 		},
+		"Invalid blurhash from database": {
+			given: Given{
+				id: id,
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.EXPECT().IsValid("invalid-from-db").Return(false).Once()
+				},
+				mockQueryRow: func(m *database.MockDatabaseAPI) {
+					m.EXPECT().
+						QueryRow(mock.Anything, mock.Anything, []any{id}).
+						Return(&projectFakeRow{project: domain.Project{
+							Id:          validProject.Id,
+							Preview:     validProject.Preview,
+							BlurHash:    "invalid-from-db", // Invalid hash from DB
+							Title:       validProject.Title,
+							Subtitle:    validProject.Subtitle,
+							Description: validProject.Description,
+							Tags:        validProject.Tags,
+							Type:        validProject.Type,
+							Link:        validProject.Link,
+							CreatedAt:   validProject.CreatedAt,
+							UpdatedAt:   validProject.UpdatedAt,
+						}})
+				},
+			},
+			expected: Expected{
+				project: nil,
+				err:     errors.New("invalid project returned: blurHash invalid"),
+			},
+		},
 		"Missing title fails": {
 			given: Given{
 				id: id,
@@ -1019,6 +1048,29 @@ func TestProjectRepository_Update(t *testing.T) {
 			expected: Expected{
 				updatedProject: nil,
 				err:            errors.New("failed to validate project: blurHash missing"),
+			},
+		},
+		"Invalid blurhash": {
+			given: Given{
+				project: domain.Project{
+					Id:          validProject.Id,
+					Preview:     validProject.Preview,
+					BlurHash:    "invalid-hash",
+					Title:       validProject.Title,
+					Subtitle:    validProject.Subtitle,
+					Description: validProject.Description,
+					Tags:        validProject.Tags,
+					Type:        validProject.Type,
+					Link:        validProject.Link,
+				},
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.EXPECT().IsValid("invalid-hash").Return(false).Once()
+				},
+				mockQueryRow: nil, // Should fail validation before DB call
+			},
+			expected: Expected{
+				updatedProject: nil,
+				err:            errors.New("failed to validate project: blurHash invalid"),
 			},
 		},
 		"Missing title fails": {

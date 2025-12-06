@@ -444,6 +444,18 @@ func TestProjectServiceHandler_Update(t *testing.T) {
 
 	validBody, _ := json.Marshal(validProject)
 
+	invalidBlurHashReq := ProjectDTO{
+		Preview:     "preview.png",
+		BlurHash:    "invalid-hash",
+		Title:       "title",
+		Subtitle:    "subtitle",
+		Description: "desc",
+		Tags:        []string{"go", "react"},
+		Type:        "web",
+		Link:        "http://example.com",
+	}
+	invalidBlurHashBody, _ := json.Marshal(invalidBlurHashReq)
+
 	type Given struct {
 		method       string
 		body         string
@@ -532,6 +544,20 @@ func TestProjectServiceHandler_Update(t *testing.T) {
 			expected: Expected{
 				code: http.StatusNotFound,
 				body: "Project not found\n",
+			},
+		},
+		"invalid blurhash": {
+			given: Given{
+				method: http.MethodPut,
+				body:   string(invalidBlurHashBody),
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.EXPECT().IsValid("invalid-hash").Return(false).Once()
+				},
+				mockRepo: nil, // Should fail before repo call
+			},
+			expected: Expected{
+				code: http.StatusBadRequest,
+				body: "Invalid project payload: blurHash invalid\n",
 			},
 		},
 	}
