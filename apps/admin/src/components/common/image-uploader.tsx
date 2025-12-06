@@ -49,6 +49,7 @@ export function ImageUploader({
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
   const [editorOpen, setEditorOpen] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   // Sync preview with value prop
   useEffect(() => {
@@ -123,10 +124,12 @@ export function ImageUploader({
   };
 
   const handleConfirmEditor = async () => {
-    if (droppedFiles.length === 0) {
+    if (loading || droppedFiles.length === 0) {
       handleCloseEditor();
       return;
     }
+
+    setLoading(true);
 
     try {
       const image = await fileToImage(droppedFiles[0]);
@@ -165,6 +168,8 @@ export function ImageUploader({
         title: 'Unable to edit',
         description: 'There was an issue editing your image. Try again later.',
       });
+    } finally {
+      setLoading(false);
     }
 
     setEditorOpen(false);
@@ -200,8 +205,11 @@ export function ImageUploader({
         </Dropzone>
       </div>
 
-      {rawImage && editorOpen && (
-        <Dialog open={editorOpen} onOpenChange={() => setEditorOpen(false)}>
+      {rawImage && (
+        <Dialog
+          open={editorOpen || loading}
+          onOpenChange={() => setEditorOpen(false)}
+        >
           <DialogContent className='flex-col'>
             <DialogHeader>
               <DialogTitle>Customize Your Image</DialogTitle>
@@ -248,10 +256,11 @@ export function ImageUploader({
             </div>
             <Button
               type='button'
+              disabled={loading}
               onClick={() => void handleConfirmEditor()}
               className='cursor-pointer w-full'
             >
-              Save
+              {loading ? 'Loading...' : 'Save'}
             </Button>
           </DialogContent>
         </Dialog>
