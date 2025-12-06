@@ -150,8 +150,20 @@ func TestProjectRepository_Create(t *testing.T) {
 		Link:        "http://example.com",
 	}
 
+	invalidBlurHashProject := domain.Project{
+		Preview:     "preview.png",
+		BlurHash:    "invalid-hash",
+		Title:       "title",
+		Subtitle:    "subtitle",
+		Description: "desc",
+		Tags:        []string{"go", "react"},
+		Type:        domain.Web,
+		Link:        "http://example.com",
+	}
+
 	type Given struct {
 		project      domain.Project
+		mockBlurHash func(m *metadata.MockBlurHashAPI)
 		mockQueryRow func(m *database.MockDatabaseAPI)
 	}
 
@@ -166,6 +178,9 @@ func TestProjectRepository_Create(t *testing.T) {
 		"Successful create project": {
 			given: Given{
 				project: validProject,
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().QueryRow(
 						mock.Anything,
@@ -181,6 +196,9 @@ func TestProjectRepository_Create(t *testing.T) {
 		"Database scan fails": {
 			given: Given{
 				project: validProject,
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.EXPECT().IsValid(validBlurHash).Return(true).Once()
+				},
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().QueryRow(
 						mock.Anything,
@@ -196,6 +214,9 @@ func TestProjectRepository_Create(t *testing.T) {
 		"Database returns empty ID": {
 			given: Given{
 				project: validProject,
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.EXPECT().IsValid(validBlurHash).Return(true).Once()
+				},
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().QueryRow(
 						mock.Anything,
@@ -244,8 +265,23 @@ func TestProjectRepository_Create(t *testing.T) {
 				err: errors.New("failed to validate project: blurHash missing"),
 			},
 		},
+		"Invalid blurhash": {
+			given: Given{
+				project: invalidBlurHashProject,
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", "invalid-hash").Return(false).Once()
+				},
+				mockQueryRow: nil,
+			},
+			expected: Expected{
+				err: errors.New("failed to validate project: blurHash invalid"),
+			},
+		},
 		"Missing title fails": {
 			given: Given{
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				project: domain.Project{
 					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
@@ -262,8 +298,11 @@ func TestProjectRepository_Create(t *testing.T) {
 				err: errors.New("failed to validate project: title missing"),
 			},
 		},
-		"Missing subTitle fails": {
+		"Missing subtitle fails": {
 			given: Given{
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				project: domain.Project{
 					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
@@ -282,6 +321,9 @@ func TestProjectRepository_Create(t *testing.T) {
 		},
 		"Missing description fails": {
 			given: Given{
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				project: domain.Project{
 					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
@@ -300,6 +342,9 @@ func TestProjectRepository_Create(t *testing.T) {
 		},
 		"Missing tags fails": {
 			given: Given{
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				project: domain.Project{
 					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
@@ -318,6 +363,9 @@ func TestProjectRepository_Create(t *testing.T) {
 		},
 		"Tags contains empty string fails": {
 			given: Given{
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				project: domain.Project{
 					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
@@ -338,6 +386,9 @@ func TestProjectRepository_Create(t *testing.T) {
 		},
 		"Missing type fails": {
 			given: Given{
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				project: domain.Project{
 					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
@@ -356,6 +407,9 @@ func TestProjectRepository_Create(t *testing.T) {
 		},
 		"Invalid type fails": {
 			given: Given{
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				project: domain.Project{
 					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
@@ -374,6 +428,9 @@ func TestProjectRepository_Create(t *testing.T) {
 		},
 		"Missing link fails": {
 			given: Given{
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				project: domain.Project{
 					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
@@ -396,7 +453,9 @@ func TestProjectRepository_Create(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			f := newProjectRepositoryTestFixture(t, func() time.Time { return fixedTime })
 
-			f.blurHashAPI.On("IsValid", test.given.project.BlurHash).Return(true).Maybe()
+			if test.given.mockBlurHash != nil {
+				test.given.mockBlurHash(f.blurHashAPI)
+			}
 
 			if test.given.mockQueryRow != nil {
 				test.given.mockQueryRow(f.databaseAPI)
@@ -439,6 +498,7 @@ func TestProjectRepository_Get(t *testing.T) {
 
 	type Given struct {
 		id           string
+		mockBlurHash func(m *metadata.MockBlurHashAPI)
 		mockQueryRow func(m *database.MockDatabaseAPI)
 	}
 
@@ -454,6 +514,9 @@ func TestProjectRepository_Get(t *testing.T) {
 		"Successful get project": {
 			given: Given{
 				id: id,
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().QueryRow(mock.Anything, mock.Anything, []any{id}).
 						Return(&projectFakeRow{project: validProject})
@@ -572,6 +635,9 @@ func TestProjectRepository_Get(t *testing.T) {
 		"Missing title fails": {
 			given: Given{
 				id: id,
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
@@ -595,9 +661,12 @@ func TestProjectRepository_Get(t *testing.T) {
 				err:     errors.New("invalid project returned: title missing"),
 			},
 		},
-		"Missing subTitle fails": {
+		"Missing subtitle fails": {
 			given: Given{
 				id: id,
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
@@ -624,6 +693,9 @@ func TestProjectRepository_Get(t *testing.T) {
 		"Missing description fails": {
 			given: Given{
 				id: id,
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
@@ -650,6 +722,9 @@ func TestProjectRepository_Get(t *testing.T) {
 		"Missing tags fails": {
 			given: Given{
 				id: id,
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
@@ -676,6 +751,9 @@ func TestProjectRepository_Get(t *testing.T) {
 		"Missing type fails": {
 			given: Given{
 				id: id,
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
@@ -702,6 +780,9 @@ func TestProjectRepository_Get(t *testing.T) {
 		"Missing link fails": {
 			given: Given{
 				id: id,
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
@@ -728,6 +809,9 @@ func TestProjectRepository_Get(t *testing.T) {
 		"Missing createdAt fails": {
 			given: Given{
 				id: id,
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
@@ -754,6 +838,9 @@ func TestProjectRepository_Get(t *testing.T) {
 		"Missing updatedAt fails": {
 			given: Given{
 				id: id,
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
@@ -783,6 +870,10 @@ func TestProjectRepository_Get(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			f := newProjectRepositoryTestFixture(t, time.Now)
 
+			if test.given.mockBlurHash != nil {
+				test.given.mockBlurHash(f.blurHashAPI)
+			}
+
 			if test.given.mockQueryRow != nil {
 				test.given.mockQueryRow(f.databaseAPI)
 			}
@@ -799,6 +890,7 @@ func TestProjectRepository_Get(t *testing.T) {
 			}
 
 			f.databaseAPI.AssertExpectations(t)
+			f.blurHashAPI.AssertExpectations(t)
 		})
 	}
 }
@@ -821,6 +913,7 @@ func TestProjectRepository_Update(t *testing.T) {
 
 	type Given struct {
 		project      domain.Project
+		mockBlurHash func(m *metadata.MockBlurHashAPI)
 		mockQueryRow func(m *database.MockDatabaseAPI)
 	}
 
@@ -836,6 +929,9 @@ func TestProjectRepository_Update(t *testing.T) {
 		"Successful update project": {
 			given: Given{
 				project: *validProject,
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Twice()
+				},
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, mock.Anything).
@@ -852,6 +948,9 @@ func TestProjectRepository_Update(t *testing.T) {
 		"Database scan fails": {
 			given: Given{
 				project: *validProject,
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, mock.Anything).
@@ -866,6 +965,9 @@ func TestProjectRepository_Update(t *testing.T) {
 		"Database returns no rows": {
 			given: Given{
 				project: *validProject,
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				mockQueryRow: func(m *database.MockDatabaseAPI) {
 					m.EXPECT().
 						QueryRow(mock.Anything, mock.Anything, mock.Anything).
@@ -919,6 +1021,9 @@ func TestProjectRepository_Update(t *testing.T) {
 		},
 		"Missing title fails": {
 			given: Given{
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				project: domain.Project{
 					Id:          validProject.Id,
 					Preview:     validProject.Preview,
@@ -937,8 +1042,11 @@ func TestProjectRepository_Update(t *testing.T) {
 				err:            errors.New("failed to validate project: title missing"),
 			},
 		},
-		"Missing subTitle fails": {
+		"Missing subtitle fails": {
 			given: Given{
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				project: domain.Project{
 					Id:          validProject.Id,
 					Preview:     validProject.Preview,
@@ -959,6 +1067,9 @@ func TestProjectRepository_Update(t *testing.T) {
 		},
 		"Missing description fails": {
 			given: Given{
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				project: domain.Project{
 					Id:          validProject.Id,
 					Preview:     validProject.Preview,
@@ -979,6 +1090,9 @@ func TestProjectRepository_Update(t *testing.T) {
 		},
 		"Missing tags fails": {
 			given: Given{
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				project: domain.Project{
 					Id:          validProject.Id,
 					Preview:     validProject.Preview,
@@ -999,6 +1113,9 @@ func TestProjectRepository_Update(t *testing.T) {
 		},
 		"Tags contains empty string fails": {
 			given: Given{
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				project: domain.Project{
 					Id:          validProject.Id,
 					Preview:     validProject.Preview,
@@ -1019,6 +1136,9 @@ func TestProjectRepository_Update(t *testing.T) {
 		},
 		"Missing type fails": {
 			given: Given{
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				project: domain.Project{
 					Id:          validProject.Id,
 					Preview:     validProject.Preview,
@@ -1039,6 +1159,9 @@ func TestProjectRepository_Update(t *testing.T) {
 		},
 		"Missing link fails": {
 			given: Given{
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.On("IsValid", validBlurHash).Return(true).Once()
+				},
 				project: domain.Project{
 					Id:          validProject.Id,
 					Preview:     validProject.Preview,
@@ -1063,6 +1186,10 @@ func TestProjectRepository_Update(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			f := newProjectRepositoryTestFixture(t, func() time.Time { return fixedTime })
 
+			if test.given.mockBlurHash != nil {
+				test.given.mockBlurHash(f.blurHashAPI)
+			}
+
 			if test.given.mockQueryRow != nil {
 				test.given.mockQueryRow(f.databaseAPI)
 			}
@@ -1084,6 +1211,7 @@ func TestProjectRepository_Update(t *testing.T) {
 			}
 
 			f.databaseAPI.AssertExpectations(t)
+			f.blurHashAPI.AssertExpectations(t)
 		})
 	}
 }
