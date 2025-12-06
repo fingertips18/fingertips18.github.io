@@ -244,7 +244,7 @@ function rotateSize({
  * @param options.pixelCrop - The rectangular area to crop from the rotated image
  * @param options.rotation - The rotation angle in degrees (default: 0)
  *
- * @returns A promise that resolves to a base64-encoded WebP data URL of the cropped image,
+ * @returns A promise that resolves to an HTMLImageElement with a blob URL (created via URL.createObjectURL) of the cropped image,
  *          or null if the canvas context could not be obtained
  *
  * @example

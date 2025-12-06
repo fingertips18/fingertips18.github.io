@@ -87,6 +87,18 @@ export function ImageUploader({
     };
   }, [editedImage]);
 
+  // Cleanup effect when the editor is closed
+  useEffect(() => {
+    if (!editorOpen) {
+      setRawImage(null);
+      setCrop({ x: 0, y: 0 });
+      setRotation(0);
+      setZoom(1);
+      setCroppedAreaPixels(null);
+      setDroppedFiles([]);
+    }
+  }, [editorOpen]);
+
   const handleDrop = async (files: File[]) => {
     setDroppedFiles(files);
 
@@ -101,25 +113,18 @@ export function ImageUploader({
     setCroppedAreaPixels(croppedAreaPixels);
   };
 
-  const handleCloseEditor = async () => {
-    setEditedImage(rawImage);
-    setRawImage(null);
+  const handleCloseEditor = () => {
     setCrop({ x: 0, y: 0 });
     setRotation(0);
     setZoom(1);
     setCroppedAreaPixels(null);
     setEditorOpen(false);
-
-    // Convert File[] to FileList for form compatibility
-    const dataTransfer = new DataTransfer();
-    droppedFiles.forEach((file) => dataTransfer.items.add(file));
-    await onChange?.(dataTransfer.files);
-    onBlur?.();
+    setDroppedFiles([]);
   };
 
   const handleConfirmEditor = async () => {
     if (droppedFiles.length === 0) {
-      await handleCloseEditor();
+      handleCloseEditor();
       return;
     }
 
@@ -154,7 +159,7 @@ export function ImageUploader({
       setEditedImage(croppedImage.src);
       onBlur?.();
     } catch {
-      await handleCloseEditor();
+      handleCloseEditor();
       toast({
         level: 'error',
         title: 'Unable to edit',
@@ -196,7 +201,7 @@ export function ImageUploader({
       </div>
 
       {rawImage && editorOpen && (
-        <Dialog open={editorOpen} onOpenChange={() => void handleCloseEditor()}>
+        <Dialog open={editorOpen} onOpenChange={() => setEditorOpen(false)}>
           <DialogContent className='flex-col'>
             <DialogHeader>
               <DialogTitle>Customize Your Image</DialogTitle>
