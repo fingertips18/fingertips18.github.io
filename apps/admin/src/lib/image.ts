@@ -233,7 +233,7 @@ function rotateSize({
 }
 
 /**
- * Loads an image, applies rotation, and returns a cropped portion as a base64-encoded data URL.
+ * Loads an image, applies rotation and flipping, and returns a cropped portion as an HTMLImageElement with a blob URL.
  *
  * @remarks
  * The returned image's `src` is an object URL created via `URL.createObjectURL`.
@@ -250,7 +250,7 @@ function rotateSize({
  * @example
  * ```typescript
  * const croppedImage = await loadCroppedImage({
- *   url: 'https://example.com/image.jpg',
+ *   image: 'https://example.com/image.webp',
  *   pixelCrop: { x: 10, y: 10, width: 100, height: 100 },
  *   rotation: 45,
  * });
