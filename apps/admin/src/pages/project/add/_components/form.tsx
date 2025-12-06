@@ -43,7 +43,7 @@ const formSchema = z.object({
     .string()
     .min(1, { message: 'Blurhash cannot be empty.' })
     .refine((hash) => isBlurhashValid(hash).result, {
-      message: 'Invalid preview format. Expected a base64 data URL.',
+      message: 'Invalid blurhash format.',
     }),
   title: z
     .string()
