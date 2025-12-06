@@ -113,6 +113,12 @@ export function Form() {
     return () => abortRef.current?.abort();
   }, []);
 
+  useEffect(() => {
+    if (submitted) {
+      void navigate(Route.project);
+    }
+  }, [submitted, navigate]);
+
   const onSubmit = async (values: Schema) => {
     let imageURL: string | null;
 
@@ -182,7 +188,6 @@ export function Form() {
 
       setSubmitted(true);
       form.reset();
-      void navigate(Route.project);
     } catch {
       toast({
         level: 'error',
