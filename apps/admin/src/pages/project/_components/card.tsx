@@ -20,7 +20,7 @@ export function Card({ project }: CardProps) {
           alt={`${project.title} preview`}
           sizes='(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw'
           onLoad={() => setImageLoaded(true)}
-          className='absolute object-center object-cover'
+          className='absolute object-center object-cover size-full'
         />
         <img
           src={project.blurhash}

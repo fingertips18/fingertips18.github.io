@@ -43,7 +43,10 @@ export function List() {
       'sort_order',
       sortAscending === 'true' ? 'asc' : 'desc',
     );
-    readableSearchParams.set('sort_by', sortAscending ? 'oldest' : 'latest');
+    readableSearchParams.set(
+      'sort_by',
+      sortAscending === 'true' ? 'oldest' : 'latest',
+    );
 
     setSearchParams(readableSearchParams);
   }, [newSearchParams, searchParams.keys.length, setSearchParams]);
@@ -85,7 +88,7 @@ export function List() {
     );
   }
 
-  const projects = data.map((p) => mapProject(p));
+  const projects = data.map(mapProject);
 
   return (
     <div className='mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'>

@@ -1,5 +1,5 @@
 import { APIRoute } from '@/constants/api';
-import { type Project, toJSONProject } from '@/types/project';
+import { mapProject, type Project, toJSONProject } from '@/types/project';
 import { ProjectType } from '@/types/project';
 
 export const ProjectService = {
@@ -80,7 +80,7 @@ export const ProjectService = {
 
       const data = await response.json();
 
-      const projects = data as Project[];
+      const projects = (data as unknown[]).map(mapProject);
 
       return projects;
     } catch (error) {
