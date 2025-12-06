@@ -97,7 +97,6 @@ export function ImageUploader({
       setZoom(1);
       setCroppedAreaPixels(null);
       setDroppedFiles([]);
-      setLoading(false);
     }
   }, [editorOpen]);
 
@@ -125,7 +124,7 @@ export function ImageUploader({
   };
 
   const handleConfirmEditor = async () => {
-    if (droppedFiles.length === 0) {
+    if (loading || droppedFiles.length === 0) {
       handleCloseEditor();
       return;
     }
@@ -206,7 +205,7 @@ export function ImageUploader({
         </Dropzone>
       </div>
 
-      {rawImage && editorOpen && (
+      {rawImage && (
         <Dialog
           open={editorOpen || loading}
           onOpenChange={() => setEditorOpen(false)}
