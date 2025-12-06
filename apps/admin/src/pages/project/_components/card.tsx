@@ -5,11 +5,11 @@ import { Button } from '@/components/shadcn/button';
 import { cn } from '@/lib/utils';
 import type { Project } from '@/types/project';
 
-interface ProjectProps {
+interface CardProps {
   project: Project;
 }
 
-export function Project({ project }: ProjectProps) {
+export function Card({ project }: CardProps) {
   const [imageLoaded, setImageLoaded] = useState<boolean>(false);
 
   return (
@@ -44,7 +44,7 @@ export function Project({ project }: ProjectProps) {
         <div className='flex-start gap-x-1 text-sm w-full'>
           <span className='font-semibold text-foreground/60'>Live:</span>
           <Button asChild variant='link' className='p-0 h-auto text-sm'>
-            <Link to={project.link} target='_blank'>
+            <Link to={project.link} target='_blank' rel='noopener noreferrer'>
               {project.link}
             </Link>
           </Button>

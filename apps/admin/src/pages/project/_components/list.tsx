@@ -5,13 +5,9 @@ import { useSearchParams } from 'react-router-dom';
 import { Skeleton } from '@/components/shadcn/skeleton';
 import { APIRoute } from '@/constants/api';
 import { useFetch } from '@/hooks/useFetch';
-import {
-  mapProject,
-  type Project as TProject,
-  ProjectType,
-} from '@/types/project';
+import { mapProject, type Project } from '@/types/project';
 
-import { Project } from './project';
+import { Card } from './card';
 
 export function List() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -30,7 +26,9 @@ export function List() {
       params.set('sort_ascending', sortOrder === 'asc' ? 'true' : 'false');
     }
 
-    params.set('type', type || ProjectType.web);
+    if (type) {
+      params.set('type', type);
+    }
 
     return params;
   }, [page, pageSize, sortOrder, type]);
@@ -41,13 +39,16 @@ export function List() {
     const readableSearchParams = new URLSearchParams(newSearchParams);
     const sortAscending = readableSearchParams.get('sort_ascending');
     readableSearchParams.delete('sort_ascending');
-    readableSearchParams.set('sort_order', sortAscending ? 'asc' : 'desc');
+    readableSearchParams.set(
+      'sort_order',
+      sortAscending === 'true' ? 'asc' : 'desc',
+    );
     readableSearchParams.set('sort_by', sortAscending ? 'oldest' : 'latest');
 
     setSearchParams(readableSearchParams);
   }, [newSearchParams, searchParams.keys.length, setSearchParams]);
 
-  const { data, loading, error } = useFetch<TProject[]>({
+  const { data, loading, error } = useFetch<Project[]>({
     url: `${APIRoute.project}s?${newSearchParams.toString()}`,
     method: 'GET',
     toastOptions: {
@@ -89,7 +90,7 @@ export function List() {
   return (
     <div className='mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'>
       {projects.map((project) => (
-        <Project key={project.id} project={project} />
+        <Card key={project.id} project={project} />
       ))}
     </div>
   );

@@ -58,7 +58,9 @@ export const ProjectService = {
       if (sortBy) {
         searchParams.set('sort_by', sortBy);
       }
-      searchParams.set('sort_ascending', String(sortAscending));
+      if (sortAscending !== undefined) {
+        searchParams.set('sort_ascending', String(sortAscending));
+      }
       if (type) {
         searchParams.set('type', type);
       }
@@ -72,13 +74,13 @@ export const ProjectService = {
 
       if (!response.ok) {
         throw new Error(
-          `failed to create project (status: ${response.status} - ${response.statusText})`,
+          `failed to list projects (status: ${response.status} - ${response.statusText})`,
         );
       }
 
       const data = await response.json();
 
-      const projects = data.projects as Project[];
+      const projects = data as Project[];
 
       return projects;
     } catch (error) {
