@@ -1,5 +1,6 @@
 import { Layers2, Loader } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Blurhash } from 'react-blurhash';
 import type { Control, FieldErrors, FieldValues, Path } from 'react-hook-form';
 
 import { ImageUploader } from '@/components/common/image-uploader';
@@ -12,11 +13,7 @@ import {
   FormMessage,
 } from '@/components/shadcn/form';
 import { MAX_BYTES } from '@/constants/sizes';
-import {
-  decodeBlurhashToBase64URL,
-  encodeImageToBlurhash,
-  fileToImage,
-} from '@/lib/image';
+import { encodeImageToBlurhash, fileToImage } from '@/lib/image';
 import { toast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
@@ -37,7 +34,7 @@ export function Preview<T extends FieldValues>({
   isEmpty,
   disabled,
 }: PreviewProps<T>) {
-  const [base64, setBase64] = useState<string | null>(null);
+  const [blurHash, setBlurHash] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   const previewHasError = !!errors[name];
@@ -45,10 +42,10 @@ export function Preview<T extends FieldValues>({
   const blurHasError = !!blurhashError;
 
   useEffect(() => {
-    if (blurHasError || isEmpty) {
-      setBase64(null);
+    if (isEmpty) {
+      setBlurHash(null);
     }
-  }, [blurHasError, isEmpty]);
+  }, [isEmpty]);
 
   return (
     <FormField
@@ -68,7 +65,7 @@ export function Preview<T extends FieldValues>({
               <FormControl>
                 <ImageUploader
                   onChange={async (files) => {
-                    setBase64(null); // reset previous image
+                    setBlurHash(null); // reset previous image
                     setLoading(files.length > 0); // start loading if there’s a file
 
                     onChange(files);
@@ -83,13 +80,10 @@ export function Preview<T extends FieldValues>({
                       const file = files[0];
                       const image = await fileToImage(file);
                       const blurhash = await encodeImageToBlurhash(image);
-                      const base64Url = decodeBlurhashToBase64URL({
-                        hash: blurhash,
-                      });
-                      setBase64(base64Url || null);
-                      onBlurhashChange(base64Url || '');
+                      setBlurHash(blurhash || null);
+                      onBlurhashChange(blurhash || '');
                     } catch {
-                      setBase64(null);
+                      setBlurHash(null);
                       onBlurhashChange('');
                       onChange(new DataTransfer().files);
 
@@ -126,7 +120,7 @@ export function Preview<T extends FieldValues>({
               <div
                 className={cn(
                   'aspect-video relative rounded-md overflow-hidden',
-                  (loading || !base64) &&
+                  (loading || !blurHash) &&
                     'border border-dashed border-border flex-center',
                   blurHasError && 'border-destructive',
                   disabled && 'opacity-50',
@@ -138,14 +132,15 @@ export function Preview<T extends FieldValues>({
                     <span className='sr-only'>Loading blurhash...</span>
                   </div>
                 )}
-                {base64 && (
-                  <img
-                    src={base64}
-                    alt='Preview Blurhash'
-                    className='absolute inset-0 size-full object-center object-cover'
+                {blurHash && (
+                  <Blurhash
+                    hash={blurHash}
+                    width='100%'
+                    height='100%'
+                    className='object-cover'
                   />
                 )}
-                {!loading && !base64 && (
+                {!loading && !blurHash && (
                   <div className='flex-center flex-col gap-y-2'>
                     <Layers2 aria-hidden='true' className='size-6' />
                     <p className='text-muted-foreground text-sm text-center'>

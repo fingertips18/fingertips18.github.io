@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Blurhash } from 'react-blurhash';
 import { Link } from 'react-router-dom';
 
 import { Button } from '@/components/shadcn/button';
@@ -22,12 +23,12 @@ export function Card({ project }: CardProps) {
           onLoad={() => setImageLoaded(true)}
           className='absolute object-center object-cover size-full'
         />
-        <img
-          src={project.blurhash}
-          alt={`${project.title} blur`}
-          sizes='(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw'
+        <Blurhash
+          hash={project.blurhash}
+          width='100%'
+          height='100%'
           className={cn(
-            'absolute z-10 object-center object-cover transition-opacity duration-400 ease-in-out size-full',
+            'object-cover transition-opacity duration-400 ease-in-out',
             imageLoaded && 'opacity-0',
           )}
         />
