@@ -78,7 +78,7 @@ export function List() {
     );
   }
 
-  if (!data) {
+  if (data === null) {
     return <ListSkeleton />;
   }
 
