@@ -13,9 +13,14 @@ import (
 
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
 	mockRepo "github.com/fingertips18/fingertips18.github.io/backend/internal/repository/v1/mocks"
+	metadata "github.com/fingertips18/fingertips18.github.io/backend/pkg/metadata/mocks"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+)
+
+const (
+	validBlurHash = "LEHV6nWB2yk8pyo0adR*.7kCMdnj"
 )
 
 // Helper to marshal JSON safely
@@ -26,21 +31,24 @@ func toJSON(v any) string {
 
 type projectHandlerTestFixture struct {
 	t               *testing.T
+	mockBlurHashAPI *metadata.MockBlurHashAPI
 	mockProjectRepo *mockRepo.MockProjectRepository
 	projectHandler  ProjectHandler
 }
 
 func newProjectHandlerTestFixture(t *testing.T) *projectHandlerTestFixture {
+	mockBlurHashAPI := new(metadata.MockBlurHashAPI)
 	mockProjectRepo := new(mockRepo.MockProjectRepository)
-
 	projectHandler := NewProjectServiceHandler(
 		ProjectServiceConfig{
+			BlurHashAPI: mockBlurHashAPI,
 			projectRepo: mockProjectRepo,
 		},
 	)
 
 	return &projectHandlerTestFixture{
 		t:               t,
+		mockBlurHashAPI: mockBlurHashAPI,
 		mockProjectRepo: mockProjectRepo,
 		projectHandler:  projectHandler,
 	}
@@ -53,9 +61,9 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 
 	createReq := ProjectDTO{
 		Preview:     "preview.png",
-		BlurHash:    "hash",
+		BlurHash:    validBlurHash,
 		Title:       "title",
-		SubTitle:    "subtitle",
+		Subtitle:    "subtitle",
 		Description: "desc",
 		Tags:        []string{"go", "react"},
 		Type:        "web",
@@ -63,10 +71,23 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 	}
 	validBody, _ := json.Marshal(createReq)
 
+	invalidBlurHashReq := ProjectDTO{
+		Preview:     "preview.png",
+		BlurHash:    "invalid-hash",
+		Title:       "title",
+		Subtitle:    "subtitle",
+		Description: "desc",
+		Tags:        []string{"go", "react"},
+		Type:        "web",
+		Link:        "http://example.com",
+	}
+	invalidBlurHashBody, _ := json.Marshal(invalidBlurHashReq)
+
 	type Given struct {
-		method   string
-		body     string
-		mockRepo func(m *mockRepo.MockProjectRepository)
+		method       string
+		body         string
+		mockBlurHash func(m *metadata.MockBlurHashAPI)
+		mockRepo     func(m *mockRepo.MockProjectRepository)
 	}
 	type Expected struct {
 		code int
@@ -81,6 +102,9 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 			given: Given{
 				method: http.MethodPost,
 				body:   string(validBody),
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.EXPECT().IsValid(validBlurHash).Return(true).Once()
+				},
 				mockRepo: func(m *mockRepo.MockProjectRepository) {
 					m.EXPECT().
 						Create(mock.Anything, mock.AnythingOfType("*domain.Project")).
@@ -90,6 +114,20 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 			expected: Expected{
 				code: http.StatusCreated,
 				body: string(validResp),
+			},
+		},
+		"invalid blurhash": {
+			given: Given{
+				method: http.MethodPost,
+				body:   string(invalidBlurHashBody),
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.EXPECT().IsValid("invalid-hash").Return(false).Once()
+				},
+				mockRepo: nil,
+			},
+			expected: Expected{
+				code: http.StatusBadRequest,
+				body: "Invalid project payload: blurHash invalid\n",
 			},
 		},
 		"invalid method": {
@@ -118,6 +156,9 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 			given: Given{
 				method: http.MethodPost,
 				body:   string(validBody),
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.EXPECT().IsValid(validBlurHash).Return(true).Once()
+				},
 				mockRepo: func(m *mockRepo.MockProjectRepository) {
 					m.EXPECT().
 						Create(mock.Anything, mock.AnythingOfType("*domain.Project")).
@@ -135,6 +176,9 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			f := newProjectHandlerTestFixture(t)
 
+			if tt.given.mockBlurHash != nil {
+				tt.given.mockBlurHash(f.mockBlurHashAPI)
+			}
 			if tt.given.mockRepo != nil {
 				tt.given.mockRepo(f.mockProjectRepo)
 			}
@@ -157,6 +201,7 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 			}
 
 			f.mockProjectRepo.AssertExpectations(t)
+			f.mockBlurHashAPI.AssertExpectations(t)
 		})
 	}
 }
@@ -169,9 +214,9 @@ func TestProjectServiceHandler_Create_Routing(t *testing.T) {
 	// Setup valid input and expected output
 	createReq := ProjectDTO{
 		Preview:     "preview.png",
-		BlurHash:    "hash",
+		BlurHash:    validBlurHash,
 		Title:       "title",
-		SubTitle:    "subtitle",
+		Subtitle:    "subtitle",
 		Description: "desc",
 		Tags:        []string{"go", "react"},
 		Type:        "web",
@@ -179,6 +224,9 @@ func TestProjectServiceHandler_Create_Routing(t *testing.T) {
 	}
 	reqBody, _ := json.Marshal(createReq)
 	expectedResp, _ := json.Marshal(domain.ProjectIDResponse{ID: fixedID})
+
+	// Mock blurhash validation to return true for happy path
+	f.mockBlurHashAPI.EXPECT().IsValid(validBlurHash).Return(true).Once()
 
 	// Setup mock expectation
 	f.mockProjectRepo.EXPECT().
@@ -205,6 +253,7 @@ func TestProjectServiceHandler_Create_Routing(t *testing.T) {
 	assert.JSONEq(t, string(expectedResp), string(body))
 
 	f.mockProjectRepo.AssertExpectations(t)
+	f.mockBlurHashAPI.AssertExpectations(t)
 }
 
 func TestProjectServiceHandler_Get(t *testing.T) {
@@ -214,9 +263,9 @@ func TestProjectServiceHandler_Get(t *testing.T) {
 	validProject := &domain.Project{
 		Id:          fixedID,
 		Preview:     "preview.png",
-		BlurHash:    "hash",
+		BlurHash:    validBlurHash,
 		Title:       "title",
-		SubTitle:    "subtitle",
+		Subtitle:    "subtitle",
 		Description: "desc",
 		Tags:        []string{"go", "react"},
 		Type:        domain.Web,
@@ -337,9 +386,9 @@ func TestProjectServiceHandler_Get_Routing(t *testing.T) {
 	validProject := &domain.Project{
 		Id:          fixedID,
 		Preview:     "preview.png",
-		BlurHash:    "hash",
+		BlurHash:    validBlurHash,
 		Title:       "title",
-		SubTitle:    "subtitle",
+		Subtitle:    "subtitle",
 		Description: "desc",
 		Tags:        []string{"go", "react"},
 		Type:        domain.Web,
@@ -384,9 +433,9 @@ func TestProjectServiceHandler_Update(t *testing.T) {
 	validProject := &domain.Project{
 		Id:          fixedID,
 		Preview:     "preview.png",
-		BlurHash:    "hash",
+		BlurHash:    validBlurHash,
 		Title:       "title",
-		SubTitle:    "subtitle",
+		Subtitle:    "subtitle",
 		Description: "desc",
 		Tags:        []string{"go", "react"},
 		Type:        domain.Web,
@@ -395,10 +444,23 @@ func TestProjectServiceHandler_Update(t *testing.T) {
 
 	validBody, _ := json.Marshal(validProject)
 
+	invalidBlurHashReq := ProjectDTO{
+		Preview:     "preview.png",
+		BlurHash:    "invalid-hash",
+		Title:       "title",
+		Subtitle:    "subtitle",
+		Description: "desc",
+		Tags:        []string{"go", "react"},
+		Type:        "web",
+		Link:        "http://example.com",
+	}
+	invalidBlurHashBody, _ := json.Marshal(invalidBlurHashReq)
+
 	type Given struct {
-		method   string
-		body     string
-		mockRepo func(m *mockRepo.MockProjectRepository)
+		method       string
+		body         string
+		mockBlurHash func(m *metadata.MockBlurHashAPI)
+		mockRepo     func(m *mockRepo.MockProjectRepository)
 	}
 
 	type Expected struct {
@@ -414,6 +476,9 @@ func TestProjectServiceHandler_Update(t *testing.T) {
 			given: Given{
 				method: http.MethodPut,
 				body:   string(validBody),
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.EXPECT().IsValid(validBlurHash).Return(true).Once()
+				},
 				mockRepo: func(m *mockRepo.MockProjectRepository) {
 					m.EXPECT().
 						Update(mock.Anything, validProject).
@@ -449,6 +514,9 @@ func TestProjectServiceHandler_Update(t *testing.T) {
 			given: Given{
 				method: http.MethodPut,
 				body:   string(validBody),
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.EXPECT().IsValid(validBlurHash).Return(true).Once()
+				},
 				mockRepo: func(m *mockRepo.MockProjectRepository) {
 					m.EXPECT().
 						Update(mock.Anything, validProject).
@@ -464,6 +532,9 @@ func TestProjectServiceHandler_Update(t *testing.T) {
 			given: Given{
 				method: http.MethodPut,
 				body:   string(validBody),
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.EXPECT().IsValid(validBlurHash).Return(true).Once()
+				},
 				mockRepo: func(m *mockRepo.MockProjectRepository) {
 					m.EXPECT().
 						Update(mock.Anything, validProject).
@@ -475,11 +546,29 @@ func TestProjectServiceHandler_Update(t *testing.T) {
 				body: "Project not found\n",
 			},
 		},
+		"invalid blurhash": {
+			given: Given{
+				method: http.MethodPut,
+				body:   string(invalidBlurHashBody),
+				mockBlurHash: func(m *metadata.MockBlurHashAPI) {
+					m.EXPECT().IsValid("invalid-hash").Return(false).Once()
+				},
+				mockRepo: nil, // Should fail before repo call
+			},
+			expected: Expected{
+				code: http.StatusBadRequest,
+				body: "Invalid project payload: blurHash invalid\n",
+			},
+		},
 	}
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			f := newProjectHandlerTestFixture(t)
+
+			if tt.given.mockBlurHash != nil {
+				tt.given.mockBlurHash(f.mockBlurHashAPI)
+			}
 
 			if tt.given.mockRepo != nil {
 				tt.given.mockRepo(f.mockProjectRepo)
@@ -503,6 +592,7 @@ func TestProjectServiceHandler_Update(t *testing.T) {
 			}
 
 			f.mockProjectRepo.AssertExpectations(t)
+			f.mockBlurHashAPI.AssertExpectations(t)
 		})
 	}
 }
@@ -513,9 +603,9 @@ func TestProjectServiceHandler_Update_Routing(t *testing.T) {
 	validProject := &domain.Project{
 		Id:          fixedID,
 		Preview:     "preview.png",
-		BlurHash:    "hash",
+		BlurHash:    validBlurHash,
 		Title:       "title",
-		SubTitle:    "subtitle",
+		Subtitle:    "subtitle",
 		Description: "desc",
 		Tags:        []string{"go", "react"},
 		Type:        domain.Web,
@@ -526,6 +616,9 @@ func TestProjectServiceHandler_Update_Routing(t *testing.T) {
 	expectedResp, _ := json.Marshal(validProject)
 
 	f := newProjectHandlerTestFixture(t)
+
+	// Mock blurhash validation to return true for happy path
+	f.mockBlurHashAPI.EXPECT().IsValid(validBlurHash).Return(true).Once()
 
 	// Setup mock expectation
 	f.mockProjectRepo.EXPECT().
@@ -700,7 +793,7 @@ func TestProjectServiceHandler_List(t *testing.T) {
 			Preview:     "preview1",
 			BlurHash:    "hash1",
 			Title:       "title1",
-			SubTitle:    "subtitle1",
+			Subtitle:    "subtitle1",
 			Description: "desc1",
 			Tags:        []string{"go"},
 			Type:        domain.Web,
@@ -713,7 +806,7 @@ func TestProjectServiceHandler_List(t *testing.T) {
 			Preview:     "preview2",
 			BlurHash:    "hash2",
 			Title:       "title2",
-			SubTitle:    "subtitle2",
+			Subtitle:    "subtitle2",
 			Description: "desc2",
 			Tags:        []string{"react"},
 			Type:        domain.Mobile,
@@ -853,7 +946,7 @@ func TestProjectServiceHandler_List_Routing(t *testing.T) {
 			Preview:     "preview1",
 			BlurHash:    "hash1",
 			Title:       "title1",
-			SubTitle:    "subtitle1",
+			Subtitle:    "subtitle1",
 			Description: "desc1",
 			Tags:        []string{"go"},
 			Type:        domain.Web,
@@ -866,7 +959,7 @@ func TestProjectServiceHandler_List_Routing(t *testing.T) {
 			Preview:     "preview2",
 			BlurHash:    "hash2",
 			Title:       "title2",
-			SubTitle:    "subtitle2",
+			Subtitle:    "subtitle2",
 			Description: "desc2",
 			Tags:        []string{"react"},
 			Type:        domain.Mobile,
