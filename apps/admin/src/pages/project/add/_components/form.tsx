@@ -89,6 +89,7 @@ type Schema = z.infer<typeof formSchema>;
 export function Form() {
   const [imageLoading, setImageLoading] = useState<boolean>(false);
   const [projectLoading, setProjectLoading] = useState<boolean>(false);
+  const [submitted, setSubmitted] = useState<boolean>(false);
   const form = useForm<Schema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -104,7 +105,9 @@ export function Form() {
   });
   const abortRef = useRef<AbortController | null>(null);
   const navigate = useNavigate();
-  useUnsavedChanges({ hasUnsavedChanges: form.formState.isDirty });
+  useUnsavedChanges({
+    hasUnsavedChanges: !submitted && form.formState.isDirty,
+  });
 
   useEffect(() => {
     abortRef.current = new AbortController();
@@ -179,6 +182,7 @@ export function Form() {
         description: `${values.title} uploaded successfully!`,
       });
 
+      setSubmitted(true);
       form.reset();
       void navigate(Route.project);
     } catch {
