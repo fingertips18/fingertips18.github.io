@@ -16,7 +16,7 @@ import {
   decodeBlurhashToBase64URL,
   encodeImageToBlurhash,
   fileToImage,
-} from '@/lib/blurhash';
+} from '@/lib/image';
 import { toast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
@@ -59,58 +59,61 @@ export function Preview<T extends FieldValues>({
         const { onChange, ...fields } = field;
 
         return (
-          <FormItem className='w-full'>
-            <FormLabel className='w-fit'>Preview</FormLabel>
-            <FormDescription>
-              Provide a preview image for your project.
-            </FormDescription>
-            <FormControl>
-              <ImageUploader
-                onChange={async (files) => {
-                  setBase64(null); // reset previous image
-                  setLoading(files.length > 0); // start loading if there’s a file
+          <div className='flex-center flex-col md:flex-row gap-x-4 gap-y-6 w-full'>
+            <FormItem className='w-full'>
+              <FormLabel className='w-fit'>Preview</FormLabel>
+              <FormDescription>
+                Provide a preview image for your project.
+              </FormDescription>
+              <FormControl>
+                <ImageUploader
+                  onChange={async (files) => {
+                    setBase64(null); // reset previous image
+                    setLoading(files.length > 0); // start loading if there’s a file
 
-                  onChange(files);
+                    onChange(files);
 
-                  if (files.length === 0) {
-                    onBlurhashChange('');
-                    setLoading(false);
-                    return;
-                  }
+                    if (files.length === 0) {
+                      onBlurhashChange('');
+                      setLoading(false);
+                      return;
+                    }
 
-                  try {
-                    const file = files[0];
-                    const image = await fileToImage(file);
-                    const blurhash = await encodeImageToBlurhash(image);
-                    const base64Url = decodeBlurhashToBase64URL({
-                      hash: blurhash,
-                    });
-                    setBase64(base64Url || null);
-                    onBlurhashChange(base64Url || '');
-                  } catch {
-                    setBase64(null);
-                    onBlurhashChange('');
-                    onChange(new DataTransfer().files);
+                    try {
+                      const file = files[0];
+                      const image = await fileToImage(file);
+                      const blurhash = await encodeImageToBlurhash(image);
+                      const base64Url = decodeBlurhashToBase64URL({
+                        hash: blurhash,
+                      });
+                      setBase64(base64Url || null);
+                      onBlurhashChange(base64Url || '');
+                    } catch {
+                      setBase64(null);
+                      onBlurhashChange('');
+                      onChange(new DataTransfer().files);
 
-                    toast({
-                      level: 'error',
-                      title: 'Blurhash generation failed',
-                      description: 'Please try uploading the image again.',
-                    });
-                  } finally {
-                    setLoading(false);
-                  }
-                }}
-                {...fields}
-                maxFiles={1}
-                maxSize={MAX_BYTES}
-                hasError={previewHasError}
-                disabled={disabled}
-                className='h-[312px] disabled:cursor-not-allowed'
-              />
-            </FormControl>
-            <FormMessage />
-            <div className='flex flex-col gap-y-2 mt-4 w-full'>
+                      toast({
+                        level: 'error',
+                        title: 'Blurhash generation failed',
+                        description: 'Please try uploading the image again.',
+                      });
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  {...fields}
+                  maxFiles={1}
+                  maxSize={MAX_BYTES}
+                  hasError={previewHasError}
+                  disabled={disabled}
+                  className='aspect-video disabled:cursor-not-allowed'
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+
+            <div className='flex flex-col gap-y-2 w-full'>
               <h6
                 data-error={!!blurHasError}
                 className='text-sm leading-none font-medium data-[error=true]:text-destructive'
@@ -122,7 +125,7 @@ export function Preview<T extends FieldValues>({
               </p>
               <div
                 className={cn(
-                  'h-[312px] relative aspect-square lg:aspect-video rounded-md overflow-hidden',
+                  'aspect-video relative rounded-md overflow-hidden',
                   (loading || !base64) &&
                     'border border-dashed border-border flex-center',
                   blurHasError && 'border-destructive',
@@ -161,7 +164,7 @@ export function Preview<T extends FieldValues>({
                 </p>
               )}
             </div>
-          </FormItem>
+          </div>
         );
       }}
     />
