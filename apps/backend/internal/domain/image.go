@@ -56,16 +56,16 @@ func (i ImageUploadRequest) Validate() error {
 }
 
 type ImageUploadFile struct {
-	Key                string                 `json:"key"`
-	FileName           string                 `json:"fileName"`
-	FileType           string                 `json:"fileType"`
-	FileUrl            string                 `json:"fileUrl"`
-	ContentDisposition string                 `json:"contentDisposition"`
-	PollingJwt         string                 `json:"pollingJwt"`
-	PollingUrl         string                 `json:"pollingUrl"`
-	CustomId           *string                `json:"customId,omitempty"`
-	URL                string                 `json:"url"` // signed URL to upload
-	Fields             map[string]interface{} `json:"fields,omitempty"`
+	Key                string         `json:"key"`
+	FileName           string         `json:"fileName"`
+	FileType           string         `json:"fileType"`
+	FileUrl            string         `json:"fileUrl"`
+	ContentDisposition string         `json:"contentDisposition"`
+	PollingJwt         string         `json:"pollingJwt"`
+	PollingUrl         string         `json:"pollingUrl"`
+	CustomId           *string        `json:"customId,omitempty"`
+	URL                string         `json:"url"` // signed URL to upload
+	Fields             map[string]any `json:"fields,omitempty"`
 }
 
 type ImageUploadResponse struct {
