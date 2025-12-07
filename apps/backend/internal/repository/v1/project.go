@@ -340,8 +340,18 @@ func (r *projectRepository) List(ctx context.Context, filter domain.ProjectFilte
 	if !filter.SortAscending {
 		sortOrder = "DESC"
 	}
-	sortBy := *filter.SortBy
-	baseQuery += fmt.Sprintf(" ORDER BY %s %s", sortBy, sortOrder)
+
+	var orderCol string
+	switch *filter.SortBy {
+	case domain.CreatedAt:
+		orderCol = "created_at"
+	case domain.UpdatedAt:
+		orderCol = "updated_at"
+	default:
+		// fallback to a safe default to avoid invalid column names
+		orderCol = "created_at"
+	}
+	baseQuery += fmt.Sprintf(" ORDER BY %s %s", orderCol, sortOrder)
 
 	// Add pagination
 	offset := (filter.Page - 1) * filter.PageSize
