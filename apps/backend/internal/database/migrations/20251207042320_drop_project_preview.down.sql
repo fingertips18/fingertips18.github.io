@@ -1,0 +1,2 @@
+ALTER TABLE project
+ADD COLUMN preview TEXT NOT NULL;
