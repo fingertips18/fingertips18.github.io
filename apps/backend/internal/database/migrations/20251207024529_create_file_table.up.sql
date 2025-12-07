@@ -15,7 +15,7 @@ CREATE TABLE file (
     fields JSONB DEFAULT '{}',
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
-)
+);
 
 -- Index for fast lookup
 CREATE INDEX idx_file_parent_role ON file(parent_table, parent_id, role);
