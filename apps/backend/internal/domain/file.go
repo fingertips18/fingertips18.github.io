@@ -1,5 +1,11 @@
 package domain
 
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
 type File struct {
 	ID          uuid.UUID
 	ParentTable string
