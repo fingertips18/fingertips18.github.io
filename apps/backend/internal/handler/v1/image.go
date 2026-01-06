@@ -94,9 +94,9 @@ func (h *imageServiceHandler) Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var files []domain.File
+	var files []domain.ImageFile
 	for _, f := range req.Files {
-		files = append(files, domain.File{
+		files = append(files, domain.ImageFile{
 			Name:     f.Name,
 			Size:     f.Size,
 			Type:     f.Type,

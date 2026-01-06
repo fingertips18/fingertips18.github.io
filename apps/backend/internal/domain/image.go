@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-type File struct {
+type ImageFile struct {
 	Name     string  `json:"name"`
 	Size     int64   `json:"size"`
 	Type     string  `json:"type"`
@@ -14,10 +14,10 @@ type File struct {
 }
 
 type ImageUploadRequest struct {
-	Files              []File  `json:"files"`
-	ACL                *string `json:"acl,omitempty"`
-	Metadata           any     `json:"metadata,omitempty"`
-	ContentDisposition *string `json:"contentDisposition,omitempty"`
+	Files              []ImageFile `json:"files"`
+	ACL                *string     `json:"acl,omitempty"`
+	Metadata           any         `json:"metadata,omitempty"`
+	ContentDisposition *string     `json:"contentDisposition,omitempty"`
 }
 
 func (i ImageUploadRequest) Validate() error {
