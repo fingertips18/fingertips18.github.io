@@ -52,7 +52,7 @@ func TestImageRepository_Upload(t *testing.T) {
 	invalidContentDisposition := "invalid-disposition"
 
 	validPayload := &domain.ImageUploadRequest{
-		Files: []domain.File{
+		Files: []domain.ImageFile{
 			{
 				Name:     "test-image.jpg",
 				Size:     1024,
@@ -126,7 +126,7 @@ func TestImageRepository_Upload(t *testing.T) {
 		"Successful upload with defaults applied": {
 			given: Given{
 				payload: &domain.ImageUploadRequest{
-					Files: []domain.File{
+					Files: []domain.ImageFile{
 						{
 							Name: "test.png",
 							Size: 2048,
@@ -161,7 +161,7 @@ func TestImageRepository_Upload(t *testing.T) {
 		"Successful upload with private ACL": {
 			given: Given{
 				payload: &domain.ImageUploadRequest{
-					Files: []domain.File{
+					Files: []domain.ImageFile{
 						{
 							Name: "private.jpg",
 							Size: 512,
@@ -366,7 +366,7 @@ func TestImageRepository_Upload(t *testing.T) {
 		"Validation error: missing files": {
 			given: Given{
 				payload: &domain.ImageUploadRequest{
-					Files: []domain.File{},
+					Files: []domain.ImageFile{},
 				},
 				mockUpload: nil,
 			},
@@ -378,7 +378,7 @@ func TestImageRepository_Upload(t *testing.T) {
 		"Validation error: missing file name": {
 			given: Given{
 				payload: &domain.ImageUploadRequest{
-					Files: []domain.File{
+					Files: []domain.ImageFile{
 						{
 							Name: "",
 							Size: 1024,
@@ -396,7 +396,7 @@ func TestImageRepository_Upload(t *testing.T) {
 		"Validation error: invalid file size": {
 			given: Given{
 				payload: &domain.ImageUploadRequest{
-					Files: []domain.File{
+					Files: []domain.ImageFile{
 						{
 							Name: "test.jpg",
 							Size: 0,
@@ -414,7 +414,7 @@ func TestImageRepository_Upload(t *testing.T) {
 		"Validation error: missing file type": {
 			given: Given{
 				payload: &domain.ImageUploadRequest{
-					Files: []domain.File{
+					Files: []domain.ImageFile{
 						{
 							Name: "test.jpg",
 							Size: 1024,
@@ -432,7 +432,7 @@ func TestImageRepository_Upload(t *testing.T) {
 		"Validation error: invalid ACL": {
 			given: Given{
 				payload: &domain.ImageUploadRequest{
-					Files: []domain.File{
+					Files: []domain.ImageFile{
 						{
 							Name: "test.jpg",
 							Size: 1024,
@@ -451,7 +451,7 @@ func TestImageRepository_Upload(t *testing.T) {
 		"Validation error: invalid content disposition": {
 			given: Given{
 				payload: &domain.ImageUploadRequest{
-					Files: []domain.File{
+					Files: []domain.ImageFile{
 						{
 							Name: "test.jpg",
 							Size: 1024,
