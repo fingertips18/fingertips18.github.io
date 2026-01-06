@@ -18,16 +18,16 @@ const (
 // File represents a file attachment that can be associated with any parent entity.
 // It uses a polymorphic association pattern via ParentTable and ParentID fields.
 type File struct {
-	ID          uuid.UUID
-	ParentTable ParentTableType
-	ParentID    uuid.UUID
-	Role        string
-	Key         string
-	URL         string
-	Type        string
-	Size        int64
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID          uuid.UUID       `json:"id"`
+	ParentTable ParentTableType `json:"parent_table"`
+	ParentID    uuid.UUID       `json:"parent_id"`
+	Role        string          `json:"role,omitempty"`
+	Key         string          `json:"key"`
+	URL         string          `json:"url"`
+	Type        string          `json:"type"`
+	Size        int64           `json:"size"`
+	CreatedAt   time.Time       `json:"created_at"`
+	UpdatedAt   time.Time       `json:"updated_at"`
 }
 
 func (pt ParentTableType) isValid() bool {
