@@ -3,6 +3,8 @@ package domain
 import (
 	"errors"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type ParentTable string
@@ -56,13 +58,16 @@ func (fr FileRole) isValid() bool {
 
 func (f File) ValidatePayload() error {
 	if f.ParentTable == "" {
-		return errors.New("parentTable missing")
+		return errors.New("parent_table missing")
 	}
 	if !f.ParentTable.isValid() {
-		return errors.New("parentTable invalid")
+		return errors.New("parent_table invalid")
 	}
 	if f.ParentID == "" {
-		return errors.New("parentId missing")
+		return errors.New("parent_id missing")
+	}
+	if _, err := uuid.Parse(f.ParentID); err != nil {
+		return errors.New("parent_id must be a valid UUID")
 	}
 	if f.Role == "" {
 		return errors.New("role missing")
@@ -89,17 +94,20 @@ func (f File) ValidateResponse() error {
 	if f.ID == "" {
 		return errors.New("id missing")
 	}
+	if _, err := uuid.Parse(f.ID); err != nil {
+		return errors.New("id must be a valid UUID")
+	}
 	if err := f.ValidatePayload(); err != nil {
 		return err
 	}
 	if f.CreatedAt.IsZero() {
-		return errors.New("createdAt missing")
+		return errors.New("created_at missing")
 	}
 	if f.UpdatedAt.IsZero() {
-		return errors.New("updatedAt missing")
+		return errors.New("updated_at missing")
 	}
 	if f.CreatedAt.After(f.UpdatedAt) {
-		return errors.New("createdAt cannot be after updatedAt")
+		return errors.New("created_at cannot be after updated_at")
 	}
 	return nil
 }
