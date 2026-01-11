@@ -1,40 +1,160 @@
 package domain
 
 import (
+	"errors"
+	"fmt"
+	"net/url"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
 )
 
-type ParentTableType string
+type ParentTable string
 
 const (
-	ProjectTable   ParentTableType = "projects"
-	UserTable      ParentTableType = "users"
-	EducationTable ParentTableType = "educations"
+	ProjectTable   ParentTable = "projects"
+	UserTable      ParentTable = "users"
+	EducationTable ParentTable = "educations"
 	// Add other valid parent table names as needed
 )
+
+type FileRole string
+
+const (
+	Image FileRole = "image"
+	// Add other valid file role names as needed
+)
+
+var mimeTypeRe = regexp.MustCompile(`^[a-z]+/[a-z0-9][a-z0-9\-\+\.]*$`)
 
 // File represents a file attachment that can be associated with any parent entity.
 // It uses a polymorphic association pattern via ParentTable and ParentID fields.
 type File struct {
-	ID          uuid.UUID       `json:"id"`
-	ParentTable ParentTableType `json:"parent_table"`
-	ParentID    uuid.UUID       `json:"parent_id"`
-	Role        string          `json:"role,omitempty"`
-	Key         string          `json:"key"`
-	URL         string          `json:"url"`
-	Type        string          `json:"type"`
-	Size        int64           `json:"size"`
-	CreatedAt   time.Time       `json:"created_at"`
-	UpdatedAt   time.Time       `json:"updated_at"`
+	ID          string      `json:"id"`
+	ParentTable ParentTable `json:"parent_table"`
+	ParentID    string      `json:"parent_id"`
+	Role        FileRole    `json:"role"`
+	Name        string      `json:"name"`
+	URL         string      `json:"url"`
+	Type        string      `json:"type"`
+	Size        int64       `json:"size"`
+	CreatedAt   time.Time   `json:"created_at"`
+	UpdatedAt   time.Time   `json:"updated_at"`
 }
 
-func (pt ParentTableType) isValid() bool {
+func (pt ParentTable) isValid() error {
+	if strings.TrimSpace(string(pt)) == "" {
+		return errors.New("parent_table missing")
+	}
+
 	switch pt {
 	case ProjectTable, UserTable, EducationTable:
-		return true
+		return nil
 	default:
-		return false
+		return errors.New("parent_table invalid")
 	}
+}
+
+func (fr FileRole) isValid() error {
+	if strings.TrimSpace(string(fr)) == "" {
+		return errors.New("role missing")
+	}
+
+	switch fr {
+	case Image:
+		return nil
+	default:
+		return errors.New("role invalid")
+	}
+}
+
+func isValidMimeType(mimeType string) error {
+	if strings.TrimSpace(mimeType) == "" {
+		return errors.New("type missing")
+	}
+
+	// Validate only the media-type part
+	base := strings.TrimSpace(strings.SplitN(mimeType, ";", 2)[0])
+	if mimeTypeRe.MatchString(strings.ToLower(base)) {
+		return nil
+	}
+	return errors.New("invalid type")
+}
+
+func isValidUUID(id string, label string) error {
+	if strings.TrimSpace(id) == "" {
+		return fmt.Errorf("%s missing", label)
+	}
+
+	if _, err := uuid.Parse(id); err != nil {
+		return fmt.Errorf("%s invalid", label)
+	}
+
+	return nil
+}
+
+func isValidURL(value string) error {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return errors.New("url missing")
+	}
+
+	u, err := url.ParseRequestURI(value)
+	if err != nil {
+		return errors.New("url invalid")
+	}
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return errors.New("url invalid")
+	}
+	if u.Host == "" {
+		return errors.New("url invalid")
+	}
+
+	return nil
+}
+
+func (f File) ValidatePayload() error {
+	if err := f.ParentTable.isValid(); err != nil {
+		return err
+	}
+	if err := isValidUUID(f.ParentID, "parent_id"); err != nil {
+		return err
+	}
+	if err := f.Role.isValid(); err != nil {
+		return err
+	}
+	if strings.TrimSpace(f.Name) == "" {
+		return errors.New("name missing")
+	}
+	if err := isValidURL(f.URL); err != nil {
+		return err
+	}
+	if err := isValidMimeType(f.Type); err != nil {
+		return err
+	}
+	if f.Size <= 0 {
+		return errors.New("size must be greater than 0")
+	}
+	return nil
+}
+
+func (f File) ValidateResponse() error {
+	if err := isValidUUID(f.ID, "id"); err != nil {
+		return err
+	}
+	if err := f.ValidatePayload(); err != nil {
+		return err
+	}
+	if f.CreatedAt.IsZero() {
+		return errors.New("created_at missing")
+	}
+	if f.UpdatedAt.IsZero() {
+		return errors.New("updated_at missing")
+	}
+	if f.CreatedAt.After(f.UpdatedAt) {
+		return errors.New("created_at cannot be after updated_at")
+	}
+	return nil
 }
