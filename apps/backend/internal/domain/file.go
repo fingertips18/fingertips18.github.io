@@ -2,6 +2,10 @@ package domain
 
 import (
 	"errors"
+	"fmt"
+	"net/url"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -38,51 +42,96 @@ type File struct {
 	UpdatedAt   time.Time   `json:"updated_at"`
 }
 
-func (pt ParentTable) isValid() bool {
+func (pt ParentTable) isValid() error {
+	if strings.TrimSpace(string(pt)) == "" {
+		return errors.New("parent_table missing")
+	}
+
 	switch pt {
 	case ProjectTable, UserTable, EducationTable:
-		return true
+		return nil
 	default:
-		return false
+		return errors.New("parent_table invalid")
 	}
 }
 
-func (fr FileRole) isValid() bool {
+func (fr FileRole) isValid() error {
+	if strings.TrimSpace(string(fr)) == "" {
+		return errors.New("role missing")
+	}
+
 	switch fr {
 	case Image:
-		return true
+		return nil
 	default:
-		return false
+		return errors.New("role invalid")
 	}
+}
+
+func isValidMimeType(mimeType string) error {
+	if strings.TrimSpace(mimeType) == "" {
+		return errors.New("type missing")
+	}
+
+	// RFC 6838 compliant MIME type pattern
+	// Format: type/subtype with optional parameters
+	pattern := `^[a-z]+/[a-z0-9][a-z0-9\-\+\.]*$`
+	matched, err := regexp.MatchString(pattern, strings.ToLower(mimeType))
+	if err != nil {
+		return errors.New("invalid type")
+	}
+
+	if matched {
+		return nil
+	} else {
+		return errors.New("invalid type")
+	}
+}
+
+func isValidUUID(id string, label string) error {
+	if strings.TrimSpace(id) == "" {
+		return fmt.Errorf("%s missing", label)
+	}
+
+	if _, err := uuid.Parse(id); err != nil {
+		return fmt.Errorf("%s invalid", label)
+	}
+
+	return nil
+}
+
+func isValidURL(value string) error {
+	if strings.TrimSpace(value) == "" {
+		return errors.New("url missing")
+	}
+	if _, err := url.Parse(value); err != nil {
+		return errors.New("url invalid")
+	}
+
+	return nil
 }
 
 func (f File) ValidatePayload() error {
-	if f.ParentTable == "" {
+	if strings.TrimSpace(string(f.ParentTable)) == "" {
 		return errors.New("parent_table missing")
 	}
-	if !f.ParentTable.isValid() {
-		return errors.New("parent_table invalid")
+	if err := f.ParentTable.isValid(); err != nil {
+		return err
 	}
-	if f.ParentID == "" {
-		return errors.New("parent_id missing")
+	if err := isValidUUID(f.ParentID, "parent_id"); err != nil {
+		return err
 	}
-	if _, err := uuid.Parse(f.ParentID); err != nil {
-		return errors.New("parent_id must be a valid UUID")
+	if err := f.Role.isValid(); err != nil {
+		return err
 	}
-	if f.Role == "" {
-		return errors.New("role missing")
-	}
-	if !f.Role.isValid() {
-		return errors.New("role invalid")
-	}
-	if f.Name == "" {
+	if strings.TrimSpace(f.Name) == "" {
 		return errors.New("name missing")
 	}
-	if f.URL == "" {
-		return errors.New("url missing")
+	if err := isValidURL(f.URL); err != nil {
+		return err
 	}
-	if f.Type == "" {
-		return errors.New("type missing")
+	if err := isValidMimeType(f.Type); err != nil {
+		return err
 	}
 	if f.Size <= 0 {
 		return errors.New("size must be greater than 0")
@@ -91,11 +140,8 @@ func (f File) ValidatePayload() error {
 }
 
 func (f File) ValidateResponse() error {
-	if f.ID == "" {
-		return errors.New("id missing")
-	}
-	if _, err := uuid.Parse(f.ID); err != nil {
-		return errors.New("id must be a valid UUID")
+	if err := isValidUUID(f.ParentID, "id"); err != nil {
+		return err
 	}
 	if err := f.ValidatePayload(); err != nil {
 		return err
