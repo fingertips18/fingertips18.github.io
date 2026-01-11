@@ -27,6 +27,8 @@ const (
 	// Add other valid file role names as needed
 )
 
+var mimeTypeRe = regexp.MustCompile(`^[a-z]+/[a-z0-9][a-z0-9\-\+\.]*$`)
+
 // File represents a file attachment that can be associated with any parent entity.
 // It uses a polymorphic association pattern via ParentTable and ParentID fields.
 type File struct {
@@ -73,19 +75,12 @@ func isValidMimeType(mimeType string) error {
 		return errors.New("type missing")
 	}
 
-	// RFC 6838 compliant MIME type pattern
-	// Format: type/subtype with optional parameters
-	pattern := `^[a-z]+/[a-z0-9][a-z0-9\-\+\.]*$`
-	matched, err := regexp.MatchString(pattern, strings.ToLower(mimeType))
-	if err != nil {
-		return errors.New("invalid type")
-	}
-
-	if matched {
+	// Validate only the media-type part
+	base := strings.TrimSpace(strings.SplitN(mimeType, ";", 2)[0])
+	if mimeTypeRe.MatchString(strings.ToLower(base)) {
 		return nil
-	} else {
-		return errors.New("invalid type")
 	}
+	return errors.New("invalid type")
 }
 
 func isValidUUID(id string, label string) error {
@@ -101,10 +96,19 @@ func isValidUUID(id string, label string) error {
 }
 
 func isValidURL(value string) error {
-	if strings.TrimSpace(value) == "" {
+	value = strings.TrimSpace(value)
+	if value == "" {
 		return errors.New("url missing")
 	}
-	if _, err := url.Parse(value); err != nil {
+
+	u, err := url.ParseRequestURI(value)
+	if err != nil {
+		return errors.New("url invalid")
+	}
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return errors.New("url invalid")
+	}
+	if u.Host == "" {
 		return errors.New("url invalid")
 	}
 
@@ -112,9 +116,6 @@ func isValidURL(value string) error {
 }
 
 func (f File) ValidatePayload() error {
-	if strings.TrimSpace(string(f.ParentTable)) == "" {
-		return errors.New("parent_table missing")
-	}
 	if err := f.ParentTable.isValid(); err != nil {
 		return err
 	}
@@ -140,7 +141,7 @@ func (f File) ValidatePayload() error {
 }
 
 func (f File) ValidateResponse() error {
-	if err := isValidUUID(f.ParentID, "id"); err != nil {
+	if err := isValidUUID(f.ID, "id"); err != nil {
 		return err
 	}
 	if err := f.ValidatePayload(); err != nil {
