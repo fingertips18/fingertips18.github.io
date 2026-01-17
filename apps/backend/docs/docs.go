@@ -555,6 +555,69 @@ const docTemplate = `{
                 }
             }
         },
+        "/files": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves all files for a specific parent entity and role.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "file"
+                ],
+                "summary": "List files by parent",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Parent table name",
+                        "name": "parent_table",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Parent ID",
+                        "name": "parent_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "File role (image)",
+                        "name": "role",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of files",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.FileResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/v1.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/image/upload": {
             "post": {
                 "security": [
@@ -1225,14 +1288,6 @@ const docTemplate = `{
         },
         "dto.CreateFileRequest": {
             "type": "object",
-            "required": [
-                "name",
-                "parent_id",
-                "parent_table",
-                "role",
-                "type",
-                "url"
-            ],
             "properties": {
                 "name": {
                     "type": "string"
@@ -1247,8 +1302,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "size": {
-                    "type": "integer",
-                    "minimum": 0
+                    "type": "integer"
                 },
                 "type": {
                     "type": "string"
