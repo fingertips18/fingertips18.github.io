@@ -101,10 +101,8 @@ func (h *fileServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			h.Get(w, r, id)
-		case http.MethodDelete:
+		default: // Must be DELETE due to earlier check
 			h.Delete(w, r, id)
-		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 		return
 
@@ -132,8 +130,6 @@ func (h *fileServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} ErrorResponse
 // @Router /file [post]
 func (h *fileServiceHandler) Create(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-
 	var req dto.CreateFileRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid JSON in request body", http.StatusBadRequest)
@@ -272,18 +268,18 @@ func (h *fileServiceHandler) Delete(w http.ResponseWriter, r *http.Request, id s
 // On success, it responds with a JSON array of files matching the criteria.
 // If required parameters are missing or invalid, it responds with an appropriate HTTP error.
 //
-// `@Security` ApiKeyAuth
-// `@Summary` List files by parent
-// `@Description` Retrieves all files for a specific parent entity and role.
-// `@Tags` file
-// `@Produce` json
-// `@Param` parent_table query string true "Parent table name"
-// `@Param` parent_id query string true "Parent ID"
-// `@Param` role query string true "File role (image)"
-// `@Success` 200 {array} dto.FileResponse "List of files"
-// `@Failure` 400 {object} ErrorResponse
-// `@Failure` 500 {object} ErrorResponse
-// `@Router` /files [get]
+// @Security ApiKeyAuth
+// @Summary List files by parent
+// @Description Retrieves all files for a specific parent entity and role.
+// @Tags file
+// @Produce json
+// @Param parent_table query string true "Parent table name"
+// @Param parent_id query string true "Parent ID"
+// @Param role query string true "File role (image)"
+// @Success 200 {array} dto.FileResponse "List of files"
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /files [get]
 func (h *fileServiceHandler) ListByParent(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	parentTable := query.Get("parent_table")
@@ -309,7 +305,7 @@ func (h *fileServiceHandler) ListByParent(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	var fileResponses []dto.FileResponse
+	fileResponses := make([]dto.FileResponse, 0, len(files))
 	for _, file := range files {
 		fileResponses = append(fileResponses, dto.FileResponse{
 			ID:          file.ID,

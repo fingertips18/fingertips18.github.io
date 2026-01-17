@@ -33,11 +33,19 @@ definitions:
       role:
         type: string
       size:
+        minimum: 0
         type: integer
       type:
         type: string
       url:
         type: string
+    required:
+    - name
+    - parent_id
+    - parent_table
+    - role
+    - type
+    - url
     type: object
   dto.FileResponse:
     properties:

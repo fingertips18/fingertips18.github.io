@@ -11,8 +11,14 @@ if [ -z "$MIGRATION_NAME" ]; then
   exit 1
 fi
 
+if ! [[ "$MIGRATION_NAME" =~ ^[a-z0-9_]+$ ]]; then
+  echo "Error: migration name must be snake_case (a-z0-9_)"
+  exit 1
+fi
+
 TIMESTAMP=$(date -u +%Y%m%d%H%M%S)
 MIGRATION_DIR="internal/database/migrations"
+mkdir -p "$MIGRATION_DIR"
 UP_FILE="${MIGRATION_DIR}/${TIMESTAMP}_${MIGRATION_NAME}.up.sql"
 DOWN_FILE="${MIGRATION_DIR}/${TIMESTAMP}_${MIGRATION_NAME}.down.sql"
 

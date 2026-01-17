@@ -1225,6 +1225,14 @@ const docTemplate = `{
         },
         "dto.CreateFileRequest": {
             "type": "object",
+            "required": [
+                "name",
+                "parent_id",
+                "parent_table",
+                "role",
+                "type",
+                "url"
+            ],
             "properties": {
                 "name": {
                     "type": "string"
@@ -1239,7 +1247,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "size": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 0
                 },
                 "type": {
                     "type": "string"
