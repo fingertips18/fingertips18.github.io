@@ -12,7 +12,7 @@ type CreateFileRequest struct {
 	Size        int64  `json:"size"`
 }
 
-type FileResponse struct {
+type FileDTO struct {
 	ID          string    `json:"id"`
 	ParentTable string    `json:"parent_table"`
 	ParentID    string    `json:"parent_id"`

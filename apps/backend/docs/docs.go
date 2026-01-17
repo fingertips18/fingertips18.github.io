@@ -98,7 +98,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/v1.UpdateEducationRequest"
+                            "$ref": "#/definitions/dto.UpdateEducationRequest"
                         }
                     }
                 ],
@@ -106,7 +106,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/v1.UpdateEducationResponse"
+                            "$ref": "#/definitions/dto.UpdateEducationResponse"
                         }
                     },
                     "400": {
@@ -153,7 +153,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/v1.CreateEducationRequest"
+                            "$ref": "#/definitions/dto.CreateEducationRequest"
                         }
                     }
                 ],
@@ -210,7 +210,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/v1.EducationDTO"
+                            "$ref": "#/definitions/dto.EducationDTO"
                         }
                     },
                     "400": {
@@ -332,7 +332,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/v1.EducationDTO"
+                                "$ref": "#/definitions/dto.EducationDTO"
                             }
                         }
                     },
@@ -406,6 +406,55 @@ const docTemplate = `{
             }
         },
         "/file": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Updates an existing file metadata record. The file ID must be provided.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "file"
+                ],
+                "summary": "Update a file record",
+                "parameters": [
+                    {
+                        "description": "Updated file data",
+                        "name": "file",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.FileDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated file details",
+                        "schema": {
+                            "$ref": "#/definitions/dto.FileDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/v1.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -454,6 +503,54 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Deletes all file records associated with a specific parent entity.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "file"
+                ],
+                "summary": "Delete files by parent",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Parent table name",
+                        "name": "parentTable",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Parent ID",
+                        "name": "parentID",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/v1.ErrorResponse"
+                        }
+                    }
+                }
             }
         },
         "/file/{id}": {
@@ -484,7 +581,7 @@ const docTemplate = `{
                     "200": {
                         "description": "File details",
                         "schema": {
-                            "$ref": "#/definitions/dto.FileResponse"
+                            "$ref": "#/definitions/dto.FileDTO"
                         }
                     },
                     "400": {
@@ -599,7 +696,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.FileResponse"
+                                "$ref": "#/definitions/dto.FileDTO"
                             }
                         }
                     },
@@ -694,7 +791,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/v1.ProjectDTO"
+                            "$ref": "#/definitions/dto.ProjectDTO"
                         }
                     }
                 ],
@@ -702,7 +799,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/v1.ProjectDTO"
+                            "$ref": "#/definitions/dto.ProjectDTO"
                         }
                     },
                     "400": {
@@ -749,7 +846,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/v1.CreateProjectRequest"
+                            "$ref": "#/definitions/dto.CreateProjectRequest"
                         }
                     }
                 ],
@@ -806,7 +903,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/v1.ProjectDTO"
+                            "$ref": "#/definitions/dto.ProjectDTO"
                         }
                     },
                     "400": {
@@ -939,7 +1036,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/v1.ProjectDTO"
+                                "$ref": "#/definitions/dto.ProjectDTO"
                             }
                         }
                     },
@@ -1286,6 +1383,24 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateEducationRequest": {
+            "type": "object",
+            "properties": {
+                "level": {
+                    "type": "string",
+                    "example": "elementary"
+                },
+                "main_school": {
+                    "$ref": "#/definitions/dto.SchoolPeriodDTO"
+                },
+                "school_periods": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.SchoolPeriodDTO"
+                    }
+                }
+            }
+        },
         "dto.CreateFileRequest": {
             "type": "object",
             "properties": {
@@ -1312,7 +1427,77 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.FileResponse": {
+        "dto.CreateProjectRequest": {
+            "type": "object",
+            "properties": {
+                "blurhash": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "education_id": {
+                    "type": "string"
+                },
+                "link": {
+                    "type": "string"
+                },
+                "previews": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.CreateFileRequest"
+                    }
+                },
+                "sub_title": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.EducationDTO": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "level": {
+                    "type": "string"
+                },
+                "main_school": {
+                    "$ref": "#/definitions/dto.SchoolPeriodDTO"
+                },
+                "projects": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.ProjectDTO"
+                    }
+                },
+                "school_periods": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.SchoolPeriodDTO"
+                    }
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.FileDTO": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -1347,28 +1532,13 @@ const docTemplate = `{
                 }
             }
         },
-        "v1.CreateEducationRequest": {
-            "type": "object",
-            "properties": {
-                "level": {
-                    "type": "string",
-                    "example": "elementary"
-                },
-                "main_school": {
-                    "$ref": "#/definitions/v1.SchoolPeriodDTO"
-                },
-                "school_periods": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/v1.SchoolPeriodDTO"
-                    }
-                }
-            }
-        },
-        "v1.CreateProjectRequest": {
+        "dto.ProjectDTO": {
             "type": "object",
             "properties": {
                 "blurhash": {
+                    "type": "string"
+                },
+                "created_at": {
                     "type": "string"
                 },
                 "description": {
@@ -1377,11 +1547,17 @@ const docTemplate = `{
                 "education_id": {
                     "type": "string"
                 },
+                "id": {
+                    "type": "string"
+                },
                 "link": {
                     "type": "string"
                 },
-                "preview": {
-                    "type": "string"
+                "previews": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.FileDTO"
+                    }
                 },
                 "sub_title": {
                     "type": "string"
@@ -1396,6 +1572,87 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "type": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.SchoolPeriodDTO": {
+            "type": "object",
+            "properties": {
+                "blurhash": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "end_date": {
+                    "type": "string",
+                    "example": "2024-06-01T00:00:00Z"
+                },
+                "honor": {
+                    "type": "string"
+                },
+                "link": {
+                    "type": "string"
+                },
+                "logo": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "start_date": {
+                    "type": "string",
+                    "example": "2020-09-01T00:00:00Z"
+                }
+            }
+        },
+        "dto.UpdateEducationRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "level": {
+                    "type": "string",
+                    "example": "elementary"
+                },
+                "main_school": {
+                    "$ref": "#/definitions/dto.SchoolPeriodDTO"
+                },
+                "school_periods": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.SchoolPeriodDTO"
+                    }
+                }
+            }
+        },
+        "dto.UpdateEducationResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "level": {
+                    "type": "string"
+                },
+                "main_school": {
+                    "$ref": "#/definitions/dto.SchoolPeriodDTO"
+                },
+                "school_periods": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.SchoolPeriodDTO"
+                    }
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }
@@ -1413,38 +1670,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "label": {
-                    "type": "string"
-                }
-            }
-        },
-        "v1.EducationDTO": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "level": {
-                    "type": "string"
-                },
-                "main_school": {
-                    "$ref": "#/definitions/v1.SchoolPeriodDTO"
-                },
-                "projects": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/v1.ProjectDTO"
-                    }
-                },
-                "school_periods": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/v1.SchoolPeriodDTO"
-                    }
-                },
-                "updated_at": {
                     "type": "string"
                 }
             }
@@ -1545,81 +1770,6 @@ const docTemplate = `{
                 }
             }
         },
-        "v1.ProjectDTO": {
-            "type": "object",
-            "properties": {
-                "blurhash": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "education_id": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "link": {
-                    "type": "string"
-                },
-                "preview": {
-                    "type": "string"
-                },
-                "sub_title": {
-                    "type": "string"
-                },
-                "tags": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "title": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "v1.SchoolPeriodDTO": {
-            "type": "object",
-            "properties": {
-                "blurhash": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "end_date": {
-                    "type": "string",
-                    "example": "2024-06-01T00:00:00Z"
-                },
-                "honor": {
-                    "type": "string"
-                },
-                "link": {
-                    "type": "string"
-                },
-                "logo": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "start_date": {
-                    "type": "string",
-                    "example": "2020-09-01T00:00:00Z"
-                }
-            }
-        },
         "v1.SkillDTO": {
             "type": "object",
             "properties": {
@@ -1640,53 +1790,6 @@ const docTemplate = `{
                 },
                 "label": {
                     "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "v1.UpdateEducationRequest": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "level": {
-                    "type": "string",
-                    "example": "elementary"
-                },
-                "main_school": {
-                    "$ref": "#/definitions/v1.SchoolPeriodDTO"
-                },
-                "school_periods": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/v1.SchoolPeriodDTO"
-                    }
-                }
-            }
-        },
-        "v1.UpdateEducationResponse": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "level": {
-                    "type": "string"
-                },
-                "main_school": {
-                    "$ref": "#/definitions/v1.SchoolPeriodDTO"
-                },
-                "school_periods": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/v1.SchoolPeriodDTO"
-                    }
                 },
                 "updated_at": {
                     "type": "string"

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
+	"github.com/fingertips18/fingertips18.github.io/backend/internal/handler/v1/dto"
 	mockRepo "github.com/fingertips18/fingertips18.github.io/backend/internal/repository/v1/mocks"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
@@ -46,7 +47,7 @@ func newEducationHandlerTestFixture(t *testing.T) *educationHandlerTestFixture {
 func TestEducationServiceHandler_Create(t *testing.T) {
 	fixedID := "edu-123"
 
-	validSchool := SchoolPeriodDTO{
+	validSchool := dto.SchoolPeriodDTO{
 		Name:        "Harvard University",
 		Description: "Top-tier education",
 		Logo:        "logo.png",
@@ -55,9 +56,9 @@ func TestEducationServiceHandler_Create(t *testing.T) {
 		EndDate:     time.Date(2019, 6, 1, 0, 0, 0, 0, time.UTC),
 	}
 
-	validCreateReq := CreateEducationRequest{
+	validCreateReq := dto.CreateEducationRequest{
 		MainSchool:    validSchool,
-		SchoolPeriods: []SchoolPeriodDTO{validSchool},
+		SchoolPeriods: []dto.SchoolPeriodDTO{validSchool},
 		Level:         "college",
 	}
 	validBody, _ := json.Marshal(validCreateReq)
@@ -241,7 +242,7 @@ func TestEducationServiceHandler_Create(t *testing.T) {
 				method: http.MethodPost,
 				body: func() string {
 					multi := validCreateReq
-					secondSchool := SchoolPeriodDTO{
+					secondSchool := dto.SchoolPeriodDTO{
 						Name:        "Massachusetts Institute of Technology",
 						Description: "Exchange program in Computer Science",
 						Logo:        "mit_logo.png",
@@ -249,7 +250,7 @@ func TestEducationServiceHandler_Create(t *testing.T) {
 						StartDate:   time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC),
 						EndDate:     time.Date(2018, 6, 1, 0, 0, 0, 0, time.UTC),
 					}
-					multi.SchoolPeriods = []SchoolPeriodDTO{
+					multi.SchoolPeriods = []dto.SchoolPeriodDTO{
 						validSchool,
 						secondSchool,
 					}
@@ -305,7 +306,7 @@ func TestEducationServiceHandler_Create(t *testing.T) {
 func TestEducationServiceHandler_Create_Routing(t *testing.T) {
 	fixedID := "edu-123"
 
-	validSchool := SchoolPeriodDTO{
+	validSchool := dto.SchoolPeriodDTO{
 		Name:        "Harvard University",
 		Description: "Top-tier education",
 		Logo:        "logo.png",
@@ -314,9 +315,9 @@ func TestEducationServiceHandler_Create_Routing(t *testing.T) {
 		EndDate:     time.Date(2019, 6, 1, 0, 0, 0, 0, time.UTC),
 	}
 
-	validCreateReq := CreateEducationRequest{
+	validCreateReq := dto.CreateEducationRequest{
 		MainSchool:    validSchool,
-		SchoolPeriods: []SchoolPeriodDTO{validSchool},
+		SchoolPeriods: []dto.SchoolPeriodDTO{validSchool},
 		Level:         "college",
 	}
 	validBody, _ := json.Marshal(validCreateReq)
@@ -357,9 +358,9 @@ func TestEducationServiceHandler_Get(t *testing.T) {
 	fixedID := "edu-123"
 	fixedTime := time.Date(2025, 10, 25, 21, 56, 4, 0, time.UTC)
 
-	sampleEducation := &EducationDTO{
+	sampleEducation := &dto.EducationDTO{
 		Id: fixedID,
-		MainSchool: SchoolPeriodDTO{
+		MainSchool: dto.SchoolPeriodDTO{
 			Name:        "Harvard University",
 			Description: "Top-tier education",
 			Logo:        "logo.png",
@@ -367,8 +368,8 @@ func TestEducationServiceHandler_Get(t *testing.T) {
 			StartDate:   time.Date(2015, 9, 1, 0, 0, 0, 0, time.UTC),
 			EndDate:     time.Date(2019, 6, 1, 0, 0, 0, 0, time.UTC),
 		},
-		SchoolPeriods: []SchoolPeriodDTO{},
-		Projects:      []ProjectDTO{},
+		SchoolPeriods: []dto.SchoolPeriodDTO{},
+		Projects:      []dto.ProjectDTO{},
 		Level:         "college",
 		CreatedAt:     fixedTime,
 		UpdatedAt:     fixedTime,
@@ -541,9 +542,9 @@ func TestEducationServiceHandler_Get_Routing(t *testing.T) {
 		UpdatedAt:     time.Now(),
 	}
 
-	dto := EducationDTO{
+	dto := dto.EducationDTO{
 		Id: sampleEducation.Id,
-		MainSchool: SchoolPeriodDTO{
+		MainSchool: dto.SchoolPeriodDTO{
 			Name:        sampleEducation.MainSchool.Name,
 			Description: sampleEducation.MainSchool.Description,
 			Logo:        sampleEducation.MainSchool.Logo,
@@ -553,10 +554,10 @@ func TestEducationServiceHandler_Get_Routing(t *testing.T) {
 			StartDate:   sampleEducation.MainSchool.StartDate,
 			EndDate:     sampleEducation.MainSchool.EndDate,
 		},
-		SchoolPeriods: func() []SchoolPeriodDTO {
-			periods := make([]SchoolPeriodDTO, len(sampleEducation.SchoolPeriods))
+		SchoolPeriods: func() []dto.SchoolPeriodDTO {
+			periods := make([]dto.SchoolPeriodDTO, len(sampleEducation.SchoolPeriods))
 			for i, p := range sampleEducation.SchoolPeriods {
-				periods[i] = SchoolPeriodDTO{
+				periods[i] = dto.SchoolPeriodDTO{
 					Name:        p.Name,
 					Description: p.Description,
 					Logo:        p.Logo,
@@ -569,7 +570,7 @@ func TestEducationServiceHandler_Get_Routing(t *testing.T) {
 			}
 			return periods
 		}(),
-		Projects:  []ProjectDTO{},
+		Projects:  []dto.ProjectDTO{},
 		Level:     string(sampleEducation.Level),
 		CreatedAt: sampleEducation.CreatedAt,
 		UpdatedAt: sampleEducation.UpdatedAt,
@@ -639,9 +640,9 @@ func TestEducationServiceHandler_Update(t *testing.T) {
 	}
 
 	// Use UpdateEducationRequest for input (no timestamps)
-	requestDTO := UpdateEducationRequest{
+	requestDTO := dto.UpdateEducationRequest{
 		Id: existingEducation.Id,
-		MainSchool: SchoolPeriodDTO{
+		MainSchool: dto.SchoolPeriodDTO{
 			Name:        existingEducation.MainSchool.Name,
 			Description: existingEducation.MainSchool.Description,
 			Logo:        existingEducation.MainSchool.Logo,
@@ -651,10 +652,10 @@ func TestEducationServiceHandler_Update(t *testing.T) {
 			StartDate:   existingEducation.MainSchool.StartDate,
 			EndDate:     existingEducation.MainSchool.EndDate,
 		},
-		SchoolPeriods: func() []SchoolPeriodDTO {
-			periods := make([]SchoolPeriodDTO, len(existingEducation.SchoolPeriods))
+		SchoolPeriods: func() []dto.SchoolPeriodDTO {
+			periods := make([]dto.SchoolPeriodDTO, len(existingEducation.SchoolPeriods))
 			for i, p := range existingEducation.SchoolPeriods {
-				periods[i] = SchoolPeriodDTO{
+				periods[i] = dto.SchoolPeriodDTO{
 					Name:        p.Name,
 					Description: p.Description,
 					Logo:        p.Logo,
@@ -671,9 +672,9 @@ func TestEducationServiceHandler_Update(t *testing.T) {
 	}
 
 	// Use UpdateEducationResponse for expected response (includes timestamps)
-	responseDTO := UpdateEducationResponse{
+	responseDTO := dto.UpdateEducationResponse{
 		Id: existingEducation.Id,
-		MainSchool: SchoolPeriodDTO{
+		MainSchool: dto.SchoolPeriodDTO{
 			Name:        existingEducation.MainSchool.Name,
 			Description: existingEducation.MainSchool.Description,
 			Logo:        existingEducation.MainSchool.Logo,
@@ -683,10 +684,10 @@ func TestEducationServiceHandler_Update(t *testing.T) {
 			StartDate:   existingEducation.MainSchool.StartDate,
 			EndDate:     existingEducation.MainSchool.EndDate,
 		},
-		SchoolPeriods: func() []SchoolPeriodDTO {
-			periods := make([]SchoolPeriodDTO, len(existingEducation.SchoolPeriods))
+		SchoolPeriods: func() []dto.SchoolPeriodDTO {
+			periods := make([]dto.SchoolPeriodDTO, len(existingEducation.SchoolPeriods))
 			for i, p := range existingEducation.SchoolPeriods {
-				periods[i] = SchoolPeriodDTO{
+				periods[i] = dto.SchoolPeriodDTO{
 					Name:        p.Name,
 					Description: p.Description,
 					Logo:        p.Logo,
@@ -765,7 +766,7 @@ func TestEducationServiceHandler_Update(t *testing.T) {
 				method: http.MethodPut,
 				body: func() string {
 					bad := requestDTO
-					bad.MainSchool = SchoolPeriodDTO{}
+					bad.MainSchool = dto.SchoolPeriodDTO{}
 					b, _ := json.Marshal(bad)
 					return string(b)
 				}(),
@@ -903,9 +904,9 @@ func TestEducationServiceHandler_Update_Routing(t *testing.T) {
 	}
 
 	// Request uses UpdateEducationRequest (no timestamps)
-	requestDTO := UpdateEducationRequest{
+	requestDTO := dto.UpdateEducationRequest{
 		Id: existingEducation.Id,
-		MainSchool: SchoolPeriodDTO{
+		MainSchool: dto.SchoolPeriodDTO{
 			Name:        existingEducation.MainSchool.Name,
 			Description: existingEducation.MainSchool.Description,
 			Logo:        existingEducation.MainSchool.Logo,
@@ -915,10 +916,10 @@ func TestEducationServiceHandler_Update_Routing(t *testing.T) {
 			StartDate:   existingEducation.MainSchool.StartDate,
 			EndDate:     existingEducation.MainSchool.EndDate,
 		},
-		SchoolPeriods: func() []SchoolPeriodDTO {
-			periods := make([]SchoolPeriodDTO, len(existingEducation.SchoolPeriods))
+		SchoolPeriods: func() []dto.SchoolPeriodDTO {
+			periods := make([]dto.SchoolPeriodDTO, len(existingEducation.SchoolPeriods))
 			for i, p := range existingEducation.SchoolPeriods {
-				periods[i] = SchoolPeriodDTO{
+				periods[i] = dto.SchoolPeriodDTO{
 					Name:        p.Name,
 					Description: p.Description,
 					Logo:        p.Logo,
@@ -935,9 +936,9 @@ func TestEducationServiceHandler_Update_Routing(t *testing.T) {
 	}
 
 	// Response uses UpdateEducationResponse (with timestamps)
-	responseDTO := UpdateEducationResponse{
+	responseDTO := dto.UpdateEducationResponse{
 		Id: existingEducation.Id,
-		MainSchool: SchoolPeriodDTO{
+		MainSchool: dto.SchoolPeriodDTO{
 			Name:        existingEducation.MainSchool.Name,
 			Description: existingEducation.MainSchool.Description,
 			Logo:        existingEducation.MainSchool.Logo,
@@ -947,10 +948,10 @@ func TestEducationServiceHandler_Update_Routing(t *testing.T) {
 			StartDate:   existingEducation.MainSchool.StartDate,
 			EndDate:     existingEducation.MainSchool.EndDate,
 		},
-		SchoolPeriods: func() []SchoolPeriodDTO {
-			periods := make([]SchoolPeriodDTO, len(existingEducation.SchoolPeriods))
+		SchoolPeriods: func() []dto.SchoolPeriodDTO {
+			periods := make([]dto.SchoolPeriodDTO, len(existingEducation.SchoolPeriods))
 			for i, p := range existingEducation.SchoolPeriods {
-				periods[i] = SchoolPeriodDTO{
+				periods[i] = dto.SchoolPeriodDTO{
 					Name:        p.Name,
 					Description: p.Description,
 					Logo:        p.Logo,
@@ -1166,11 +1167,11 @@ func TestEducationServiceHandler_List(t *testing.T) {
 
 	listResp := []domain.Education{sampleEducation}
 
-	educations := make([]EducationDTO, len(listResp))
+	educations := make([]dto.EducationDTO, len(listResp))
 	for i, e := range listResp {
-		educations[i] = EducationDTO{
+		educations[i] = dto.EducationDTO{
 			Id: e.Id,
-			MainSchool: SchoolPeriodDTO{
+			MainSchool: dto.SchoolPeriodDTO{
 				Link:        e.MainSchool.Link,
 				Name:        e.MainSchool.Name,
 				Description: e.MainSchool.Description,
@@ -1180,10 +1181,10 @@ func TestEducationServiceHandler_List(t *testing.T) {
 				StartDate:   e.MainSchool.StartDate,
 				EndDate:     e.MainSchool.EndDate,
 			},
-			SchoolPeriods: func() []SchoolPeriodDTO {
-				periods := make([]SchoolPeriodDTO, len(e.SchoolPeriods))
+			SchoolPeriods: func() []dto.SchoolPeriodDTO {
+				periods := make([]dto.SchoolPeriodDTO, len(e.SchoolPeriods))
 				for j, p := range e.SchoolPeriods {
-					periods[j] = SchoolPeriodDTO{
+					periods[j] = dto.SchoolPeriodDTO{
 						Link:        p.Link,
 						Name:        p.Name,
 						Description: p.Description,
@@ -1196,7 +1197,7 @@ func TestEducationServiceHandler_List(t *testing.T) {
 				}
 				return periods
 			}(),
-			Projects:  []ProjectDTO{},
+			Projects:  []dto.ProjectDTO{},
 			Level:     string(e.Level),
 			CreatedAt: e.CreatedAt,
 			UpdatedAt: e.UpdatedAt,
@@ -1541,11 +1542,11 @@ func TestEducationServiceHandler_List_Routing(t *testing.T) {
 
 	listResp := []domain.Education{sampleEducation}
 
-	educations := make([]EducationDTO, len(listResp))
+	educations := make([]dto.EducationDTO, len(listResp))
 	for i, e := range listResp {
-		educations[i] = EducationDTO{
+		educations[i] = dto.EducationDTO{
 			Id: e.Id,
-			MainSchool: SchoolPeriodDTO{
+			MainSchool: dto.SchoolPeriodDTO{
 				Name:        e.MainSchool.Name,
 				Description: e.MainSchool.Description,
 				Logo:        e.MainSchool.Logo,
@@ -1555,10 +1556,10 @@ func TestEducationServiceHandler_List_Routing(t *testing.T) {
 				Link:        e.MainSchool.Link,
 				Honor:       e.MainSchool.Honor,
 			},
-			SchoolPeriods: func() []SchoolPeriodDTO {
-				periods := make([]SchoolPeriodDTO, len(e.SchoolPeriods))
+			SchoolPeriods: func() []dto.SchoolPeriodDTO {
+				periods := make([]dto.SchoolPeriodDTO, len(e.SchoolPeriods))
 				for j, p := range e.SchoolPeriods {
-					periods[j] = SchoolPeriodDTO{
+					periods[j] = dto.SchoolPeriodDTO{
 						Name:        p.Name,
 						Description: p.Description,
 						Logo:        p.Logo,
@@ -1571,7 +1572,7 @@ func TestEducationServiceHandler_List_Routing(t *testing.T) {
 				}
 				return periods
 			}(),
-			Projects:  []ProjectDTO{},
+			Projects:  []dto.ProjectDTO{},
 			Level:     string(e.Level),
 			CreatedAt: e.CreatedAt,
 			UpdatedAt: e.UpdatedAt,

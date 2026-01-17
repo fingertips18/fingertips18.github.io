@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
+	"github.com/fingertips18/fingertips18.github.io/backend/internal/handler/v1/dto"
 	mockRepo "github.com/fingertips18/fingertips18.github.io/backend/internal/repository/v1/mocks"
 	metadata "github.com/fingertips18/fingertips18.github.io/backend/pkg/metadata/mocks"
 	"github.com/jackc/pgx/v5"
@@ -59,8 +60,7 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 
 	validResp, _ := json.Marshal(domain.ProjectIDResponse{ID: fixedID})
 
-	createReq := ProjectDTO{
-		Preview:     "preview.png",
+	createReq := dto.ProjectDTO{
 		BlurHash:    validBlurHash,
 		Title:       "title",
 		Subtitle:    "subtitle",
@@ -71,8 +71,7 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 	}
 	validBody, _ := json.Marshal(createReq)
 
-	invalidBlurHashReq := ProjectDTO{
-		Preview:     "preview.png",
+	invalidBlurHashReq := dto.ProjectDTO{
 		BlurHash:    "invalid-hash",
 		Title:       "title",
 		Subtitle:    "subtitle",
@@ -212,8 +211,7 @@ func TestProjectServiceHandler_Create_Routing(t *testing.T) {
 	f := newProjectHandlerTestFixture(t)
 
 	// Setup valid input and expected output
-	createReq := ProjectDTO{
-		Preview:     "preview.png",
+	createReq := dto.ProjectDTO{
 		BlurHash:    validBlurHash,
 		Title:       "title",
 		Subtitle:    "subtitle",
@@ -262,7 +260,6 @@ func TestProjectServiceHandler_Get(t *testing.T) {
 
 	validProject := &domain.Project{
 		Id:          fixedID,
-		Preview:     "preview.png",
 		BlurHash:    validBlurHash,
 		Title:       "title",
 		Subtitle:    "subtitle",
@@ -385,7 +382,6 @@ func TestProjectServiceHandler_Get_Routing(t *testing.T) {
 
 	validProject := &domain.Project{
 		Id:          fixedID,
-		Preview:     "preview.png",
 		BlurHash:    validBlurHash,
 		Title:       "title",
 		Subtitle:    "subtitle",
@@ -432,7 +428,6 @@ func TestProjectServiceHandler_Update(t *testing.T) {
 
 	validProject := &domain.Project{
 		Id:          fixedID,
-		Preview:     "preview.png",
 		BlurHash:    validBlurHash,
 		Title:       "title",
 		Subtitle:    "subtitle",
@@ -444,8 +439,7 @@ func TestProjectServiceHandler_Update(t *testing.T) {
 
 	validBody, _ := json.Marshal(validProject)
 
-	invalidBlurHashReq := ProjectDTO{
-		Preview:     "preview.png",
+	invalidBlurHashReq := dto.ProjectDTO{
 		BlurHash:    "invalid-hash",
 		Title:       "title",
 		Subtitle:    "subtitle",
@@ -602,7 +596,6 @@ func TestProjectServiceHandler_Update_Routing(t *testing.T) {
 
 	validProject := &domain.Project{
 		Id:          fixedID,
-		Preview:     "preview.png",
 		BlurHash:    validBlurHash,
 		Title:       "title",
 		Subtitle:    "subtitle",
@@ -790,7 +783,6 @@ func TestProjectServiceHandler_List(t *testing.T) {
 	validProjects := []domain.Project{
 		{
 			Id:          "p1",
-			Preview:     "preview1",
 			BlurHash:    "hash1",
 			Title:       "title1",
 			Subtitle:    "subtitle1",
@@ -803,7 +795,6 @@ func TestProjectServiceHandler_List(t *testing.T) {
 		},
 		{
 			Id:          "p2",
-			Preview:     "preview2",
 			BlurHash:    "hash2",
 			Title:       "title2",
 			Subtitle:    "subtitle2",
@@ -943,7 +934,6 @@ func TestProjectServiceHandler_List_Routing(t *testing.T) {
 	validProjects := []domain.Project{
 		{
 			Id:          "p1",
-			Preview:     "preview1",
 			BlurHash:    "hash1",
 			Title:       "title1",
 			Subtitle:    "subtitle1",
@@ -956,7 +946,6 @@ func TestProjectServiceHandler_List_Routing(t *testing.T) {
 		},
 		{
 			Id:          "p2",
-			Preview:     "preview2",
 			BlurHash:    "hash2",
 			Title:       "title2",
 			Subtitle:    "subtitle2",

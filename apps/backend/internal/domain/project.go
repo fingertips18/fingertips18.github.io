@@ -19,7 +19,6 @@ const (
 
 type Project struct {
 	Id          string      `json:"id"`
-	Preview     string      `json:"preview"`
 	BlurHash    string      `json:"blurhash"`
 	Title       string      `json:"title"`
 	Subtitle    string      `json:"sub_title"`
@@ -54,9 +53,6 @@ func (pt ProjectType) isValid() bool {
 }
 
 func (p Project) ValidatePayload(blurHashAPI metadata.BlurHashAPI) error {
-	if p.Preview == "" {
-		return errors.New("preview missing")
-	}
 	if p.BlurHash == "" {
 		return errors.New("blurHash missing")
 	}

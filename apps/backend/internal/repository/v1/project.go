@@ -105,7 +105,6 @@ func (r *projectRepository) Create(ctx context.Context, project *domain.Project)
 		ctx,
 		query,
 		id,
-		project.Preview,
 		project.BlurHash,
 		project.Title,
 		project.Subtitle,
@@ -154,7 +153,6 @@ func (r *projectRepository) Get(ctx context.Context, id string) (*domain.Project
 		id,
 	).Scan(
 		&project.Id,
-		&project.Preview,
 		&project.BlurHash,
 		&project.Title,
 		&project.Subtitle,
@@ -206,17 +204,16 @@ func (r *projectRepository) Update(ctx context.Context, project *domain.Project)
 
 	query := fmt.Sprintf(
 		`UPDATE %s
-		SET preview=$2,
-			blur_hash=$3,
-			title=$4,
-			sub_title=$5,
-			description=$6,
-			tags=$7,
-			type=$8,
-			link=$9,
-			updated_at=$10
+		SET blur_hash=$2,
+			title=$3,
+			sub_title=$4,
+			description=$5,
+			tags=$6,
+			type=$7,
+			link=$8,
+			updated_at=$9
 		WHERE id=$1
-		RETURNING id, preview, blur_hash, title, sub_title, description, tags, type, link, created_at, updated_at`,
+		RETURNING id, blur_hash, title, sub_title, description, tags, type, link, created_at, updated_at`,
 		r.projectTable,
 	)
 
@@ -224,7 +221,6 @@ func (r *projectRepository) Update(ctx context.Context, project *domain.Project)
 		ctx,
 		query,
 		project.Id,
-		project.Preview,
 		project.BlurHash,
 		project.Title,
 		project.Subtitle,
@@ -232,11 +228,9 @@ func (r *projectRepository) Update(ctx context.Context, project *domain.Project)
 		project.Tags,
 		project.Type,
 		project.Link,
-		project.CreatedAt,
 		project.UpdatedAt,
 	).Scan(
 		&updatedProject.Id,
-		&updatedProject.Preview,
 		&updatedProject.BlurHash,
 		&updatedProject.Title,
 		&updatedProject.Subtitle,
@@ -370,7 +364,6 @@ func (r *projectRepository) List(ctx context.Context, filter domain.ProjectFilte
 
 		err := rows.Scan(
 			&project.Id,
-			&project.Preview,
 			&project.BlurHash,
 			&project.Title,
 			&project.Subtitle,
@@ -437,7 +430,7 @@ func (r *projectRepository) ListByEducationID(ctx context.Context, educationID s
 		var educationID sql.NullString
 
 		err := rows.Scan(
-			&p.Id, &p.Preview, &p.BlurHash, &p.Title, &p.Subtitle,
+			&p.Id, &p.BlurHash, &p.Title, &p.Subtitle,
 			&p.Description, &p.Tags, &p.Type, &p.Link,
 			&educationID, &p.CreatedAt, &p.UpdatedAt,
 		)
@@ -492,7 +485,7 @@ func (r *projectRepository) ListByEducationIDs(ctx context.Context, educationIDs
 		var educationID sql.NullString
 
 		err := rows.Scan(
-			&p.Id, &p.Preview, &p.BlurHash, &p.Title, &p.Subtitle,
+			&p.Id, &p.BlurHash, &p.Title, &p.Subtitle,
 			&p.Description, &p.Tags, &p.Type, &p.Link,
 			&educationID, &p.CreatedAt, &p.UpdatedAt,
 		)

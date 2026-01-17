@@ -44,7 +44,6 @@ func (f *projectFakeRow) Scan(dest ...any) error {
 
 	case 11:
 		*dest[0].(*string) = f.project.Id
-		*dest[1].(*string) = f.project.Preview
 		*dest[2].(*string) = f.project.BlurHash
 		*dest[3].(*string) = f.project.Title
 		*dest[4].(*string) = f.project.Subtitle
@@ -140,7 +139,6 @@ func TestProjectRepository_Create(t *testing.T) {
 	scanErr := errors.New("scan error")
 
 	validProject := domain.Project{
-		Preview:     "test-preview",
 		BlurHash:    validBlurHash,
 		Title:       "test-title",
 		Subtitle:    "test-subtitle",
@@ -151,7 +149,6 @@ func TestProjectRepository_Create(t *testing.T) {
 	}
 
 	invalidBlurHashProject := domain.Project{
-		Preview:     "preview.png",
 		BlurHash:    "invalid-hash",
 		Title:       "title",
 		Subtitle:    "subtitle",
@@ -232,7 +229,6 @@ func TestProjectRepository_Create(t *testing.T) {
 		"Missing preview fails": {
 			given: Given{
 				project: domain.Project{
-					Preview:     "",
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -250,7 +246,6 @@ func TestProjectRepository_Create(t *testing.T) {
 		"Missing blurHash fails": {
 			given: Given{
 				project: domain.Project{
-					Preview:     validProject.Preview,
 					BlurHash:    "",
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -283,7 +278,6 @@ func TestProjectRepository_Create(t *testing.T) {
 					m.EXPECT().IsValid(validBlurHash).Return(true).Once()
 				},
 				project: domain.Project{
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       "",
 					Subtitle:    validProject.Subtitle,
@@ -304,7 +298,6 @@ func TestProjectRepository_Create(t *testing.T) {
 					m.EXPECT().IsValid(validBlurHash).Return(true).Once()
 				},
 				project: domain.Project{
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    "",
@@ -325,7 +318,6 @@ func TestProjectRepository_Create(t *testing.T) {
 					m.EXPECT().IsValid(validBlurHash).Return(true).Once()
 				},
 				project: domain.Project{
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -346,7 +338,6 @@ func TestProjectRepository_Create(t *testing.T) {
 					m.EXPECT().IsValid(validBlurHash).Return(true).Once()
 				},
 				project: domain.Project{
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -367,7 +358,6 @@ func TestProjectRepository_Create(t *testing.T) {
 					m.EXPECT().IsValid(validBlurHash).Return(true).Once()
 				},
 				project: domain.Project{
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -390,7 +380,6 @@ func TestProjectRepository_Create(t *testing.T) {
 					m.EXPECT().IsValid(validBlurHash).Return(true).Once()
 				},
 				project: domain.Project{
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -411,7 +400,6 @@ func TestProjectRepository_Create(t *testing.T) {
 					m.EXPECT().IsValid(validBlurHash).Return(true).Once()
 				},
 				project: domain.Project{
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -432,7 +420,6 @@ func TestProjectRepository_Create(t *testing.T) {
 					m.EXPECT().IsValid(validBlurHash).Return(true).Once()
 				},
 				project: domain.Project{
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -484,7 +471,6 @@ func TestProjectRepository_Get(t *testing.T) {
 
 	validProject := domain.Project{
 		Id:          id,
-		Preview:     "test-preview",
 		BlurHash:    validBlurHash,
 		Title:       "test-title",
 		Subtitle:    "test-subtitle",
@@ -562,7 +548,6 @@ func TestProjectRepository_Get(t *testing.T) {
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
 						Return(&projectFakeRow{project: domain.Project{
 							Id:          "",
-							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
 							Title:       validProject.Title,
 							Subtitle:    validProject.Subtitle,
@@ -588,7 +573,6 @@ func TestProjectRepository_Get(t *testing.T) {
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
 						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
-							Preview:     "",
 							BlurHash:    validProject.BlurHash,
 							Title:       validProject.Title,
 							Subtitle:    validProject.Subtitle,
@@ -614,7 +598,6 @@ func TestProjectRepository_Get(t *testing.T) {
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
 						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
-							Preview:     validProject.Preview,
 							BlurHash:    "",
 							Title:       validProject.Title,
 							Subtitle:    validProject.Subtitle,
@@ -643,7 +626,6 @@ func TestProjectRepository_Get(t *testing.T) {
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
 						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
-							Preview:     validProject.Preview,
 							BlurHash:    "invalid-from-db", // Invalid hash from DB
 							Title:       validProject.Title,
 							Subtitle:    validProject.Subtitle,
@@ -672,7 +654,6 @@ func TestProjectRepository_Get(t *testing.T) {
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
 						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
-							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
 							Title:       "",
 							Subtitle:    validProject.Subtitle,
@@ -701,7 +682,6 @@ func TestProjectRepository_Get(t *testing.T) {
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
 						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
-							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
 							Title:       validProject.Title,
 							Subtitle:    "",
@@ -730,7 +710,6 @@ func TestProjectRepository_Get(t *testing.T) {
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
 						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
-							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
 							Title:       validProject.Title,
 							Subtitle:    validProject.Subtitle,
@@ -759,7 +738,6 @@ func TestProjectRepository_Get(t *testing.T) {
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
 						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
-							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
 							Title:       validProject.Title,
 							Subtitle:    validProject.Subtitle,
@@ -788,7 +766,6 @@ func TestProjectRepository_Get(t *testing.T) {
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
 						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
-							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
 							Title:       validProject.Title,
 							Subtitle:    validProject.Subtitle,
@@ -817,7 +794,6 @@ func TestProjectRepository_Get(t *testing.T) {
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
 						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
-							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
 							Title:       validProject.Title,
 							Subtitle:    validProject.Subtitle,
@@ -846,7 +822,6 @@ func TestProjectRepository_Get(t *testing.T) {
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
 						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
-							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
 							Title:       validProject.Title,
 							Subtitle:    validProject.Subtitle,
@@ -875,7 +850,6 @@ func TestProjectRepository_Get(t *testing.T) {
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
 						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
-							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
 							Title:       validProject.Title,
 							Subtitle:    validProject.Subtitle,
@@ -930,7 +904,6 @@ func TestProjectRepository_Update(t *testing.T) {
 
 	validProject := &domain.Project{
 		Id:          "123-abc",
-		Preview:     "test-preview",
 		BlurHash:    validBlurHash,
 		Title:       "test-title",
 		Subtitle:    "test-subtitle",
@@ -1014,7 +987,6 @@ func TestProjectRepository_Update(t *testing.T) {
 			given: Given{
 				project: domain.Project{
 					Id:          validProject.Id,
-					Preview:     "",
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -1034,7 +1006,6 @@ func TestProjectRepository_Update(t *testing.T) {
 			given: Given{
 				project: domain.Project{
 					Id:          validProject.Id,
-					Preview:     validProject.Preview,
 					BlurHash:    "",
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -1054,7 +1025,6 @@ func TestProjectRepository_Update(t *testing.T) {
 			given: Given{
 				project: domain.Project{
 					Id:          validProject.Id,
-					Preview:     validProject.Preview,
 					BlurHash:    "invalid-hash",
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -1080,7 +1050,6 @@ func TestProjectRepository_Update(t *testing.T) {
 				},
 				project: domain.Project{
 					Id:          validProject.Id,
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       "",
 					Subtitle:    validProject.Subtitle,
@@ -1103,7 +1072,6 @@ func TestProjectRepository_Update(t *testing.T) {
 				},
 				project: domain.Project{
 					Id:          validProject.Id,
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    "",
@@ -1126,7 +1094,6 @@ func TestProjectRepository_Update(t *testing.T) {
 				},
 				project: domain.Project{
 					Id:          validProject.Id,
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -1149,7 +1116,6 @@ func TestProjectRepository_Update(t *testing.T) {
 				},
 				project: domain.Project{
 					Id:          validProject.Id,
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -1172,7 +1138,6 @@ func TestProjectRepository_Update(t *testing.T) {
 				},
 				project: domain.Project{
 					Id:          validProject.Id,
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -1195,7 +1160,6 @@ func TestProjectRepository_Update(t *testing.T) {
 				},
 				project: domain.Project{
 					Id:          validProject.Id,
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -1218,7 +1182,6 @@ func TestProjectRepository_Update(t *testing.T) {
 				},
 				project: domain.Project{
 					Id:          validProject.Id,
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -1363,7 +1326,6 @@ func TestProjectRepository_List(t *testing.T) {
 
 	validProject := domain.Project{
 		Id:          "123-abc",
-		Preview:     "test-preview",
 		BlurHash:    validBlurHash,
 		Title:       "test-title",
 		Subtitle:    "test-subtitle",

@@ -10,6 +10,7 @@ import (
 
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/database"
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
+	"github.com/fingertips18/fingertips18.github.io/backend/internal/handler/v1/dto"
 	v1 "github.com/fingertips18/fingertips18.github.io/backend/internal/repository/v1"
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/utils"
 	"github.com/jackc/pgx/v5"
@@ -159,7 +160,7 @@ func (h *educationServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 // @Tags education
 // @Accept json
 // @Produce json
-// @Param education body CreateEducationRequest true "Education payload"
+// @Param education body dto.CreateEducationRequest true "Education payload"
 // @Success 201 {object} IDResponse "Education ID"
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
@@ -172,7 +173,7 @@ func (h *educationServiceHandler) Create(w http.ResponseWriter, r *http.Request)
 
 	defer r.Body.Close()
 
-	var createReq CreateEducationRequest
+	var createReq dto.CreateEducationRequest
 	if err := json.NewDecoder(r.Body).Decode(&createReq); err != nil {
 		http.Error(w, "Invalid JSON in request body", http.StatusBadRequest)
 		return
@@ -250,7 +251,7 @@ func (h *educationServiceHandler) Create(w http.ResponseWriter, r *http.Request)
 // @Accept json
 // @Produce json
 // @Param id path string true "Education ID"
-// @Success 200 {object} EducationDTO
+// @Success 200 {object} dto.EducationDTO
 // @Failure 400 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
@@ -284,11 +285,10 @@ func (h *educationServiceHandler) Get(w http.ResponseWriter, r *http.Request, id
 	}
 
 	// Convert to DTOs
-	projectDTOs := make([]ProjectDTO, len(projects))
+	projectDTOs := make([]dto.ProjectDTO, len(projects))
 	for i, p := range projects {
-		projectDTOs[i] = ProjectDTO{
+		projectDTOs[i] = dto.ProjectDTO{
 			Id:          p.Id,
-			Preview:     p.Preview,
 			BlurHash:    p.BlurHash,
 			Title:       p.Title,
 			Subtitle:    p.Subtitle,
@@ -302,9 +302,9 @@ func (h *educationServiceHandler) Get(w http.ResponseWriter, r *http.Request, id
 		}
 	}
 
-	education := EducationDTO{
+	education := dto.EducationDTO{
 		Id: educationRes.Id,
-		MainSchool: SchoolPeriodDTO{
+		MainSchool: dto.SchoolPeriodDTO{
 			Link:        educationRes.MainSchool.Link,
 			Name:        educationRes.MainSchool.Name,
 			Description: educationRes.MainSchool.Description,
@@ -314,10 +314,10 @@ func (h *educationServiceHandler) Get(w http.ResponseWriter, r *http.Request, id
 			StartDate:   educationRes.MainSchool.StartDate,
 			EndDate:     educationRes.MainSchool.EndDate,
 		},
-		SchoolPeriods: func() []SchoolPeriodDTO {
-			periods := make([]SchoolPeriodDTO, len(educationRes.SchoolPeriods))
+		SchoolPeriods: func() []dto.SchoolPeriodDTO {
+			periods := make([]dto.SchoolPeriodDTO, len(educationRes.SchoolPeriods))
 			for i, p := range educationRes.SchoolPeriods {
-				periods[i] = SchoolPeriodDTO{
+				periods[i] = dto.SchoolPeriodDTO{
 					Link:        p.Link,
 					Name:        p.Name,
 					Description: p.Description,
@@ -371,8 +371,8 @@ func (h *educationServiceHandler) Get(w http.ResponseWriter, r *http.Request, id
 // @Tags education
 // @Accept json
 // @Produce json
-// @Param education body UpdateEducationRequest true "Education payload with ID"
-// @Success 200 {object} UpdateEducationResponse
+// @Param education body dto.UpdateEducationRequest true "Education payload with ID"
+// @Success 200 {object} dto.UpdateEducationResponse
 // @Failure 400 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
@@ -385,7 +385,7 @@ func (h *educationServiceHandler) Update(w http.ResponseWriter, r *http.Request)
 
 	defer r.Body.Close()
 
-	var updateReq UpdateEducationRequest
+	var updateReq dto.UpdateEducationRequest
 	if err := json.NewDecoder(r.Body).Decode(&updateReq); err != nil {
 		http.Error(w, "Invalid JSON in request body", http.StatusBadRequest)
 		return
@@ -437,9 +437,9 @@ func (h *educationServiceHandler) Update(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	updatedEducation := UpdateEducationResponse{
+	updatedEducation := dto.UpdateEducationResponse{
 		Id: updatedEducationRes.Id,
-		MainSchool: SchoolPeriodDTO{
+		MainSchool: dto.SchoolPeriodDTO{
 			Link:        updatedEducationRes.MainSchool.Link,
 			Name:        updatedEducationRes.MainSchool.Name,
 			Description: updatedEducationRes.MainSchool.Description,
@@ -449,10 +449,10 @@ func (h *educationServiceHandler) Update(w http.ResponseWriter, r *http.Request)
 			StartDate:   updatedEducationRes.MainSchool.StartDate,
 			EndDate:     updatedEducationRes.MainSchool.EndDate,
 		},
-		SchoolPeriods: func() []SchoolPeriodDTO {
-			periods := make([]SchoolPeriodDTO, len(updatedEducationRes.SchoolPeriods))
+		SchoolPeriods: func() []dto.SchoolPeriodDTO {
+			periods := make([]dto.SchoolPeriodDTO, len(updatedEducationRes.SchoolPeriods))
 			for i, p := range updatedEducationRes.SchoolPeriods {
-				periods[i] = SchoolPeriodDTO{
+				periods[i] = dto.SchoolPeriodDTO{
 					Link:        p.Link,
 					Name:        p.Name,
 					Description: p.Description,
@@ -543,7 +543,7 @@ func (h *educationServiceHandler) Delete(w http.ResponseWriter, r *http.Request,
 // @Param page_size query int false "Number of items per page (default 10)"
 // @Param sort_by query string false "Field to sort by" Enums(created_at, updated_at)
 // @Param sort_ascending query bool false "Sort ascending order"
-// @Success 200 {array} EducationDTO
+// @Success 200 {array} dto.EducationDTO
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /educations [get]
@@ -561,7 +561,7 @@ func (h *educationServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filter := EducationFilterRequest{
+	filter := dto.EducationFilterRequest{
 		Page:          utils.GetQueryInt32(q, "page", 1),
 		PageSize:      utils.GetQueryInt32(q, "page_size", 10),
 		SortBy:        sortBy,
@@ -614,18 +614,17 @@ func (h *educationServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	educations := make([]EducationDTO, len(educationsRes))
+	educations := make([]dto.EducationDTO, len(educationsRes))
 	for i, e := range educationsRes {
 
 		// Get projects for this education from the batch result
 		projects := projectsByEducation[e.Id]
 
 		// Convert to DTOs
-		projectDTOs := make([]ProjectDTO, len(projects))
+		projectDTOs := make([]dto.ProjectDTO, len(projects))
 		for i, p := range projects {
-			projectDTOs[i] = ProjectDTO{
+			projectDTOs[i] = dto.ProjectDTO{
 				Id:          p.Id,
-				Preview:     p.Preview,
 				BlurHash:    p.BlurHash,
 				Title:       p.Title,
 				Subtitle:    p.Subtitle,
@@ -639,9 +638,9 @@ func (h *educationServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		educations[i] = EducationDTO{
+		educations[i] = dto.EducationDTO{
 			Id: e.Id,
-			MainSchool: SchoolPeriodDTO{
+			MainSchool: dto.SchoolPeriodDTO{
 				Link:        e.MainSchool.Link,
 				Name:        e.MainSchool.Name,
 				Description: e.MainSchool.Description,
@@ -651,10 +650,10 @@ func (h *educationServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 				StartDate:   e.MainSchool.StartDate,
 				EndDate:     e.MainSchool.EndDate,
 			},
-			SchoolPeriods: func() []SchoolPeriodDTO {
-				periods := make([]SchoolPeriodDTO, len(e.SchoolPeriods))
+			SchoolPeriods: func() []dto.SchoolPeriodDTO {
+				periods := make([]dto.SchoolPeriodDTO, len(e.SchoolPeriods))
 				for j, p := range e.SchoolPeriods {
-					periods[j] = SchoolPeriodDTO{
+					periods[j] = dto.SchoolPeriodDTO{
 						Link:        p.Link,
 						Name:        p.Name,
 						Description: p.Description,

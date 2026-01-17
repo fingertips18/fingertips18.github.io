@@ -39,7 +39,7 @@ func (_m *MockFileRepository) EXPECT() *MockFileRepository_Expecter {
 }
 
 // Create provides a mock function for the type MockFileRepository
-func (_mock *MockFileRepository) Create(ctx context.Context, file *domain.File) (string, error) {
+func (_mock *MockFileRepository) Create(ctx context.Context, file domain.File) (string, error) {
 	ret := _mock.Called(ctx, file)
 
 	if len(ret) == 0 {
@@ -48,15 +48,15 @@ func (_mock *MockFileRepository) Create(ctx context.Context, file *domain.File) 
 
 	var r0 string
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.File) (string, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.File) (string, error)); ok {
 		return returnFunc(ctx, file)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.File) string); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.File) string); ok {
 		r0 = returnFunc(ctx, file)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *domain.File) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, domain.File) error); ok {
 		r1 = returnFunc(ctx, file)
 	} else {
 		r1 = ret.Error(1)
@@ -71,20 +71,20 @@ type MockFileRepository_Create_Call struct {
 
 // Create is a helper method to define mock.On call
 //   - ctx context.Context
-//   - file *domain.File
+//   - file domain.File
 func (_e *MockFileRepository_Expecter) Create(ctx interface{}, file interface{}) *MockFileRepository_Create_Call {
 	return &MockFileRepository_Create_Call{Call: _e.mock.On("Create", ctx, file)}
 }
 
-func (_c *MockFileRepository_Create_Call) Run(run func(ctx context.Context, file *domain.File)) *MockFileRepository_Create_Call {
+func (_c *MockFileRepository_Create_Call) Run(run func(ctx context.Context, file domain.File)) *MockFileRepository_Create_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 *domain.File
+		var arg1 domain.File
 		if args[1] != nil {
-			arg1 = args[1].(*domain.File)
+			arg1 = args[1].(domain.File)
 		}
 		run(
 			arg0,
@@ -99,7 +99,7 @@ func (_c *MockFileRepository_Create_Call) Return(s string, err error) *MockFileR
 	return _c
 }
 
-func (_c *MockFileRepository_Create_Call) RunAndReturn(run func(ctx context.Context, file *domain.File) (string, error)) *MockFileRepository_Create_Call {
+func (_c *MockFileRepository_Create_Call) RunAndReturn(run func(ctx context.Context, file domain.File) (string, error)) *MockFileRepository_Create_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -305,6 +305,74 @@ func (_c *MockFileRepository_FindByParent_Call) Return(files []domain.File, err 
 }
 
 func (_c *MockFileRepository_FindByParent_Call) RunAndReturn(run func(ctx context.Context, parentTable string, parentID string, role domain.FileRole) ([]domain.File, error)) *MockFileRepository_FindByParent_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Update provides a mock function for the type MockFileRepository
+func (_mock *MockFileRepository) Update(ctx context.Context, fileUpdate domain.File) (*domain.File, error) {
+	ret := _mock.Called(ctx, fileUpdate)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Update")
+	}
+
+	var r0 *domain.File
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.File) (*domain.File, error)); ok {
+		return returnFunc(ctx, fileUpdate)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.File) *domain.File); ok {
+		r0 = returnFunc(ctx, fileUpdate)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.File)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, domain.File) error); ok {
+		r1 = returnFunc(ctx, fileUpdate)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockFileRepository_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
+type MockFileRepository_Update_Call struct {
+	*mock.Call
+}
+
+// Update is a helper method to define mock.On call
+//   - ctx context.Context
+//   - fileUpdate domain.File
+func (_e *MockFileRepository_Expecter) Update(ctx interface{}, fileUpdate interface{}) *MockFileRepository_Update_Call {
+	return &MockFileRepository_Update_Call{Call: _e.mock.On("Update", ctx, fileUpdate)}
+}
+
+func (_c *MockFileRepository_Update_Call) Run(run func(ctx context.Context, fileUpdate domain.File)) *MockFileRepository_Update_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 domain.File
+		if args[1] != nil {
+			arg1 = args[1].(domain.File)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockFileRepository_Update_Call) Return(file *domain.File, err error) *MockFileRepository_Update_Call {
+	_c.Call.Return(file, err)
+	return _c
+}
+
+func (_c *MockFileRepository_Update_Call) RunAndReturn(run func(ctx context.Context, fileUpdate domain.File) (*domain.File, error)) *MockFileRepository_Update_Call {
 	_c.Call.Return(run)
 	return _c
 }

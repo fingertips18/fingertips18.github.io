@@ -22,6 +22,18 @@ definitions:
       subject:
         type: string
     type: object
+  dto.CreateEducationRequest:
+    properties:
+      level:
+        example: elementary
+        type: string
+      main_school:
+        $ref: '#/definitions/dto.SchoolPeriodDTO'
+      school_periods:
+        items:
+          $ref: '#/definitions/dto.SchoolPeriodDTO'
+        type: array
+    type: object
   dto.CreateFileRequest:
     properties:
       name:
@@ -39,7 +51,53 @@ definitions:
       url:
         type: string
     type: object
-  dto.FileResponse:
+  dto.CreateProjectRequest:
+    properties:
+      blurhash:
+        type: string
+      description:
+        type: string
+      education_id:
+        type: string
+      link:
+        type: string
+      previews:
+        items:
+          $ref: '#/definitions/dto.CreateFileRequest'
+        type: array
+      sub_title:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      type:
+        type: string
+    type: object
+  dto.EducationDTO:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      level:
+        type: string
+      main_school:
+        $ref: '#/definitions/dto.SchoolPeriodDTO'
+      projects:
+        items:
+          $ref: '#/definitions/dto.ProjectDTO'
+        type: array
+      school_periods:
+        items:
+          $ref: '#/definitions/dto.SchoolPeriodDTO'
+        type: array
+      updated_at:
+        type: string
+    type: object
+  dto.FileDTO:
     properties:
       created_at:
         type: string
@@ -62,30 +120,24 @@ definitions:
       url:
         type: string
     type: object
-  v1.CreateEducationRequest:
-    properties:
-      level:
-        example: elementary
-        type: string
-      main_school:
-        $ref: '#/definitions/v1.SchoolPeriodDTO'
-      school_periods:
-        items:
-          $ref: '#/definitions/v1.SchoolPeriodDTO'
-        type: array
-    type: object
-  v1.CreateProjectRequest:
+  dto.ProjectDTO:
     properties:
       blurhash:
+        type: string
+      created_at:
         type: string
       description:
         type: string
       education_id:
         type: string
+      id:
+        type: string
       link:
         type: string
-      preview:
-        type: string
+      previews:
+        items:
+          $ref: '#/definitions/dto.FileDTO'
+        type: array
       sub_title:
         type: string
       tags:
@@ -95,6 +147,60 @@ definitions:
       title:
         type: string
       type:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  dto.SchoolPeriodDTO:
+    properties:
+      blurhash:
+        type: string
+      description:
+        type: string
+      end_date:
+        example: "2024-06-01T00:00:00Z"
+        type: string
+      honor:
+        type: string
+      link:
+        type: string
+      logo:
+        type: string
+      name:
+        type: string
+      start_date:
+        example: "2020-09-01T00:00:00Z"
+        type: string
+    type: object
+  dto.UpdateEducationRequest:
+    properties:
+      id:
+        type: string
+      level:
+        example: elementary
+        type: string
+      main_school:
+        $ref: '#/definitions/dto.SchoolPeriodDTO'
+      school_periods:
+        items:
+          $ref: '#/definitions/dto.SchoolPeriodDTO'
+        type: array
+    type: object
+  dto.UpdateEducationResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      level:
+        type: string
+      main_school:
+        $ref: '#/definitions/dto.SchoolPeriodDTO'
+      school_periods:
+        items:
+          $ref: '#/definitions/dto.SchoolPeriodDTO'
+        type: array
+      updated_at:
         type: string
     type: object
   v1.CreateSkillRequest:
@@ -106,27 +212,6 @@ definitions:
       icon:
         type: string
       label:
-        type: string
-    type: object
-  v1.EducationDTO:
-    properties:
-      created_at:
-        type: string
-      id:
-        type: string
-      level:
-        type: string
-      main_school:
-        $ref: '#/definitions/v1.SchoolPeriodDTO'
-      projects:
-        items:
-          $ref: '#/definitions/v1.ProjectDTO'
-        type: array
-      school_periods:
-        items:
-          $ref: '#/definitions/v1.SchoolPeriodDTO'
-        type: array
-      updated_at:
         type: string
     type: object
   v1.ErrorResponse:
@@ -192,56 +277,6 @@ definitions:
       file:
         $ref: '#/definitions/v1.ImageUploadFileDTO'
     type: object
-  v1.ProjectDTO:
-    properties:
-      blurhash:
-        type: string
-      created_at:
-        type: string
-      description:
-        type: string
-      education_id:
-        type: string
-      id:
-        type: string
-      link:
-        type: string
-      preview:
-        type: string
-      sub_title:
-        type: string
-      tags:
-        items:
-          type: string
-        type: array
-      title:
-        type: string
-      type:
-        type: string
-      updated_at:
-        type: string
-    type: object
-  v1.SchoolPeriodDTO:
-    properties:
-      blurhash:
-        type: string
-      description:
-        type: string
-      end_date:
-        example: "2024-06-01T00:00:00Z"
-        type: string
-      honor:
-        type: string
-      link:
-        type: string
-      logo:
-        type: string
-      name:
-        type: string
-      start_date:
-        example: "2020-09-01T00:00:00Z"
-        type: string
-    type: object
   v1.SkillDTO:
     properties:
       category:
@@ -256,37 +291,6 @@ definitions:
         type: string
       label:
         type: string
-      updated_at:
-        type: string
-    type: object
-  v1.UpdateEducationRequest:
-    properties:
-      id:
-        type: string
-      level:
-        example: elementary
-        type: string
-      main_school:
-        $ref: '#/definitions/v1.SchoolPeriodDTO'
-      school_periods:
-        items:
-          $ref: '#/definitions/v1.SchoolPeriodDTO'
-        type: array
-    type: object
-  v1.UpdateEducationResponse:
-    properties:
-      created_at:
-        type: string
-      id:
-        type: string
-      level:
-        type: string
-      main_school:
-        $ref: '#/definitions/v1.SchoolPeriodDTO'
-      school_periods:
-        items:
-          $ref: '#/definitions/v1.SchoolPeriodDTO'
-        type: array
       updated_at:
         type: string
     type: object
@@ -377,7 +381,7 @@ paths:
         name: education
         required: true
         schema:
-          $ref: '#/definitions/v1.CreateEducationRequest'
+          $ref: '#/definitions/dto.CreateEducationRequest'
       produces:
       - application/json
       responses:
@@ -409,14 +413,14 @@ paths:
         name: education
         required: true
         schema:
-          $ref: '#/definitions/v1.UpdateEducationRequest'
+          $ref: '#/definitions/dto.UpdateEducationRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/v1.UpdateEducationResponse'
+            $ref: '#/definitions/dto.UpdateEducationResponse'
         "400":
           description: Bad Request
           schema:
@@ -481,7 +485,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/v1.EducationDTO'
+            $ref: '#/definitions/dto.EducationDTO'
         "400":
           description: Bad Request
           schema:
@@ -532,7 +536,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/v1.EducationDTO'
+              $ref: '#/definitions/dto.EducationDTO'
             type: array
         "400":
           description: Bad Request
@@ -583,6 +587,37 @@ paths:
       tags:
       - email
   /file:
+    delete:
+      description: Deletes all file records associated with a specific parent entity.
+      parameters:
+      - description: Parent table name
+        in: query
+        name: parentTable
+        required: true
+        type: string
+      - description: Parent ID
+        in: query
+        name: parentID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete files by parent
+      tags:
+      - file
     post:
       consumes:
       - application/json
@@ -613,6 +648,37 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Create a file record
+      tags:
+      - file
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing file metadata record. The file ID must be provided.
+      parameters:
+      - description: Updated file data
+        in: body
+        name: file
+        required: true
+        schema:
+          $ref: '#/definitions/dto.FileDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated file details
+          schema:
+            $ref: '#/definitions/dto.FileDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update a file record
       tags:
       - file
   /file/{id}:
@@ -660,7 +726,7 @@ paths:
         "200":
           description: File details
           schema:
-            $ref: '#/definitions/dto.FileResponse'
+            $ref: '#/definitions/dto.FileDTO'
         "400":
           description: Bad Request
           schema:
@@ -704,7 +770,7 @@ paths:
           description: List of files
           schema:
             items:
-              $ref: '#/definitions/dto.FileResponse'
+              $ref: '#/definitions/dto.FileDTO'
             type: array
         "400":
           description: Bad Request
@@ -764,7 +830,7 @@ paths:
         name: project
         required: true
         schema:
-          $ref: '#/definitions/v1.CreateProjectRequest'
+          $ref: '#/definitions/dto.CreateProjectRequest'
       produces:
       - application/json
       responses:
@@ -796,14 +862,14 @@ paths:
         name: project
         required: true
         schema:
-          $ref: '#/definitions/v1.ProjectDTO'
+          $ref: '#/definitions/dto.ProjectDTO'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/v1.ProjectDTO'
+            $ref: '#/definitions/dto.ProjectDTO'
         "400":
           description: Bad Request
           schema:
@@ -866,7 +932,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/v1.ProjectDTO'
+            $ref: '#/definitions/dto.ProjectDTO'
         "400":
           description: Bad Request
           schema:
@@ -925,7 +991,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/v1.ProjectDTO'
+              $ref: '#/definitions/dto.ProjectDTO'
             type: array
         "400":
           description: Bad Request
