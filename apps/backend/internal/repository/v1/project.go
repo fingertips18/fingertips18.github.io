@@ -94,8 +94,8 @@ func (r *projectRepository) Create(ctx context.Context, project *domain.Project)
 
 	query := fmt.Sprintf(
 		`INSERT INTO %s
-		(id, preview, blur_hash, title, sub_title, description, tags, type, link, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+		(id, blur_hash, title, sub_title, description, tags, type, link, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 		RETURNING id`,
 		r.projectTable,
 	)
@@ -141,7 +141,7 @@ func (r *projectRepository) Get(ctx context.Context, id string) (*domain.Project
 	var project domain.Project
 
 	query := fmt.Sprintf(
-		`SELECT id, preview, blur_hash, title, sub_title, description, tags, type, link, created_at, updated_at
+		`SELECT id, blur_hash, title, sub_title, description, tags, type, link, created_at, updated_at
 		FROM %s
 		WHERE id = $1`,
 		r.projectTable,
@@ -310,7 +310,7 @@ func (r *projectRepository) List(ctx context.Context, filter domain.ProjectFilte
 	}
 
 	baseQuery := fmt.Sprintf(
-		`SELECT id, preview, blur_hash, title, sub_title, description, tags, type, link, created_at, updated_at FROM %s`,
+		`SELECT id, blur_hash, title, sub_title, description, tags, type, link, created_at, updated_at FROM %s`,
 		r.projectTable,
 	)
 	var conditions []string
@@ -392,7 +392,7 @@ func (r *projectRepository) List(ctx context.Context, filter domain.ProjectFilte
 // provided educationID and returns them as a slice of domain.Project.
 //
 // Behavior:
-//   - Executes a SELECT for id, preview, blur_hash, title, sub_title, description,
+//   - Executes a SELECT for id, blur_hash, title, sub_title, description,
 //     tags, type, link, education_id, created_at, updated_at from the project table
 //     where education_id = $1.
 //   - Results are ordered by created_at DESC.
@@ -412,7 +412,7 @@ func (r *projectRepository) List(ctx context.Context, filter domain.ProjectFilte
 //   - The function defers closing rows and returns any rows.Err() after iteration.
 func (r *projectRepository) ListByEducationID(ctx context.Context, educationID string) ([]domain.Project, error) {
 	query := fmt.Sprintf(`
-        SELECT id, preview, blur_hash, title, sub_title, description, tags, type, link, education_id, created_at, updated_at
+        SELECT id, blur_hash, title, sub_title, description, tags, type, link, education_id, created_at, updated_at
         FROM %s
         WHERE education_id = $1
         ORDER BY created_at DESC
@@ -463,7 +463,7 @@ func (r *projectRepository) ListByEducationIDs(ctx context.Context, educationIDs
 	}
 
 	query := fmt.Sprintf(`
-		SELECT id, preview, blur_hash, title, sub_title, description, tags, type, link, education_id, created_at, updated_at
+		SELECT id, blur_hash, title, sub_title, description, tags, type, link, education_id, created_at, updated_at
 		FROM %s
 		WHERE education_id IN (%s)
 		ORDER BY education_id, created_at DESC

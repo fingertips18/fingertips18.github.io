@@ -60,7 +60,7 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 
 	validResp, _ := json.Marshal(domain.ProjectIDResponse{ID: fixedID})
 
-	createReq := dto.ProjectDTO{
+	createReq := dto.CreateProjectRequest{
 		BlurHash:    validBlurHash,
 		Title:       "title",
 		Subtitle:    "subtitle",
@@ -211,7 +211,7 @@ func TestProjectServiceHandler_Create_Routing(t *testing.T) {
 	f := newProjectHandlerTestFixture(t)
 
 	// Setup valid input and expected output
-	createReq := dto.ProjectDTO{
+	createReq := dto.CreateProjectRequest{
 		BlurHash:    validBlurHash,
 		Title:       "title",
 		Subtitle:    "subtitle",

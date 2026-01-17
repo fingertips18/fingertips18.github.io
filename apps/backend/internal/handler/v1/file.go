@@ -70,20 +70,29 @@ func (h *fileServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch {
 	// GET /files?parent_table=...&parent_id=...&role=...
 	case path == "/files":
-		if r.Method != http.MethodGet {
+		switch r.Method {
+		case http.MethodGet:
+			h.ListByParent(w, r)
+		case http.MethodDelete:
+			parentTable := r.URL.Query().Get("parent_table")
+			parentID := r.URL.Query().Get("parent_id")
+			h.DeleteByParent(w, r, parentTable, parentID)
+		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-			return
 		}
-		h.ListByParent(w, r)
 		return
 
-	// POST /file
+	// POST / PUT /file
 	case path == "/file":
-		if r.Method != http.MethodPost {
+		switch r.Method {
+		case http.MethodPost:
+			h.Create(w, r)
+		case http.MethodPut:
+			h.Update(w, r)
+		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
-		h.Create(w, r)
 		return
 
 	// GET / DELETE /file/{id}
@@ -277,6 +286,11 @@ func (h *fileServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 			msg = strings.ToUpper(msg[:1]) + msg[1:]
 		}
 		http.Error(w, msg, http.StatusInternalServerError)
+		return
+	}
+
+	if updatedFile == nil {
+		http.Error(w, "File not found", http.StatusNotFound)
 		return
 	}
 

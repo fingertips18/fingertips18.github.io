@@ -134,7 +134,7 @@ func (r *fileRepository) FindByParent(ctx context.Context, parentTable, parentID
 //   - string: The newly created file's ID.
 //   - error: An error if validation fails, database insertion fails, or the returned ID is empty.
 //
-// The provided file object's CreatedAt and UpdatedAt fields are updated when the method succeeds.
+// Note: Since the file is passed by value, the caller's struct is not modified with timestamps.
 func (r *fileRepository) Create(ctx context.Context, file domain.File) (string, error) {
 	if err := file.ValidatePayload(); err != nil {
 		return "", fmt.Errorf("failed to validate file: %w", err)

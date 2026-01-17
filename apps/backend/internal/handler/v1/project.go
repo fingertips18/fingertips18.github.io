@@ -198,6 +198,7 @@ func (h *projectServiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	createdAny := false
 	for _, preview := range createReq.Previews {
 		preview := &domain.File{
 			ParentTable: "project",
@@ -211,10 +212,14 @@ func (h *projectServiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 		_, err := h.fileRepo.Create(r.Context(), *preview)
 		if err != nil {
-			// Log error but don't fail the entire request
+			if createdAny {
+				_ = h.fileRepo.DeleteByParent(r.Context(), "project", id)
+			}
+			_ = h.projectRepo.Delete(r.Context(), id)
 			http.Error(w, "Failed to create file record: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
+		createdAny = true
 	}
 
 	resp := IDResponse{Id: id}
@@ -293,7 +298,7 @@ func (h *projectServiceHandler) Get(w http.ResponseWriter, r *http.Request, id s
 	}
 
 	resp := dto.ProjectDTO{
-		Id:          project.Id,
+		ID:          project.Id,
 		BlurHash:    project.BlurHash,
 		Title:       project.Title,
 		Subtitle:    project.Subtitle,
@@ -352,7 +357,7 @@ func (h *projectServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	project := domain.Project{
-		Id:          updateReq.Id,
+		Id:          updateReq.ID,
 		BlurHash:    updateReq.BlurHash,
 		Title:       updateReq.Title,
 		Subtitle:    updateReq.Subtitle,
@@ -381,7 +386,8 @@ func (h *projectServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, preview := range updateReq.Previews {
-		preview := &domain.File{
+		prevUpdate := &domain.File{
+			ID:          preview.ID,
 			ParentTable: "project",
 			ParentID:    updatedProject.Id,
 			Role:        domain.FileRole(preview.Role),
@@ -391,7 +397,7 @@ func (h *projectServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 			Size:        preview.Size,
 		}
 
-		_, err := h.fileRepo.Update(r.Context(), *preview)
+		_, err := h.fileRepo.Update(r.Context(), *prevUpdate)
 		if err != nil {
 			// Log error but don't fail the entire request
 			http.Error(w, "Failed to update file record: "+err.Error(), http.StatusInternalServerError)
@@ -399,8 +405,23 @@ func (h *projectServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	resp := dto.ProjectDTO{
+		ID:          updatedProject.Id,
+		BlurHash:    updatedProject.BlurHash,
+		Title:       updatedProject.Title,
+		Subtitle:    updatedProject.Subtitle,
+		Description: updatedProject.Description,
+		Tags:        updatedProject.Tags,
+		Type:        string(updatedProject.Type),
+		Link:        updatedProject.Link,
+		EducationID: updatedProject.EducationID,
+		Previews:    updateReq.Previews, // or reload from fileRepo
+		CreatedAt:   updatedProject.CreatedAt,
+		UpdatedAt:   updatedProject.UpdatedAt,
+	}
+
 	var buf bytes.Buffer
-	if err := json.NewEncoder(&buf).Encode(updatedProject); err != nil {
+	if err := json.NewEncoder(&buf).Encode(resp); err != nil {
 		http.Error(w, "Failed to write response: "+err.Error(), http.StatusInternalServerError)
 		return
 	}

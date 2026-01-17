@@ -288,7 +288,7 @@ func (h *educationServiceHandler) Get(w http.ResponseWriter, r *http.Request, id
 	projectDTOs := make([]dto.ProjectDTO, len(projects))
 	for i, p := range projects {
 		projectDTOs[i] = dto.ProjectDTO{
-			Id:          p.Id,
+			ID:          p.Id,
 			BlurHash:    p.BlurHash,
 			Title:       p.Title,
 			Subtitle:    p.Subtitle,
@@ -624,7 +624,7 @@ func (h *educationServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 		projectDTOs := make([]dto.ProjectDTO, len(projects))
 		for i, p := range projects {
 			projectDTOs[i] = dto.ProjectDTO{
-				Id:          p.Id,
+				ID:          p.Id,
 				BlurHash:    p.BlurHash,
 				Title:       p.Title,
 				Subtitle:    p.Subtitle,

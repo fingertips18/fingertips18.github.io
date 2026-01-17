@@ -3,7 +3,7 @@ package dto
 import "time"
 
 type ProjectDTO struct {
-	Id          string    `json:"id"`
+	ID          string    `json:"id"`
 	BlurHash    string    `json:"blurhash"`
 	Title       string    `json:"title"`
 	Subtitle    string    `json:"sub_title"`

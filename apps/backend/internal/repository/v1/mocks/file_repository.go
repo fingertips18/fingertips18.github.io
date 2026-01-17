@@ -161,6 +161,69 @@ func (_c *MockFileRepository_Delete_Call) RunAndReturn(run func(ctx context.Cont
 	return _c
 }
 
+// DeleteByParent provides a mock function for the type MockFileRepository
+func (_mock *MockFileRepository) DeleteByParent(ctx context.Context, parentTable string, parentID string) error {
+	ret := _mock.Called(ctx, parentTable, parentID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteByParent")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = returnFunc(ctx, parentTable, parentID)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockFileRepository_DeleteByParent_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteByParent'
+type MockFileRepository_DeleteByParent_Call struct {
+	*mock.Call
+}
+
+// DeleteByParent is a helper method to define mock.On call
+//   - ctx context.Context
+//   - parentTable string
+//   - parentID string
+func (_e *MockFileRepository_Expecter) DeleteByParent(ctx interface{}, parentTable interface{}, parentID interface{}) *MockFileRepository_DeleteByParent_Call {
+	return &MockFileRepository_DeleteByParent_Call{Call: _e.mock.On("DeleteByParent", ctx, parentTable, parentID)}
+}
+
+func (_c *MockFileRepository_DeleteByParent_Call) Run(run func(ctx context.Context, parentTable string, parentID string)) *MockFileRepository_DeleteByParent_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockFileRepository_DeleteByParent_Call) Return(err error) *MockFileRepository_DeleteByParent_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockFileRepository_DeleteByParent_Call) RunAndReturn(run func(ctx context.Context, parentTable string, parentID string) error) *MockFileRepository_DeleteByParent_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // FindByID provides a mock function for the type MockFileRepository
 func (_mock *MockFileRepository) FindByID(ctx context.Context, id string) (*domain.File, error) {
 	ret := _mock.Called(ctx, id)
