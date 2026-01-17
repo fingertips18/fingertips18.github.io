@@ -252,6 +252,7 @@ func (h *fileServiceHandler) Get(w http.ResponseWriter, r *http.Request, id stri
 // @Param file body dto.FileDTO true "Updated file data"
 // @Success 200 {object} dto.FileDTO "Updated file details"
 // @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse "Not Found"
 // @Failure 500 {object} ErrorResponse
 // @Router /file [put]
 func (h *fileServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
