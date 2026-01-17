@@ -22,6 +22,46 @@ definitions:
       subject:
         type: string
     type: object
+  dto.CreateFileRequest:
+    properties:
+      name:
+        type: string
+      parent_id:
+        type: string
+      parent_table:
+        type: string
+      role:
+        type: string
+      size:
+        type: integer
+      type:
+        type: string
+      url:
+        type: string
+    type: object
+  dto.FileResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      parent_id:
+        type: string
+      parent_table:
+        type: string
+      role:
+        type: string
+      size:
+        type: integer
+      type:
+        type: string
+      updated_at:
+        type: string
+      url:
+        type: string
+    type: object
   v1.CreateEducationRequest:
     properties:
       level:
@@ -542,6 +582,102 @@ paths:
       summary: Send an email
       tags:
       - email
+  /file:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new file metadata record from the provided JSON payload.
+        Returns the created file ID.
+      parameters:
+      - description: File payload
+        in: body
+        name: file
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateFileRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: File ID
+          schema:
+            $ref: '#/definitions/v1.IDResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a file record
+      tags:
+      - file
+  /file/{id}:
+    delete:
+      description: Deletes a file record by its unique identifier.
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a file by ID
+      tags:
+      - file
+    get:
+      description: Retrieves a file record by its unique identifier.
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: File details
+          schema:
+            $ref: '#/definitions/dto.FileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a file by ID
+      tags:
+      - file
   /image/upload:
     post:
       consumes:
