@@ -137,6 +137,12 @@ func createHandlers(cfg Config) []handlerConfig {
 		},
 	)
 
+	fileHandler := v1.NewFileServiceHandler(
+		v1.FileServiceConfig{
+			DatabaseAPI: cfg.DatabaseAPI,
+		},
+	)
+
 	handlers := []handlerConfig{
 		{
 			paths:   []string{"/email", "/email/"},
@@ -161,6 +167,10 @@ func createHandlers(cfg Config) []handlerConfig {
 		{
 			paths:   []string{"/image", "/image/"},
 			handler: imageHandler,
+		},
+		{
+			paths:   []string{"/file", "/file/", "/files", "/files/"},
+			handler: fileHandler,
 		},
 	}
 

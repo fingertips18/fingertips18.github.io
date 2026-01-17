@@ -1,0 +1,333 @@
+package v1
+
+import (
+	"bytes"
+	"encoding/json"
+	"errors"
+	"net/http"
+	"strings"
+
+	"github.com/fingertips18/fingertips18.github.io/backend/internal/database"
+	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
+	dto "github.com/fingertips18/fingertips18.github.io/backend/internal/handler/v1/dto"
+	v1 "github.com/fingertips18/fingertips18.github.io/backend/internal/repository/v1"
+	"github.com/jackc/pgx/v5"
+)
+
+type FileHandler interface {
+	http.Handler
+	Create(w http.ResponseWriter, r *http.Request)
+	Get(w http.ResponseWriter, r *http.Request, id string)
+	Delete(w http.ResponseWriter, r *http.Request, id string)
+	ListByParent(w http.ResponseWriter, r *http.Request)
+}
+
+type FileServiceConfig struct {
+	DatabaseAPI database.DatabaseAPI
+
+	fileRepo v1.FileRepository
+}
+
+type fileServiceHandler struct {
+	fileRepo v1.FileRepository
+}
+
+// NewFileServiceHandler creates and returns a new instance of FileHandler.
+// It accepts a FileServiceConfig, which may include a custom file repository.
+// If no repository is provided in the config, it initializes a default FileRepository
+// using the provided DatabaseAPI and a default table name.
+// Returns a FileHandler implementation.
+func NewFileServiceHandler(cfg FileServiceConfig) FileHandler {
+	fileRepo := cfg.fileRepo
+	if fileRepo == nil {
+		fileRepo = v1.NewFileRepository(
+			v1.FileRepositoryConfig{
+				DatabaseAPI: cfg.DatabaseAPI,
+				FileTable:   "file",
+			},
+		)
+	}
+
+	return &fileServiceHandler{
+		fileRepo: fileRepo,
+	}
+}
+
+// ServeHTTP handles HTTP requests for file-related endpoints.
+//
+// It supports the following routes:
+//   - GET    /files?parent_table=...&parent_id=...&role=...  : List files by parent
+//   - POST   /file                                           : Create a new file record
+//   - GET    /file/{id}                                      : Retrieve a file by its ID
+//   - DELETE /file/{id}                                      : Delete a file by its ID
+//
+// For unsupported methods or unknown routes, it responds with appropriate HTTP error codes.
+func (h *fileServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	path := strings.TrimSuffix(r.URL.Path, "/")
+
+	switch {
+	// GET /files?parent_table=...&parent_id=...&role=...
+	case path == "/files":
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		h.ListByParent(w, r)
+		return
+
+	// POST /file
+	case path == "/file":
+		if r.Method != http.MethodPost {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		h.Create(w, r)
+		return
+
+	// GET / DELETE /file/{id}
+	case strings.HasPrefix(path, "/file/"):
+		id := strings.TrimPrefix(path, "/file/")
+
+		if r.Method != http.MethodGet && r.Method != http.MethodDelete {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		if id == "" {
+			http.Error(w, "File ID is required", http.StatusBadRequest)
+			return
+		}
+
+		switch r.Method {
+		case http.MethodGet:
+			h.Get(w, r, id)
+		default: // Must be DELETE due to earlier check
+			h.Delete(w, r, id)
+		}
+		return
+
+	// Unknown route
+	default:
+		http.NotFound(w, r)
+		return
+	}
+}
+
+// Create handles HTTP POST requests to create a new file record.
+// It expects a JSON payload in the request body representing file metadata.
+// On success, it responds with a JSON object containing the new file's ID and a status message.
+// If the request method is not POST, the JSON is invalid, or file creation fails, it responds with an appropriate HTTP error.
+//
+// @Security ApiKeyAuth
+// @Summary Create a file record
+// @Description Creates a new file metadata record from the provided JSON payload. Returns the created file ID.
+// @Tags file
+// @Accept json
+// @Produce json
+// @Param file body dto.CreateFileRequest true "File payload"
+// @Success 201 {object} IDResponse "File ID"
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /file [post]
+func (h *fileServiceHandler) Create(w http.ResponseWriter, r *http.Request) {
+	var req dto.CreateFileRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid JSON in request body", http.StatusBadRequest)
+		return
+	}
+
+	file := &domain.File{
+		ParentTable: domain.ParentTable(req.ParentTable),
+		ParentID:    req.ParentID,
+		Role:        domain.FileRole(req.Role),
+		Name:        req.Name,
+		URL:         req.URL,
+		Type:        req.Type,
+		Size:        req.Size,
+	}
+
+	id, err := h.fileRepo.Create(r.Context(), file)
+	if err != nil {
+		msg := err.Error()
+		if len(msg) > 0 {
+			msg = strings.ToUpper(msg[:1]) + msg[1:]
+		}
+		http.Error(w, msg, http.StatusInternalServerError)
+		return
+	}
+
+	resp := IDResponse{
+		Id: id,
+	}
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(resp); err != nil {
+		http.Error(w, "Failed to write response: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	w.Write(buf.Bytes())
+}
+
+// Get handles HTTP GET requests to retrieve a file by its ID.
+// It expects the file ID as a URL path parameter.
+// On success, it responds with a JSON representation of the file.
+// If the ID is invalid, the file is not found, or retrieval fails, it responds with an appropriate HTTP error.
+//
+// @Security ApiKeyAuth
+// @Summary Get a file by ID
+// @Description Retrieves a file record by its unique identifier.
+// @Tags file
+// @Produce json
+// @Param id path string true "File ID"
+// @Success 200 {object} dto.FileResponse "File details"
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /file/{id} [get]
+func (h *fileServiceHandler) Get(w http.ResponseWriter, r *http.Request, id string) {
+	if id == "" {
+		http.Error(w, "Invalid file ID", http.StatusBadRequest)
+		return
+	}
+
+	file, err := h.fileRepo.FindByID(r.Context(), id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			http.Error(w, "File not found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Failed to retrieve file: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	resp := dto.FileResponse{
+		ID:          file.ID,
+		ParentTable: string(file.ParentTable),
+		ParentID:    file.ParentID,
+		Role:        string(file.Role),
+		Name:        file.Name,
+		URL:         file.URL,
+		Type:        file.Type,
+		Size:        file.Size,
+		CreatedAt:   file.CreatedAt,
+		UpdatedAt:   file.UpdatedAt,
+	}
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(resp); err != nil {
+		http.Error(w, "Failed to write response: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(buf.Bytes())
+}
+
+// Delete handles HTTP DELETE requests to remove a file by its ID.
+// It expects the file ID as a URL path parameter.
+// On success, it responds with status "ok".
+// If the ID is invalid, the file is not found, or deletion fails, it responds with an appropriate HTTP error.
+//
+// @Security ApiKeyAuth
+// @Summary Delete a file by ID
+// @Description Deletes a file record by its unique identifier.
+// @Tags file
+// @Produce json
+// @Param id path string true "File ID"
+// @Success 204 "No Content"
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /file/{id} [delete]
+func (h *fileServiceHandler) Delete(w http.ResponseWriter, r *http.Request, id string) {
+	if id == "" {
+		http.Error(w, "Invalid file ID", http.StatusBadRequest)
+		return
+	}
+
+	err := h.fileRepo.Delete(r.Context(), id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			http.Error(w, "File not found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Failed to delete file: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Successful delete → 204 No Content
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// ListByParent handles HTTP GET requests to retrieve files by parent entity and role.
+// It expects query parameters: parentTable, parentId, and role.
+// On success, it responds with a JSON array of files matching the criteria.
+// If required parameters are missing or invalid, it responds with an appropriate HTTP error.
+//
+// @Security ApiKeyAuth
+// @Summary List files by parent
+// @Description Retrieves all files for a specific parent entity and role.
+// @Tags file
+// @Produce json
+// @Param parent_table query string true "Parent table name"
+// @Param parent_id query string true "Parent ID"
+// @Param role query string true "File role (image)"
+// @Success 200 {array} dto.FileResponse "List of files"
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /files [get]
+func (h *fileServiceHandler) ListByParent(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query()
+	parentTable := query.Get("parent_table")
+	parentID := query.Get("parent_id")
+	role := query.Get("role")
+
+	if parentTable == "" {
+		http.Error(w, "parent_table query parameter is required", http.StatusBadRequest)
+		return
+	}
+	if parentID == "" {
+		http.Error(w, "parent_id query parameter is required", http.StatusBadRequest)
+		return
+	}
+	if role == "" {
+		http.Error(w, "role query parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	files, err := h.fileRepo.FindByParent(r.Context(), parentTable, parentID, domain.FileRole(role))
+	if err != nil {
+		http.Error(w, "Failed to retrieve files: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	fileResponses := make([]dto.FileResponse, 0, len(files))
+	for _, file := range files {
+		fileResponses = append(fileResponses, dto.FileResponse{
+			ID:          file.ID,
+			ParentTable: string(file.ParentTable),
+			ParentID:    file.ParentID,
+			Role:        string(file.Role),
+			Name:        file.Name,
+			URL:         file.URL,
+			Type:        file.Type,
+			Size:        file.Size,
+			CreatedAt:   file.CreatedAt,
+			UpdatedAt:   file.UpdatedAt,
+		})
+	}
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(fileResponses); err != nil {
+		http.Error(w, "Failed to write response: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(buf.Bytes())
+}

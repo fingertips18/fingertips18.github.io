@@ -16,6 +16,7 @@ packages:
       EducationRepository: {}
       SkillRepository: {}
       ImageRepository: {}
+      FileRepository: {}
   github.com/fingertips18/fingertips18.github.io/backend/internal/handler/v1:
     interfaces:
       AnalyticsHandler: {}
@@ -24,6 +25,7 @@ packages:
       EducationHandler: {}
       SkillHandler: {}
       ImageHandler: {}
+      FileHandler: {}
   github.com/fingertips18/fingertips18.github.io/backend/internal/database:
     interfaces:
       DatabaseAPI: {}
