@@ -509,54 +509,6 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Deletes all file records associated with a specific parent entity.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "file"
-                ],
-                "summary": "Delete files by parent",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Parent table name",
-                        "name": "parentTable",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Parent ID",
-                        "name": "parentID",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/v1.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/v1.ErrorResponse"
-                        }
-                    }
-                }
             }
         },
         "/file/{id}": {
@@ -705,6 +657,54 @@ const docTemplate = `{
                                 "$ref": "#/definitions/dto.FileDTO"
                             }
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/v1.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Deletes all file records associated with a specific parent entity.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "file"
+                ],
+                "summary": "Delete files by parent",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Parent table name",
+                        "name": "parent_table",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Parent ID",
+                        "name": "parent_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",

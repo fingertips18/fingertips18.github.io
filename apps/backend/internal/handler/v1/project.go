@@ -399,10 +399,33 @@ func (h *projectServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 		_, err := h.fileRepo.Update(r.Context(), *prevUpdate)
 		if err != nil {
-			// Log error but don't fail the entire request
 			http.Error(w, "Failed to update file record: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
+	}
+
+	// Reload previews from database to get fresh timestamps
+	previews, err := h.fileRepo.FindByParent(r.Context(), "project", updatedProject.Id, domain.Image)
+	if err != nil {
+		http.Error(w, "Failed to reload previews: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Transform previews to DTOs
+	previewDTOs := make([]dto.FileDTO, 0, len(previews))
+	for _, preview := range previews {
+		previewDTOs = append(previewDTOs, dto.FileDTO{
+			ID:          preview.ID,
+			ParentTable: string(preview.ParentTable),
+			ParentID:    preview.ParentID,
+			Role:        string(preview.Role),
+			Name:        preview.Name,
+			URL:         preview.URL,
+			Type:        preview.Type,
+			Size:        preview.Size,
+			CreatedAt:   preview.CreatedAt,
+			UpdatedAt:   preview.UpdatedAt,
+		})
 	}
 
 	resp := dto.ProjectDTO{
@@ -415,7 +438,7 @@ func (h *projectServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 		Type:        string(updatedProject.Type),
 		Link:        updatedProject.Link,
 		EducationID: updatedProject.EducationID,
-		Previews:    updateReq.Previews, // or reload from fileRepo
+		Previews:    previewDTOs,
 		CreatedAt:   updatedProject.CreatedAt,
 		UpdatedAt:   updatedProject.UpdatedAt,
 	}
@@ -453,15 +476,8 @@ func (h *projectServiceHandler) Delete(w http.ResponseWriter, r *http.Request, i
 		return
 	}
 
-	// Delete associated files first
-	err := h.fileRepo.DeleteByParent(r.Context(), "project", id)
-	if err != nil {
-		http.Error(w, "Failed to delete associated previews: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Now delete the project
-	err = h.projectRepo.Delete(r.Context(), id)
+	// Delete the project first
+	err := h.projectRepo.Delete(r.Context(), id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			http.Error(w, "Project not found", http.StatusNotFound)
@@ -470,6 +486,12 @@ func (h *projectServiceHandler) Delete(w http.ResponseWriter, r *http.Request, i
 
 		http.Error(w, "Failed to delete project: "+err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	// Clean up associated files (best-effort after project is gone)
+	if err := h.fileRepo.DeleteByParent(r.Context(), "project", id); err != nil {
+		// Log but don't fail - project is already deleted
+		// Consider logging: log.Printf("Failed to delete previews for project %s: %v", id, err)
 	}
 
 	// Successful delete → 204 No Content
@@ -562,8 +584,48 @@ func (h *projectServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	projectDTOs := make([]dto.ProjectDTO, 0, len(projects))
+	for _, project := range projects {
+		previews, err := h.fileRepo.FindByParent(r.Context(), "project", project.Id, domain.Image)
+		if err != nil {
+			http.Error(w, "Failed to retrieve previews: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		previewDTOs := make([]dto.FileDTO, 0, len(previews))
+		for _, preview := range previews {
+			previewDTOs = append(previewDTOs, dto.FileDTO{
+				ID:          preview.ID,
+				ParentTable: string(preview.ParentTable),
+				ParentID:    preview.ParentID,
+				Role:        string(preview.Role),
+				Name:        preview.Name,
+				URL:         preview.URL,
+				Type:        preview.Type,
+				Size:        preview.Size,
+				CreatedAt:   preview.CreatedAt,
+				UpdatedAt:   preview.UpdatedAt,
+			})
+		}
+
+		projectDTOs = append(projectDTOs, dto.ProjectDTO{
+			ID:          project.Id,
+			BlurHash:    project.BlurHash,
+			Title:       project.Title,
+			Subtitle:    project.Subtitle,
+			Description: project.Description,
+			Tags:        project.Tags,
+			Type:        string(project.Type),
+			Link:        project.Link,
+			Previews:    previewDTOs,
+			EducationID: project.EducationID,
+			CreatedAt:   project.CreatedAt,
+			UpdatedAt:   project.UpdatedAt,
+		})
+	}
+
 	var buf bytes.Buffer
-	if err := json.NewEncoder(&buf).Encode(projects); err != nil {
+	if err := json.NewEncoder(&buf).Encode(projectDTOs); err != nil {
 		http.Error(w, "Failed to write response: "+err.Error(), http.StatusInternalServerError)
 		return
 	}

@@ -587,37 +587,6 @@ paths:
       tags:
       - email
   /file:
-    delete:
-      description: Deletes all file records associated with a specific parent entity.
-      parameters:
-      - description: Parent table name
-        in: query
-        name: parentTable
-        required: true
-        type: string
-      - description: Parent ID
-        in: query
-        name: parentID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/v1.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/v1.ErrorResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: Delete files by parent
-      tags:
-      - file
     post:
       consumes:
       - application/json
@@ -749,6 +718,37 @@ paths:
       tags:
       - file
   /files:
+    delete:
+      description: Deletes all file records associated with a specific parent entity.
+      parameters:
+      - description: Parent table name
+        in: query
+        name: parent_table
+        required: true
+        type: string
+      - description: Parent ID
+        in: query
+        name: parent_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete files by parent
+      tags:
+      - file
     get:
       description: Retrieves all files for a specific parent entity and role.
       parameters:

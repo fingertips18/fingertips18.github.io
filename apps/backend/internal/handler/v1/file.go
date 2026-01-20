@@ -45,7 +45,7 @@ func NewFileServiceHandler(cfg FileServiceConfig) FileHandler {
 		fileRepo = v1.NewFileRepository(
 			v1.FileRepositoryConfig{
 				DatabaseAPI: cfg.DatabaseAPI,
-				FileTable:   "file",
+				FileTable:   "File",
 			},
 		)
 	}
@@ -276,8 +276,6 @@ func (h *fileServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 		URL:         req.URL,
 		Type:        req.Type,
 		Size:        req.Size,
-		CreatedAt:   req.CreatedAt,
-		UpdatedAt:   req.UpdatedAt,
 	}
 
 	updatedFile, err := h.fileRepo.Update(r.Context(), *file)
@@ -365,8 +363,8 @@ func (h *fileServiceHandler) Delete(w http.ResponseWriter, r *http.Request, id s
 // @Description Deletes all file records associated with a specific parent entity.
 // @Tags file
 // @Produce json
-// @Param parentTable query string true "Parent table name"
-// @Param parentID query string true "Parent ID"
+// @Param parent_table query string true "Parent table name"
+// @Param parent_id query string true "Parent ID"
 // @Success 204 "No Content"
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
