@@ -22,10 +22,12 @@ type FileHandler interface {
 	Delete(w http.ResponseWriter, r *http.Request, id string)
 	DeleteByParent(w http.ResponseWriter, r *http.Request, parentTable, parentID string)
 	ListByParent(w http.ResponseWriter, r *http.Request)
+	Upload(w http.ResponseWriter, r *http.Request)
 }
 
 type FileServiceConfig struct {
-	DatabaseAPI database.DatabaseAPI
+	DatabaseAPI          database.DatabaseAPI
+	UploadthingSecretKey string
 
 	fileRepo v1.FileRepository
 }
@@ -44,8 +46,9 @@ func NewFileServiceHandler(cfg FileServiceConfig) FileHandler {
 	if fileRepo == nil {
 		fileRepo = v1.NewFileRepository(
 			v1.FileRepositoryConfig{
-				DatabaseAPI: cfg.DatabaseAPI,
-				FileTable:   "File",
+				DatabaseAPI:          cfg.DatabaseAPI,
+				FileTable:            "File",
+				UploadthingSecretKey: cfg.UploadthingSecretKey,
 			},
 		)
 	}
@@ -68,6 +71,9 @@ func (h *fileServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	path := strings.TrimSuffix(r.URL.Path, "/")
 
 	switch {
+	case path == "/file/upload":
+		h.Upload(w, r)
+
 	// GET /files?parent_table=...&parent_id=...&role=...
 	case path == "/files":
 		switch r.Method {
@@ -456,5 +462,94 @@ func (h *fileServiceHandler) ListByParent(w http.ResponseWriter, r *http.Request
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+	w.Write(buf.Bytes())
+}
+
+// Upload handles HTTP POST requests to upload file files.
+// It expects a JSON request body containing file metadata and upload configuration.
+// The method validates the HTTP method, decodes the request body, converts DTOs to domain objects,
+// and delegates the upload operation to the file repository.
+// On success, it returns a 202 Accepted status with a JSON response containing the uploaded URL.
+// On failure, it returns appropriate HTTP error status codes with error messages.
+//
+// @Security ApiKeyAuth
+// @Summary Upload a file
+// @Description Handles file upload with the supplied metadata and returns the Uploadthing URL of the stored file.
+// @Tags file
+// @Accept json
+// @Produce json
+// @Param fileUpload body dto.FileUploadRequestDTO true "File upload payload"
+// @Success 202 {object} dto.FileUploadedResponseDTO "File upload URL"
+// @Failure 400 {object} domain.ErrorResponse
+// @Failure 500 {object} domain.ErrorResponse
+// @Router /file/upload [post]
+func (h *fileServiceHandler) Upload(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed: only POST is supported", http.StatusMethodNotAllowed)
+		return
+	}
+
+	defer r.Body.Close()
+
+	var req dto.FileUploadRequestDTO
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid JSON in request body", http.StatusBadRequest)
+		return
+	}
+
+	var files []domain.FileUpload
+	for _, f := range req.Files {
+		files = append(files, domain.FileUpload{
+			Name:     f.Name,
+			Size:     f.Size,
+			Type:     f.Type,
+			CustomID: f.CustomID,
+		})
+	}
+	upload := domain.FileUploadRequest{
+		Files:              files,
+		ACL:                req.ACL,
+		Metadata:           req.Metadata,
+		ContentDisposition: req.ContentDisposition,
+	}
+
+	image, err := h.fileRepo.Upload(r.Context(), &upload)
+	if err != nil {
+		// The error in the repo is comprehensive enough
+		// Ensure that the first letter is capitalize
+		msg := err.Error()
+		if len(msg) > 0 {
+			msg = strings.ToUpper(msg[:1]) + msg[1:]
+		}
+
+		http.Error(w, msg, http.StatusInternalServerError)
+		return
+	}
+
+	file := dto.FileUploadedDTO{
+		Key:                image.Key,
+		FileName:           image.FileName,
+		FileType:           image.FileType,
+		FileUrl:            image.FileUrl,
+		ContentDisposition: image.ContentDisposition,
+		PollingJwt:         image.PollingJwt,
+		PollingUrl:         image.PollingUrl,
+		CustomId:           image.CustomId,
+		URL:                image.URL,
+		Fields:             image.Fields,
+	}
+
+	resp := dto.FileUploadedResponseDTO{
+		File: file,
+	}
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(resp); err != nil {
+		http.Error(w, "Failed to write response: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusAccepted)
 	w.Write(buf.Bytes())
 }

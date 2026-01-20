@@ -1,11 +1,17 @@
 package v1
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"log"
+	"net/http"
 	"time"
 
+	"github.com/fingertips18/fingertips18.github.io/backend/internal/client"
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/database"
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/utils"
@@ -19,19 +25,24 @@ type FileRepository interface {
 	Delete(ctx context.Context, id string) error
 	DeleteByParent(ctx context.Context, parentTable string, parentID string) error
 	FindByID(ctx context.Context, id string) (*domain.File, error)
+	Upload(ctx context.Context, file *domain.FileUploadRequest) (*domain.FileUploaded, error)
 }
 
 type FileRepositoryConfig struct {
-	DatabaseAPI database.DatabaseAPI
-	FileTable   string
+	DatabaseAPI          database.DatabaseAPI
+	FileTable            string
+	UploadthingSecretKey string
 
+	httpAPI      client.HttpAPI
 	timeProvider domain.TimeProvider
 }
 
 type fileRepository struct {
-	fileTable    string
-	databaseAPI  database.DatabaseAPI
-	timeProvider domain.TimeProvider
+	fileTable            string
+	databaseAPI          database.DatabaseAPI
+	uploadthingSecretKey string
+	httpAPI              client.HttpAPI
+	timeProvider         domain.TimeProvider
 }
 
 // NewFileRepository creates and returns a configured FileRepository.
@@ -42,15 +53,22 @@ type fileRepository struct {
 // as the time provider. The returned value implements the
 // FileRepository interface and is never nil.
 func NewFileRepository(cfg FileRepositoryConfig) FileRepository {
+	httpAPI := cfg.httpAPI
+	if httpAPI == nil {
+		httpAPI = client.NewHTTPAPI(30 * time.Second)
+	}
+
 	timeProvider := cfg.timeProvider
 	if timeProvider == nil {
 		timeProvider = time.Now
 	}
 
 	return &fileRepository{
-		fileTable:    cfg.FileTable,
-		databaseAPI:  cfg.DatabaseAPI,
-		timeProvider: timeProvider,
+		fileTable:            cfg.FileTable,
+		databaseAPI:          cfg.DatabaseAPI,
+		uploadthingSecretKey: cfg.UploadthingSecretKey,
+		httpAPI:              httpAPI,
+		timeProvider:         timeProvider,
 	}
 }
 
@@ -375,4 +393,105 @@ func (r *fileRepository) FindByID(ctx context.Context, id string) (*domain.File,
 	}
 
 	return &file, nil
+}
+
+// Upload uploads the provided UploadthingUploadRequest to the UploadThing service and
+// returns the URL of the uploaded file or an error.
+//
+// Behavior:
+//   - Validates the incoming request via image.Validate() and returns an error if invalid.
+//   - Applies default fallback values when not provided (ACL => "public-read",
+//     ContentDisposition => "inline").
+//   - Marshals the request to JSON and issues an HTTP POST to
+//     "https://api.uploadthing.com/v6/uploadFiles" using the repository's httpAPI and the
+//     repository's Uploadthing API key (r.uploadthingSecretKey). The HTTP request is executed
+//     with the provided ctx.
+//   - Treats any non-200 (OK) response as an error and includes the response status and body
+//     in the returned error for diagnostics.
+//   - Decodes the successful response into domain.FileUploadedResponse, validates it,
+//     and returns the file metadata of the first returned file (uploadResp.Data[0]).
+//   - All underlying errors are wrapped with context for easier debugging.
+//
+// Logging: the method logs the upload attempt and the resulting uploaded file URL on success.
+//
+// Return values:
+// - *domain.FileUploadedResponse: the file metadata on success, or nil on failure.
+// - error: non-nil if validation, marshaling, network, decoding, or response validation fails.
+func (r *fileRepository) Upload(ctx context.Context, file *domain.FileUploadRequest) (*domain.FileUploaded, error) {
+	// Validate request structure
+	if err := file.Validate(); err != nil {
+		return nil, fmt.Errorf("failed to validate file: %w", err)
+	}
+
+	log.Println("Attempting to upload the file...")
+
+	payload := *file
+
+	// Default fallback values
+	if payload.ACL == nil {
+		acl := "public-read"
+		payload.ACL = &acl
+	}
+	if payload.ContentDisposition == nil {
+		contentDisposition := "inline"
+		payload.ContentDisposition = &contentDisposition
+	}
+
+	// Marshal request payload
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal payload: %w", err)
+	}
+
+	// Build HTTP request
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodPost,
+		"https://api.uploadthing.com/v6/uploadFiles",
+		bytes.NewBuffer(body),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create HTTP request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Uploadthing-Api-Key", r.uploadthingSecretKey)
+
+	// Execute request
+	resp, err := r.httpAPI.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send HTTP request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Handle non-200 response
+	if resp.StatusCode != http.StatusOK {
+		respBody, readErr := io.ReadAll(resp.Body)
+		if readErr != nil {
+			log.Printf("failed to read error response body: %v", readErr)
+		}
+		return nil, fmt.Errorf(
+			"failed to upload file: status=%s message=%s",
+			resp.Status,
+			respBody,
+		)
+	}
+
+	// Decode UploadThing success response
+	var uploadResp domain.FileUploadedResponse
+	if err := json.NewDecoder(resp.Body).Decode(&uploadResp); err != nil {
+		return nil, fmt.Errorf("failed to decode uploadthing response: %w", err)
+	}
+
+	// Make sure at least one file was returned
+	if err := uploadResp.Validate(); err != nil {
+		return nil, fmt.Errorf("invalid uploadthing response: %w", err)
+	}
+
+	// Extract file URL
+	data := uploadResp.Data[0]
+
+	log.Println("File uploaded successfully:", data.FileName)
+
+	return &data, nil
 }

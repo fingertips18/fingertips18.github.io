@@ -17,7 +17,7 @@ export function Card({ project }: CardProps) {
     <div className='flex flex-col aspect-square rounded-md border overflow-hidden bg-gray-100 transition-all duration-400 ease-in-out hover:scale-95 hover:shadow-2xl'>
       <div className='relative aspect-video'>
         <img
-          src={project.preview}
+          src={project.id}
           alt={`${project.title} preview`}
           sizes='(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw'
           onLoad={() => setImageLoaded(true)}

@@ -503,6 +503,57 @@
                 }
             }
         },
+        "/file/upload": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Handles file upload with the supplied metadata and returns the Uploadthing URL of the stored file.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "file"
+                ],
+                "summary": "Upload a file",
+                "parameters": [
+                    {
+                        "description": "File upload payload",
+                        "name": "fileUpload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.FileUploadRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "File upload URL",
+                        "schema": {
+                            "$ref": "#/definitions/dto.FileUploadedResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/file/{id}": {
             "get": {
                 "security": [
@@ -708,57 +759,6 @@
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/v1.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/image/upload": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Handles image upload with the supplied metadata and returns the Uploadthing URL of the stored image.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "image"
-                ],
-                "summary": "Upload an image",
-                "parameters": [
-                    {
-                        "description": "Image upload payload",
-                        "name": "imageUpload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/v1.ImageUploadRequestDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "202": {
-                        "description": "Image upload URL",
-                        "schema": {
-                            "$ref": "#/definitions/v1.ImageUploadResponseDTO"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/domain.ErrorResponse"
                         }
                     }
                 }
@@ -1530,6 +1530,86 @@
                 }
             }
         },
+        "dto.FileUploadDTO": {
+            "type": "object",
+            "properties": {
+                "custom_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.FileUploadRequestDTO": {
+            "type": "object",
+            "properties": {
+                "acl": {
+                    "type": "string"
+                },
+                "content_disposition": {
+                    "type": "string"
+                },
+                "files": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.FileUploadDTO"
+                    }
+                },
+                "metadata": {}
+            }
+        },
+        "dto.FileUploadedDTO": {
+            "type": "object",
+            "properties": {
+                "content_disposition": {
+                    "type": "string"
+                },
+                "custom_id": {
+                    "type": "string"
+                },
+                "fields": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "file_name": {
+                    "type": "string"
+                },
+                "file_type": {
+                    "type": "string"
+                },
+                "file_url": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "polling_jwt": {
+                    "type": "string"
+                },
+                "polling_url": {
+                    "type": "string"
+                },
+                "url": {
+                    "description": "signed URL to upload",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.FileUploadedResponseDTO": {
+            "type": "object",
+            "properties": {
+                "file": {
+                    "$ref": "#/definitions/dto.FileUploadedDTO"
+                }
+            }
+        },
         "dto.ProjectDTO": {
             "type": "object",
             "properties": {
@@ -1680,91 +1760,11 @@
                 }
             }
         },
-        "v1.FileDTO": {
-            "type": "object",
-            "properties": {
-                "custom_id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "size": {
-                    "type": "integer"
-                },
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
         "v1.IDResponse": {
             "type": "object",
             "properties": {
                 "id": {
                     "type": "string"
-                }
-            }
-        },
-        "v1.ImageUploadFileDTO": {
-            "type": "object",
-            "properties": {
-                "content_disposition": {
-                    "type": "string"
-                },
-                "custom_id": {
-                    "type": "string"
-                },
-                "fields": {
-                    "type": "object",
-                    "additionalProperties": {}
-                },
-                "file_name": {
-                    "type": "string"
-                },
-                "file_type": {
-                    "type": "string"
-                },
-                "file_url": {
-                    "type": "string"
-                },
-                "key": {
-                    "type": "string"
-                },
-                "polling_jwt": {
-                    "type": "string"
-                },
-                "polling_url": {
-                    "type": "string"
-                },
-                "url": {
-                    "description": "signed URL to upload",
-                    "type": "string"
-                }
-            }
-        },
-        "v1.ImageUploadRequestDTO": {
-            "type": "object",
-            "properties": {
-                "acl": {
-                    "type": "string"
-                },
-                "content_disposition": {
-                    "type": "string"
-                },
-                "files": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/v1.FileDTO"
-                    }
-                },
-                "metadata": {}
-            }
-        },
-        "v1.ImageUploadResponseDTO": {
-            "type": "object",
-            "properties": {
-                "file": {
-                    "$ref": "#/definitions/v1.ImageUploadFileDTO"
                 }
             }
         },

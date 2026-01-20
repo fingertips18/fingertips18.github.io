@@ -131,15 +131,10 @@ func createHandlers(cfg Config) []handlerConfig {
 		},
 	)
 
-	imageHandler := v1.NewImageServiceHandler(
-		v1.ImageServiceConfig{
-			UploadthingSecretKey: cfg.UploadthingSecretKey,
-		},
-	)
-
 	fileHandler := v1.NewFileServiceHandler(
 		v1.FileServiceConfig{
-			DatabaseAPI: cfg.DatabaseAPI,
+			DatabaseAPI:          cfg.DatabaseAPI,
+			UploadthingSecretKey: cfg.UploadthingSecretKey,
 		},
 	)
 
@@ -163,10 +158,6 @@ func createHandlers(cfg Config) []handlerConfig {
 		{
 			paths:   []string{"/skill", "/skill/", "/skills", "/skills/"},
 			handler: skillHandler,
-		},
-		{
-			paths:   []string{"/image", "/image/"},
-			handler: imageHandler,
 		},
 		{
 			paths:   []string{"/file", "/file/", "/files", "/files/"},
