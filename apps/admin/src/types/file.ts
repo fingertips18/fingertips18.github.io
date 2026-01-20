@@ -25,16 +25,20 @@ export type File = {
  * @throws {Error} If the value is not a string or is not a valid file role
  */
 function ensureRole(value: unknown): 'image' {
-  const roleValue = ensureString({
+  const roleString = ensureString({
     value,
     name: 'role',
-  }) as (typeof FileRole)[keyof typeof FileRole];
+  });
 
-  if (!Object.values(FileRole).includes(roleValue)) {
-    throw new Error(`Invalid file role: ${roleValue}`);
+  if (
+    !Object.values(FileRole).includes(
+      roleString as (typeof FileRole)[keyof typeof FileRole],
+    )
+  ) {
+    throw new Error(`Invalid file role: ${roleString}`);
   }
 
-  return roleValue;
+  return roleString as (typeof FileRole)[keyof typeof FileRole];
 }
 
 /**
