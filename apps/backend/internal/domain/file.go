@@ -16,7 +16,6 @@ type ParentTable string
 
 const (
 	ProjectTable   ParentTable = "projects"
-	UserTable      ParentTable = "users"
 	EducationTable ParentTable = "educations"
 	// Add other valid parent table names as needed
 )
@@ -52,7 +51,7 @@ func (pt ParentTable) isValid() error {
 	}
 
 	switch pt {
-	case ProjectTable, UserTable, EducationTable:
+	case ProjectTable, EducationTable:
 		return nil
 	default:
 		return errors.New("parent_table invalid")

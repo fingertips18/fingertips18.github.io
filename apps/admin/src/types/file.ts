@@ -113,8 +113,9 @@ export type FileUpload = {
  * Validates and converts an unknown value to a fields object with string values.
  *
  * @param value - The value to validate and convert as fields
- * @returns An object with string values, or an empty object if value is not a valid object
+ * @returns An object with string values
  * @throws {Error} If any field value is not a string
+ * @throws {Error} If the value is not a valid object
  */
 function ensureFields(value: unknown): { [k: string]: string } {
   if (!value || typeof value !== 'object') {

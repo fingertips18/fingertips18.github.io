@@ -505,11 +505,17 @@ func (h *fileServiceHandler) Upload(w http.ResponseWriter, r *http.Request) {
 			CustomID: f.CustomID,
 		})
 	}
+
 	upload := domain.FileUploadRequest{
 		Files:              files,
 		ACL:                req.ACL,
 		Metadata:           req.Metadata,
 		ContentDisposition: req.ContentDisposition,
+	}
+
+	if err := upload.Validate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	uploaded, err := h.fileRepo.Upload(r.Context(), &upload)
