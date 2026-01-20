@@ -199,17 +199,10 @@ func TestFileServiceHandler_Upload(t *testing.T) {
 					b, _ := json.Marshal(req)
 					return string(b)
 				}(),
-				mockRepo: func(m *mockRepo.MockFileRepository) {
-					m.EXPECT().
-						Upload(mock.Anything, mock.MatchedBy(func(req *domain.FileUploadRequest) bool {
-							return len(req.Files) == 0
-						})).
-						Return(expectedUploadedFile, nil)
-				},
 			},
 			expected: Expected{
-				code: http.StatusAccepted,
-				body: string(expectedResp),
+				code: http.StatusBadRequest,
+				body: "files missing\n",
 			},
 		},
 		"with all optional fields": {
@@ -428,17 +421,10 @@ func TestFileServiceHandler_Upload(t *testing.T) {
 					b, _ := json.Marshal(req)
 					return string(b)
 				}(),
-				mockRepo: func(m *mockRepo.MockFileRepository) {
-					m.EXPECT().
-						Upload(mock.Anything, mock.MatchedBy(func(req *domain.FileUploadRequest) bool {
-							return len(req.Files) == 1 && req.Files[0].Size == 0
-						})).
-						Return(expectedUploadedFile, nil)
-				},
 			},
 			expected: Expected{
-				code: http.StatusAccepted,
-				body: string(expectedResp),
+				code: http.StatusBadRequest,
+				body: "file[0]: size invalid\n",
 			},
 		},
 		"complex metadata": {
