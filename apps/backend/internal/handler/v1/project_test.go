@@ -428,6 +428,10 @@ func TestProjectServiceHandler_Get_Routing(t *testing.T) {
 		Get(mock.Anything, fixedID).
 		Return(validProject, nil)
 
+	f.mockFileRepo.EXPECT().
+		FindByParent(mock.Anything, "project", fixedID, domain.Image).
+		Return([]domain.File{}, nil)
+
 	// Create HTTP request and response recorder
 	req := httptest.NewRequest(http.MethodGet, "/project/"+fixedID, nil)
 	w := httptest.NewRecorder()

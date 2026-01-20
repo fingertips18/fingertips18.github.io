@@ -30,10 +30,6 @@ type projectFakeRow struct {
 }
 
 func (f *projectFakeRow) Scan(dest ...any) error {
-	if f.scanErr != nil {
-		return f.scanErr
-	}
-
 	switch len(dest) {
 	case 1:
 		if v, ok := dest[0].(*string); ok {
@@ -42,20 +38,20 @@ func (f *projectFakeRow) Scan(dest ...any) error {
 		}
 		return fmt.Errorf("expected *string for id, got %T", dest[0])
 
-	case 11:
+	case 10: // ← Changed from 11 to 10 (Preview field removed)
 		*dest[0].(*string) = f.project.Id
-		*dest[2].(*string) = f.project.BlurHash
-		*dest[3].(*string) = f.project.Title
-		*dest[4].(*string) = f.project.Subtitle
-		*dest[5].(*string) = f.project.Description
+		*dest[1].(*string) = f.project.BlurHash    // ← Shifted from dest[2]
+		*dest[2].(*string) = f.project.Title       // ← Shifted from dest[3]
+		*dest[3].(*string) = f.project.Subtitle    // ← Shifted from dest[4]
+		*dest[4].(*string) = f.project.Description // ← Shifted from dest[5]
 
-		if v, ok := dest[6].(*[]string); ok {
+		if v, ok := dest[5].(*[]string); ok { // ← Shifted from dest[6]
 			*v = f.project.Tags
 		} else {
-			return fmt.Errorf("expected *[]string for tags, got %T", dest[6])
+			return fmt.Errorf("expected *[]string for tags, got %T", dest[5])
 		}
 
-		switch v := dest[7].(type) {
+		switch v := dest[6].(type) { // ← Shifted from dest[7]
 		case *string:
 			*v = string(f.project.Type)
 		case *domain.ProjectType:
@@ -64,9 +60,9 @@ func (f *projectFakeRow) Scan(dest ...any) error {
 			return fmt.Errorf("unexpected type for project.Type: %T", v)
 		}
 
-		*dest[8].(*string) = f.project.Link
-		*dest[9].(*time.Time) = f.project.CreatedAt
-		*dest[10].(*time.Time) = f.project.UpdatedAt
+		*dest[7].(*string) = f.project.Link         // ← Shifted from dest[8]
+		*dest[8].(*time.Time) = f.project.CreatedAt // ← Shifted from dest[9]
+		*dest[9].(*time.Time) = f.project.UpdatedAt // ← Shifted from dest[10]
 		return nil
 
 	default:
