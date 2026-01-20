@@ -34,16 +34,19 @@ type projectHandlerTestFixture struct {
 	t               *testing.T
 	mockBlurHashAPI *metadata.MockBlurHashAPI
 	mockProjectRepo *mockRepo.MockProjectRepository
+	mockFileRepo    *mockRepo.MockFileRepository
 	projectHandler  ProjectHandler
 }
 
 func newProjectHandlerTestFixture(t *testing.T) *projectHandlerTestFixture {
 	mockBlurHashAPI := new(metadata.MockBlurHashAPI)
 	mockProjectRepo := new(mockRepo.MockProjectRepository)
+	mockFileRepo := new(mockRepo.MockFileRepository)
 	projectHandler := NewProjectServiceHandler(
 		ProjectServiceConfig{
 			BlurHashAPI: mockBlurHashAPI,
 			projectRepo: mockProjectRepo,
+			fileRepo:    mockFileRepo,
 		},
 	)
 
@@ -51,6 +54,7 @@ func newProjectHandlerTestFixture(t *testing.T) *projectHandlerTestFixture {
 		t:               t,
 		mockBlurHashAPI: mockBlurHashAPI,
 		mockProjectRepo: mockProjectRepo,
+		mockFileRepo:    mockFileRepo,
 		projectHandler:  projectHandler,
 	}
 }
@@ -271,7 +275,21 @@ func TestProjectServiceHandler_Get(t *testing.T) {
 		UpdatedAt:   fixedTime,
 	}
 
-	validBody, _ := json.Marshal(validProject)
+	projectDTO := dto.ProjectDTO{
+		ID:          fixedID,
+		BlurHash:    validBlurHash,
+		Title:       "title",
+		Subtitle:    "subtitle",
+		Description: "desc",
+		Tags:        []string{"go", "react"},
+		Type:        string(domain.Web),
+		Link:        "http://example.com",
+		Previews:    []dto.FileDTO{},
+		CreatedAt:   fixedTime,
+		UpdatedAt:   fixedTime,
+	}
+
+	validBody, _ := json.Marshal(projectDTO)
 
 	type Given struct {
 		method   string
@@ -354,6 +372,12 @@ func TestProjectServiceHandler_Get(t *testing.T) {
 				tt.given.mockRepo(f.mockProjectRepo)
 			}
 
+			if name == "success" {
+				f.mockFileRepo.EXPECT().
+					FindByParent(mock.Anything, "project", tt.given.id, domain.Image).
+					Return([]domain.File{}, nil)
+			}
+
 			req := httptest.NewRequest(tt.given.method, "/project/"+tt.given.id, nil)
 			w := httptest.NewRecorder()
 
@@ -372,6 +396,9 @@ func TestProjectServiceHandler_Get(t *testing.T) {
 			}
 
 			f.mockProjectRepo.AssertExpectations(t)
+			if name == "success" {
+				f.mockFileRepo.AssertExpectations(t)
+			}
 		})
 	}
 }

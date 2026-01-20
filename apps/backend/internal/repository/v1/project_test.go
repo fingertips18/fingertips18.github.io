@@ -226,23 +226,6 @@ func TestProjectRepository_Create(t *testing.T) {
 				err: errors.New("invalid project returned: ID missing"),
 			},
 		},
-		"Missing preview fails": {
-			given: Given{
-				project: domain.Project{
-					BlurHash:    validProject.BlurHash,
-					Title:       validProject.Title,
-					Subtitle:    validProject.Subtitle,
-					Description: validProject.Description,
-					Tags:        validProject.Tags,
-					Type:        validProject.Type,
-					Link:        validProject.Link,
-				},
-				mockQueryRow: nil,
-			},
-			expected: Expected{
-				err: errors.New("failed to validate project: preview missing"),
-			},
-		},
 		"Missing blurHash fails": {
 			given: Given{
 				project: domain.Project{
@@ -563,31 +546,6 @@ func TestProjectRepository_Get(t *testing.T) {
 			expected: Expected{
 				project: nil,
 				err:     errors.New("invalid project returned: ID missing"),
-			},
-		},
-		"Missing preview fails": {
-			given: Given{
-				id: id,
-				mockQueryRow: func(m *database.MockDatabaseAPI) {
-					m.EXPECT().
-						QueryRow(mock.Anything, mock.Anything, []any{id}).
-						Return(&projectFakeRow{project: domain.Project{
-							Id:          validProject.Id,
-							BlurHash:    validProject.BlurHash,
-							Title:       validProject.Title,
-							Subtitle:    validProject.Subtitle,
-							Description: validProject.Description,
-							Tags:        validProject.Tags,
-							Type:        validProject.Type,
-							Link:        validProject.Link,
-							CreatedAt:   validProject.CreatedAt,
-							UpdatedAt:   validProject.UpdatedAt,
-						}})
-				},
-			},
-			expected: Expected{
-				project: nil,
-				err:     errors.New("invalid project returned: preview missing"),
 			},
 		},
 		"Missing blurHash fails": {
@@ -981,25 +939,6 @@ func TestProjectRepository_Update(t *testing.T) {
 			expected: Expected{
 				updatedProject: nil,
 				err:            nil,
-			},
-		},
-		"Missing preview fails": {
-			given: Given{
-				project: domain.Project{
-					Id:          validProject.Id,
-					BlurHash:    validProject.BlurHash,
-					Title:       validProject.Title,
-					Subtitle:    validProject.Subtitle,
-					Description: validProject.Description,
-					Tags:        validProject.Tags,
-					Type:        validProject.Type,
-					Link:        validProject.Link,
-				},
-				mockQueryRow: nil,
-			},
-			expected: Expected{
-				updatedProject: nil,
-				err:            errors.New("failed to validate project: preview missing"),
 			},
 		},
 		"Missing blurHash fails": {
