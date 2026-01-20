@@ -73,6 +73,7 @@ func (h *fileServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case path == "/file/upload":
 		h.Upload(w, r)
+		return
 
 	// GET /files?parent_table=...&parent_id=...&role=...
 	case path == "/files":
@@ -489,8 +490,6 @@ func (h *fileServiceHandler) Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	defer r.Body.Close()
-
 	var req dto.FileUploadRequestDTO
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid JSON in request body", http.StatusBadRequest)
@@ -513,7 +512,7 @@ func (h *fileServiceHandler) Upload(w http.ResponseWriter, r *http.Request) {
 		ContentDisposition: req.ContentDisposition,
 	}
 
-	image, err := h.fileRepo.Upload(r.Context(), &upload)
+	uploaded, err := h.fileRepo.Upload(r.Context(), &upload)
 	if err != nil {
 		// The error in the repo is comprehensive enough
 		// Ensure that the first letter is capitalize
@@ -527,16 +526,16 @@ func (h *fileServiceHandler) Upload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	file := dto.FileUploadedDTO{
-		Key:                image.Key,
-		FileName:           image.FileName,
-		FileType:           image.FileType,
-		FileUrl:            image.FileUrl,
-		ContentDisposition: image.ContentDisposition,
-		PollingJwt:         image.PollingJwt,
-		PollingUrl:         image.PollingUrl,
-		CustomId:           image.CustomId,
-		URL:                image.URL,
-		Fields:             image.Fields,
+		Key:                uploaded.Key,
+		FileName:           uploaded.FileName,
+		FileType:           uploaded.FileType,
+		FileUrl:            uploaded.FileUrl,
+		ContentDisposition: uploaded.ContentDisposition,
+		PollingJwt:         uploaded.PollingJwt,
+		PollingUrl:         uploaded.PollingUrl,
+		CustomId:           uploaded.CustomId,
+		URL:                uploaded.URL,
+		Fields:             uploaded.Fields,
 	}
 
 	resp := dto.FileUploadedResponseDTO{

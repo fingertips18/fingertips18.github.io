@@ -202,6 +202,9 @@ func (i FileUploadRequest) Validate() error {
 		if f.Type == "" {
 			return errors.New("file[" + strconv.Itoa(idx) + "]: type missing")
 		}
+		if err := isValidMimeType(f.Type); err != nil {
+			return errors.New("file[" + strconv.Itoa(idx) + "]: " + err.Error())
+		}
 	}
 
 	// UploadThing ACL accepts: private, public-read

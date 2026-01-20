@@ -117,14 +117,16 @@ export type FileUpload = {
  * @throws {Error} If any field value is not a string
  */
 function ensureFields(value: unknown): { [k: string]: string } {
-  return value && typeof value === 'object'
-    ? Object.fromEntries(
-        Object.entries(value).map(([k, v]) => [
-          k,
-          ensureString({ value: v, name: k }),
-        ]),
-      )
-    : {};
+  if (!value || typeof value !== 'object') {
+    throw new Error("Expected property 'fields' to be an object");
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).map(([k, v]) => [
+      k,
+      ensureString({ value: v, name: k }),
+    ]),
+  );
 }
 
 /**
