@@ -736,9 +736,8 @@ func TestProjectServiceHandler_Delete(t *testing.T) {
 	type Given struct {
 		method   string
 		id       string
-		mockRepo func(m *mockRepo.MockProjectRepository)
+		mockRepo func(*mockRepo.MockProjectRepository)
 	}
-
 	type Expected struct {
 		code int
 		body string
@@ -763,17 +762,7 @@ func TestProjectServiceHandler_Delete(t *testing.T) {
 				body: "",
 			},
 		},
-		"invalid method": {
-			given: Given{
-				method: http.MethodGet,
-				id:     fixedID,
-			},
-			expected: Expected{
-				code: http.StatusMethodNotAllowed,
-				body: "Method not allowed: only DELETE is supported\n",
-			},
-		},
-		"not found": {
+		"not_found": {
 			given: Given{
 				method: http.MethodDelete,
 				id:     fixedID,
@@ -788,19 +777,32 @@ func TestProjectServiceHandler_Delete(t *testing.T) {
 				body: "Project not found\n",
 			},
 		},
-		"repo error": {
+		"repo_error": {
 			given: Given{
 				method: http.MethodDelete,
 				id:     fixedID,
 				mockRepo: func(m *mockRepo.MockProjectRepository) {
 					m.EXPECT().
 						Delete(mock.Anything, fixedID).
-						Return(errors.New("db failure"))
+						Return(errors.New("db error"))
 				},
 			},
 			expected: Expected{
 				code: http.StatusInternalServerError,
-				body: "Failed to delete project: db failure\n",
+				body: "Failed to delete project: db error\n",
+			},
+		},
+		"method_not_allowed": {
+			given: Given{
+				method: http.MethodGet,
+				id:     fixedID,
+				mockRepo: func(m *mockRepo.MockProjectRepository) {
+					// No expectation needed as method check happens first
+				},
+			},
+			expected: Expected{
+				code: http.StatusMethodNotAllowed,
+				body: "Method not allowed: only DELETE is supported\n",
 			},
 		},
 	}
@@ -813,7 +815,8 @@ func TestProjectServiceHandler_Delete(t *testing.T) {
 				tt.given.mockRepo(f.mockProjectRepo)
 			}
 
-			if name == "success" {
+			// Mock fileRepo.DeleteByParent for ALL cases except method_not_allowed
+			if name != "method_not_allowed" {
 				f.mockFileRepo.EXPECT().
 					DeleteByParent(mock.Anything, "project", tt.given.id).
 					Return(nil)
@@ -838,7 +841,8 @@ func TestProjectServiceHandler_Delete(t *testing.T) {
 
 			f.mockProjectRepo.AssertExpectations(t)
 
-			if name == "success" {
+			// Assert fileRepo expectations for cases that call it
+			if name != "method_not_allowed" {
 				f.mockFileRepo.AssertExpectations(t)
 			}
 		})
