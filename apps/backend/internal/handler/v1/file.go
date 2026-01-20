@@ -370,7 +370,7 @@ func (h *fileServiceHandler) Delete(w http.ResponseWriter, r *http.Request, id s
 // @Success 204 "No Content"
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /file [delete]
+// @Router /files [delete]
 func (h *fileServiceHandler) DeleteByParent(w http.ResponseWriter, r *http.Request, parentTable, parentID string) {
 	if parentTable == "" {
 		http.Error(w, "Invalid: missing parentTable", http.StatusBadRequest)

@@ -453,8 +453,15 @@ func (h *projectServiceHandler) Delete(w http.ResponseWriter, r *http.Request, i
 		return
 	}
 
+	// Delete associated files first
+	err := h.fileRepo.DeleteByParent(r.Context(), "project", id)
+	if err != nil {
+		http.Error(w, "Failed to delete associated previews: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	// Now delete the project
-	err := h.projectRepo.Delete(r.Context(), id)
+	err = h.projectRepo.Delete(r.Context(), id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			http.Error(w, "Project not found", http.StatusNotFound)
@@ -462,12 +469,6 @@ func (h *projectServiceHandler) Delete(w http.ResponseWriter, r *http.Request, i
 		}
 
 		http.Error(w, "Failed to delete project: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	err = h.fileRepo.DeleteByParent(r.Context(), "project", id)
-	if err != nil {
-		http.Error(w, "Failed to delete associated previews: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
