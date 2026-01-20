@@ -9,6 +9,7 @@ import (
 
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/database"
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
+	"github.com/fingertips18/fingertips18.github.io/backend/internal/handler/v1/dto"
 	v1 "github.com/fingertips18/fingertips18.github.io/backend/internal/repository/v1"
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/utils"
 	"github.com/fingertips18/fingertips18.github.io/backend/pkg/metadata"
@@ -29,11 +30,13 @@ type ProjectServiceConfig struct {
 	BlurHashAPI metadata.BlurHashAPI
 
 	projectRepo v1.ProjectRepository
+	fileRepo    v1.FileRepository
 }
 
 type projectServiceHandler struct {
 	blurHashAPI metadata.BlurHashAPI
 	projectRepo v1.ProjectRepository
+	fileRepo    v1.FileRepository
 }
 
 // NewProjectServiceHandler creates and returns a new instance of ProjectService.
@@ -58,9 +61,20 @@ func NewProjectServiceHandler(cfg ProjectServiceConfig) ProjectHandler {
 		)
 	}
 
+	fileRepo := cfg.fileRepo
+	if fileRepo == nil {
+		fileRepo = v1.NewFileRepository(
+			v1.FileRepositoryConfig{
+				DatabaseAPI: cfg.DatabaseAPI,
+				FileTable:   "File",
+			},
+		)
+	}
+
 	return &projectServiceHandler{
 		blurHashAPI: blurHashAPI,
 		projectRepo: projectRepo,
+		fileRepo:    fileRepo,
 	}
 }
 
@@ -142,7 +156,7 @@ func (h *projectServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 // @Tags project
 // @Accept json
 // @Produce json
-// @Param project body CreateProjectRequest true "Project payload"
+// @Param project body dto.CreateProjectRequest true "Project payload"
 // @Success 201 {object} IDResponse "Project ID"
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
@@ -155,14 +169,13 @@ func (h *projectServiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	defer r.Body.Close()
 
-	var createReq CreateProjectRequest
+	var createReq dto.CreateProjectRequest
 	if err := json.NewDecoder(r.Body).Decode(&createReq); err != nil {
 		http.Error(w, "Invalid JSON in request body", http.StatusBadRequest)
 		return
 	}
 
 	project := domain.Project{
-		Preview:     createReq.Preview,
 		BlurHash:    createReq.BlurHash,
 		Title:       createReq.Title,
 		Subtitle:    createReq.Subtitle,
@@ -183,6 +196,30 @@ func (h *projectServiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Failed to create project: "+err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	createdAny := false
+	for _, preview := range createReq.Previews {
+		preview := &domain.File{
+			ParentTable: "project",
+			ParentID:    id,
+			Role:        domain.FileRole(preview.Role),
+			Name:        preview.Name,
+			URL:         preview.URL,
+			Type:        preview.Type,
+			Size:        preview.Size,
+		}
+
+		_, err := h.fileRepo.Create(r.Context(), *preview)
+		if err != nil {
+			if createdAny {
+				_ = h.fileRepo.DeleteByParent(r.Context(), "project", id)
+			}
+			_ = h.projectRepo.Delete(r.Context(), id)
+			http.Error(w, "Failed to create file record: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		createdAny = true
 	}
 
 	resp := IDResponse{Id: id}
@@ -211,7 +248,7 @@ func (h *projectServiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param id path string true "Project ID"
-// @Success 200 {object} ProjectDTO
+// @Success 200 {object} dto.ProjectDTO
 // @Failure 400 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
@@ -236,8 +273,47 @@ func (h *projectServiceHandler) Get(w http.ResponseWriter, r *http.Request, id s
 		return
 	}
 
+	// Get preview images
+	previews, err := h.fileRepo.FindByParent(r.Context(), "project", id, domain.Image)
+	if err != nil {
+		http.Error(w, "Failed to fetch project files: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Convert to response DTO
+	previewResponses := make([]dto.FileDTO, 0, len(previews))
+	for _, file := range previews {
+		previewResponses = append(previewResponses, dto.FileDTO{
+			ID:          file.ID,
+			ParentTable: string(file.ParentTable),
+			ParentID:    file.ParentID,
+			Role:        string(file.Role),
+			Name:        file.Name,
+			URL:         file.URL,
+			Type:        file.Type,
+			Size:        file.Size,
+			CreatedAt:   file.CreatedAt,
+			UpdatedAt:   file.UpdatedAt,
+		})
+	}
+
+	resp := dto.ProjectDTO{
+		ID:          project.Id,
+		BlurHash:    project.BlurHash,
+		Title:       project.Title,
+		Subtitle:    project.Subtitle,
+		Description: project.Description,
+		Tags:        project.Tags,
+		Type:        string(project.Type),
+		Link:        project.Link,
+		EducationID: project.EducationID,
+		Previews:    previewResponses,
+		CreatedAt:   project.CreatedAt,
+		UpdatedAt:   project.UpdatedAt,
+	}
+
 	var buf bytes.Buffer
-	if err := json.NewEncoder(&buf).Encode(project); err != nil {
+	if err := json.NewEncoder(&buf).Encode(resp); err != nil {
 		http.Error(w, "Failed to write response: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -260,8 +336,8 @@ func (h *projectServiceHandler) Get(w http.ResponseWriter, r *http.Request, id s
 // @Tags project
 // @Accept json
 // @Produce json
-// @Param project body ProjectDTO true "Project payload with ID"
-// @Success 200 {object} ProjectDTO
+// @Param project body dto.ProjectDTO true "Project payload with ID"
+// @Success 200 {object} dto.ProjectDTO
 // @Failure 400 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
@@ -274,15 +350,14 @@ func (h *projectServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	defer r.Body.Close()
 
-	var updateReq ProjectDTO
+	var updateReq dto.ProjectDTO
 	if err := json.NewDecoder(r.Body).Decode(&updateReq); err != nil {
 		http.Error(w, "Invalid JSON in request body", http.StatusBadRequest)
 		return
 	}
 
 	project := domain.Project{
-		Id:          updateReq.Id,
-		Preview:     updateReq.Preview,
+		Id:          updateReq.ID,
 		BlurHash:    updateReq.BlurHash,
 		Title:       updateReq.Title,
 		Subtitle:    updateReq.Subtitle,
@@ -310,8 +385,66 @@ func (h *projectServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	for _, preview := range updateReq.Previews {
+		prevUpdate := &domain.File{
+			ID:          preview.ID,
+			ParentTable: "project",
+			ParentID:    updatedProject.Id,
+			Role:        domain.FileRole(preview.Role),
+			Name:        preview.Name,
+			URL:         preview.URL,
+			Type:        preview.Type,
+			Size:        preview.Size,
+		}
+
+		_, err := h.fileRepo.Update(r.Context(), *prevUpdate)
+		if err != nil {
+			http.Error(w, "Failed to update file record: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	// Reload previews from database to get fresh timestamps
+	previews, err := h.fileRepo.FindByParent(r.Context(), "project", updatedProject.Id, domain.Image)
+	if err != nil {
+		http.Error(w, "Failed to reload previews: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Transform previews to DTOs
+	previewDTOs := make([]dto.FileDTO, 0, len(previews))
+	for _, preview := range previews {
+		previewDTOs = append(previewDTOs, dto.FileDTO{
+			ID:          preview.ID,
+			ParentTable: string(preview.ParentTable),
+			ParentID:    preview.ParentID,
+			Role:        string(preview.Role),
+			Name:        preview.Name,
+			URL:         preview.URL,
+			Type:        preview.Type,
+			Size:        preview.Size,
+			CreatedAt:   preview.CreatedAt,
+			UpdatedAt:   preview.UpdatedAt,
+		})
+	}
+
+	resp := dto.ProjectDTO{
+		ID:          updatedProject.Id,
+		BlurHash:    updatedProject.BlurHash,
+		Title:       updatedProject.Title,
+		Subtitle:    updatedProject.Subtitle,
+		Description: updatedProject.Description,
+		Tags:        updatedProject.Tags,
+		Type:        string(updatedProject.Type),
+		Link:        updatedProject.Link,
+		EducationID: updatedProject.EducationID,
+		Previews:    previewDTOs,
+		CreatedAt:   updatedProject.CreatedAt,
+		UpdatedAt:   updatedProject.UpdatedAt,
+	}
+
 	var buf bytes.Buffer
-	if err := json.NewEncoder(&buf).Encode(updatedProject); err != nil {
+	if err := json.NewEncoder(&buf).Encode(resp); err != nil {
 		http.Error(w, "Failed to write response: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -343,13 +476,20 @@ func (h *projectServiceHandler) Delete(w http.ResponseWriter, r *http.Request, i
 		return
 	}
 
-	err := h.projectRepo.Delete(r.Context(), id)
+	// Delete associated files FIRST to prevent orphans
+	err := h.fileRepo.DeleteByParent(r.Context(), "project", id)
+	if err != nil {
+		http.Error(w, "Failed to delete project files: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Then delete the project
+	err = h.projectRepo.Delete(r.Context(), id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			http.Error(w, "Project not found", http.StatusNotFound)
 			return
 		}
-
 		http.Error(w, "Failed to delete project: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -374,7 +514,7 @@ func (h *projectServiceHandler) Delete(w http.ResponseWriter, r *http.Request, i
 // @Param sort_by query string false "Field to sort by" Enums(created_at, updated_at)
 // @Param sort_ascending query bool false "Sort ascending order"
 // @Param type query string false "Filter by project type" Enums(web, mobile, game)
-// @Success 200 {array} ProjectDTO
+// @Success 200 {array} dto.ProjectDTO
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /projects [get]
@@ -392,7 +532,7 @@ func (h *projectServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filter := ProjectFilterRequest{
+	filter := dto.ProjectFilterRequest{
 		Page:          utils.GetQueryInt32(q, "page", 1),
 		PageSize:      utils.GetQueryInt32(q, "page_size", 10),
 		SortBy:        sortBy,
@@ -444,8 +584,48 @@ func (h *projectServiceHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	projectDTOs := make([]dto.ProjectDTO, 0, len(projects))
+	for _, project := range projects {
+		previews, err := h.fileRepo.FindByParent(r.Context(), "project", project.Id, domain.Image)
+		if err != nil {
+			http.Error(w, "Failed to retrieve previews: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		previewDTOs := make([]dto.FileDTO, 0, len(previews))
+		for _, preview := range previews {
+			previewDTOs = append(previewDTOs, dto.FileDTO{
+				ID:          preview.ID,
+				ParentTable: string(preview.ParentTable),
+				ParentID:    preview.ParentID,
+				Role:        string(preview.Role),
+				Name:        preview.Name,
+				URL:         preview.URL,
+				Type:        preview.Type,
+				Size:        preview.Size,
+				CreatedAt:   preview.CreatedAt,
+				UpdatedAt:   preview.UpdatedAt,
+			})
+		}
+
+		projectDTOs = append(projectDTOs, dto.ProjectDTO{
+			ID:          project.Id,
+			BlurHash:    project.BlurHash,
+			Title:       project.Title,
+			Subtitle:    project.Subtitle,
+			Description: project.Description,
+			Tags:        project.Tags,
+			Type:        string(project.Type),
+			Link:        project.Link,
+			Previews:    previewDTOs,
+			EducationID: project.EducationID,
+			CreatedAt:   project.CreatedAt,
+			UpdatedAt:   project.UpdatedAt,
+		})
+	}
+
 	var buf bytes.Buffer
-	if err := json.NewEncoder(&buf).Encode(projects); err != nil {
+	if err := json.NewEncoder(&buf).Encode(projectDTOs); err != nil {
 		http.Error(w, "Failed to write response: "+err.Error(), http.StatusInternalServerError)
 		return
 	}

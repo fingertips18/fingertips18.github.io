@@ -135,6 +135,64 @@ func (_c *MockFileHandler_Delete_Call) RunAndReturn(run func(w http.ResponseWrit
 	return _c
 }
 
+// DeleteByParent provides a mock function for the type MockFileHandler
+func (_mock *MockFileHandler) DeleteByParent(w http.ResponseWriter, r *http.Request, parentTable string, parentID string) {
+	_mock.Called(w, r, parentTable, parentID)
+	return
+}
+
+// MockFileHandler_DeleteByParent_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteByParent'
+type MockFileHandler_DeleteByParent_Call struct {
+	*mock.Call
+}
+
+// DeleteByParent is a helper method to define mock.On call
+//   - w http.ResponseWriter
+//   - r *http.Request
+//   - parentTable string
+//   - parentID string
+func (_e *MockFileHandler_Expecter) DeleteByParent(w interface{}, r interface{}, parentTable interface{}, parentID interface{}) *MockFileHandler_DeleteByParent_Call {
+	return &MockFileHandler_DeleteByParent_Call{Call: _e.mock.On("DeleteByParent", w, r, parentTable, parentID)}
+}
+
+func (_c *MockFileHandler_DeleteByParent_Call) Run(run func(w http.ResponseWriter, r *http.Request, parentTable string, parentID string)) *MockFileHandler_DeleteByParent_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 http.ResponseWriter
+		if args[0] != nil {
+			arg0 = args[0].(http.ResponseWriter)
+		}
+		var arg1 *http.Request
+		if args[1] != nil {
+			arg1 = args[1].(*http.Request)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 string
+		if args[3] != nil {
+			arg3 = args[3].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *MockFileHandler_DeleteByParent_Call) Return() *MockFileHandler_DeleteByParent_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *MockFileHandler_DeleteByParent_Call) RunAndReturn(run func(w http.ResponseWriter, r *http.Request, parentTable string, parentID string)) *MockFileHandler_DeleteByParent_Call {
+	_c.Run(run)
+	return _c
+}
+
 // Get provides a mock function for the type MockFileHandler
 func (_mock *MockFileHandler) Get(w http.ResponseWriter, r *http.Request, id string) {
 	_mock.Called(w, r, id)
@@ -275,6 +333,52 @@ func (_c *MockFileHandler_ServeHTTP_Call) Return() *MockFileHandler_ServeHTTP_Ca
 }
 
 func (_c *MockFileHandler_ServeHTTP_Call) RunAndReturn(run func(responseWriter http.ResponseWriter, request *http.Request)) *MockFileHandler_ServeHTTP_Call {
+	_c.Run(run)
+	return _c
+}
+
+// Update provides a mock function for the type MockFileHandler
+func (_mock *MockFileHandler) Update(w http.ResponseWriter, r *http.Request) {
+	_mock.Called(w, r)
+	return
+}
+
+// MockFileHandler_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
+type MockFileHandler_Update_Call struct {
+	*mock.Call
+}
+
+// Update is a helper method to define mock.On call
+//   - w http.ResponseWriter
+//   - r *http.Request
+func (_e *MockFileHandler_Expecter) Update(w interface{}, r interface{}) *MockFileHandler_Update_Call {
+	return &MockFileHandler_Update_Call{Call: _e.mock.On("Update", w, r)}
+}
+
+func (_c *MockFileHandler_Update_Call) Run(run func(w http.ResponseWriter, r *http.Request)) *MockFileHandler_Update_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 http.ResponseWriter
+		if args[0] != nil {
+			arg0 = args[0].(http.ResponseWriter)
+		}
+		var arg1 *http.Request
+		if args[1] != nil {
+			arg1 = args[1].(*http.Request)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockFileHandler_Update_Call) Return() *MockFileHandler_Update_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *MockFileHandler_Update_Call) RunAndReturn(run func(w http.ResponseWriter, r *http.Request)) *MockFileHandler_Update_Call {
 	_c.Run(run)
 	return _c
 }

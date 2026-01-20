@@ -18,7 +18,9 @@ type FileHandler interface {
 	http.Handler
 	Create(w http.ResponseWriter, r *http.Request)
 	Get(w http.ResponseWriter, r *http.Request, id string)
+	Update(w http.ResponseWriter, r *http.Request)
 	Delete(w http.ResponseWriter, r *http.Request, id string)
+	DeleteByParent(w http.ResponseWriter, r *http.Request, parentTable, parentID string)
 	ListByParent(w http.ResponseWriter, r *http.Request)
 }
 
@@ -43,7 +45,7 @@ func NewFileServiceHandler(cfg FileServiceConfig) FileHandler {
 		fileRepo = v1.NewFileRepository(
 			v1.FileRepositoryConfig{
 				DatabaseAPI: cfg.DatabaseAPI,
-				FileTable:   "file",
+				FileTable:   "File",
 			},
 		)
 	}
@@ -68,20 +70,29 @@ func (h *fileServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch {
 	// GET /files?parent_table=...&parent_id=...&role=...
 	case path == "/files":
-		if r.Method != http.MethodGet {
+		switch r.Method {
+		case http.MethodGet:
+			h.ListByParent(w, r)
+		case http.MethodDelete:
+			parentTable := r.URL.Query().Get("parent_table")
+			parentID := r.URL.Query().Get("parent_id")
+			h.DeleteByParent(w, r, parentTable, parentID)
+		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-			return
 		}
-		h.ListByParent(w, r)
 		return
 
-	// POST /file
+	// POST / PUT /file
 	case path == "/file":
-		if r.Method != http.MethodPost {
+		switch r.Method {
+		case http.MethodPost:
+			h.Create(w, r)
+		case http.MethodPut:
+			h.Update(w, r)
+		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
-		h.Create(w, r)
 		return
 
 	// GET / DELETE /file/{id}
@@ -146,7 +157,7 @@ func (h *fileServiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Size:        req.Size,
 	}
 
-	id, err := h.fileRepo.Create(r.Context(), file)
+	id, err := h.fileRepo.Create(r.Context(), *file)
 	if err != nil {
 		msg := err.Error()
 		if len(msg) > 0 {
@@ -182,7 +193,7 @@ func (h *fileServiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Tags file
 // @Produce json
 // @Param id path string true "File ID"
-// @Success 200 {object} dto.FileResponse "File details"
+// @Success 200 {object} dto.FileDTO "File details"
 // @Failure 400 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
@@ -203,7 +214,7 @@ func (h *fileServiceHandler) Get(w http.ResponseWriter, r *http.Request, id stri
 		return
 	}
 
-	resp := dto.FileResponse{
+	resp := dto.FileDTO{
 		ID:          file.ID,
 		ParentTable: string(file.ParentTable),
 		ParentID:    file.ParentID,
@@ -214,6 +225,85 @@ func (h *fileServiceHandler) Get(w http.ResponseWriter, r *http.Request, id stri
 		Size:        file.Size,
 		CreatedAt:   file.CreatedAt,
 		UpdatedAt:   file.UpdatedAt,
+	}
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(resp); err != nil {
+		http.Error(w, "Failed to write response: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(buf.Bytes())
+}
+
+// Update handles HTTP PUT requests to update an existing file record.
+// It expects a JSON payload in the request body with the file ID and updated fields.
+// On success, it responds with a JSON object containing the updated file details.
+// If the JSON is invalid, the file ID is missing, or the update fails, it responds with an appropriate HTTP error.
+//
+// @Security ApiKeyAuth
+// @Summary Update a file record
+// @Description Updates an existing file metadata record. The file ID must be provided.
+// @Tags file
+// @Accept json
+// @Produce json
+// @Param file body dto.FileDTO true "Updated file data"
+// @Success 200 {object} dto.FileDTO "Updated file details"
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse "Not Found"
+// @Failure 500 {object} ErrorResponse
+// @Router /file [put]
+func (h *fileServiceHandler) Update(w http.ResponseWriter, r *http.Request) {
+	var req dto.FileDTO
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid JSON in request body", http.StatusBadRequest)
+		return
+	}
+
+	if req.ID == "" {
+		http.Error(w, "Invalid: ID missing", http.StatusBadRequest)
+		return
+	}
+
+	file := &domain.File{
+		ID:          req.ID,
+		ParentTable: domain.ParentTable(req.ParentTable),
+		ParentID:    req.ParentID,
+		Role:        domain.FileRole(req.Role),
+		Name:        req.Name,
+		URL:         req.URL,
+		Type:        req.Type,
+		Size:        req.Size,
+	}
+
+	updatedFile, err := h.fileRepo.Update(r.Context(), *file)
+	if err != nil {
+		msg := err.Error()
+		if len(msg) > 0 {
+			msg = strings.ToUpper(msg[:1]) + msg[1:]
+		}
+		http.Error(w, msg, http.StatusInternalServerError)
+		return
+	}
+
+	if updatedFile == nil {
+		http.Error(w, "File not found", http.StatusNotFound)
+		return
+	}
+
+	resp := dto.FileDTO{
+		ID:          updatedFile.ID,
+		ParentTable: string(updatedFile.ParentTable),
+		ParentID:    updatedFile.ParentID,
+		Role:        string(updatedFile.Role),
+		Name:        updatedFile.Name,
+		URL:         updatedFile.URL,
+		Type:        updatedFile.Type,
+		Size:        updatedFile.Size,
+		CreatedAt:   updatedFile.CreatedAt,
+		UpdatedAt:   updatedFile.UpdatedAt,
 	}
 
 	var buf bytes.Buffer
@@ -263,6 +353,43 @@ func (h *fileServiceHandler) Delete(w http.ResponseWriter, r *http.Request, id s
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// DeleteByParent handles HTTP DELETE requests to remove all files associated with a parent entity.
+// It expects the parent table name and parent ID as parameters.
+// On success, it responds with status 204 No Content.
+// If required parameters are missing or the deletion fails, it responds with an appropriate HTTP error.
+//
+// @Security ApiKeyAuth
+// @Summary Delete files by parent
+// @Description Deletes all file records associated with a specific parent entity.
+// @Tags file
+// @Produce json
+// @Param parent_table query string true "Parent table name"
+// @Param parent_id query string true "Parent ID"
+// @Success 204 "No Content"
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /files [delete]
+func (h *fileServiceHandler) DeleteByParent(w http.ResponseWriter, r *http.Request, parentTable, parentID string) {
+	if parentTable == "" {
+		http.Error(w, "Invalid: missing parentTable", http.StatusBadRequest)
+		return
+	}
+
+	if parentID == "" {
+		http.Error(w, "Invalid: missing parentID", http.StatusBadRequest)
+		return
+	}
+
+	err := h.fileRepo.DeleteByParent(r.Context(), parentTable, parentID)
+	if err != nil {
+		http.Error(w, "Failed to delete files on table "+parentTable+" with ID "+parentID+":"+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Successful delete → 204 No Content
+	w.WriteHeader(http.StatusNoContent)
+}
+
 // ListByParent handles HTTP GET requests to retrieve files by parent entity and role.
 // It expects query parameters: parentTable, parentId, and role.
 // On success, it responds with a JSON array of files matching the criteria.
@@ -276,7 +403,7 @@ func (h *fileServiceHandler) Delete(w http.ResponseWriter, r *http.Request, id s
 // @Param parent_table query string true "Parent table name"
 // @Param parent_id query string true "Parent ID"
 // @Param role query string true "File role (image)"
-// @Success 200 {array} dto.FileResponse "List of files"
+// @Success 200 {array} dto.FileDTO "List of files"
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /files [get]
@@ -305,9 +432,9 @@ func (h *fileServiceHandler) ListByParent(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	fileResponses := make([]dto.FileResponse, 0, len(files))
+	fileResponses := make([]dto.FileDTO, 0, len(files))
 	for _, file := range files {
-		fileResponses = append(fileResponses, dto.FileResponse{
+		fileResponses = append(fileResponses, dto.FileDTO{
 			ID:          file.ID,
 			ParentTable: string(file.ParentTable),
 			ParentID:    file.ParentID,

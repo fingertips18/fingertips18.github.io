@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/fingertips18/fingertips18.github.io/backend/internal/domain"
+	"github.com/fingertips18/fingertips18.github.io/backend/internal/handler/v1/dto"
 	mockRepo "github.com/fingertips18/fingertips18.github.io/backend/internal/repository/v1/mocks"
 	metadata "github.com/fingertips18/fingertips18.github.io/backend/pkg/metadata/mocks"
 	"github.com/jackc/pgx/v5"
@@ -33,16 +34,19 @@ type projectHandlerTestFixture struct {
 	t               *testing.T
 	mockBlurHashAPI *metadata.MockBlurHashAPI
 	mockProjectRepo *mockRepo.MockProjectRepository
+	mockFileRepo    *mockRepo.MockFileRepository
 	projectHandler  ProjectHandler
 }
 
 func newProjectHandlerTestFixture(t *testing.T) *projectHandlerTestFixture {
 	mockBlurHashAPI := new(metadata.MockBlurHashAPI)
 	mockProjectRepo := new(mockRepo.MockProjectRepository)
+	mockFileRepo := new(mockRepo.MockFileRepository)
 	projectHandler := NewProjectServiceHandler(
 		ProjectServiceConfig{
 			BlurHashAPI: mockBlurHashAPI,
 			projectRepo: mockProjectRepo,
+			fileRepo:    mockFileRepo,
 		},
 	)
 
@@ -50,6 +54,7 @@ func newProjectHandlerTestFixture(t *testing.T) *projectHandlerTestFixture {
 		t:               t,
 		mockBlurHashAPI: mockBlurHashAPI,
 		mockProjectRepo: mockProjectRepo,
+		mockFileRepo:    mockFileRepo,
 		projectHandler:  projectHandler,
 	}
 }
@@ -59,8 +64,7 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 
 	validResp, _ := json.Marshal(domain.ProjectIDResponse{ID: fixedID})
 
-	createReq := ProjectDTO{
-		Preview:     "preview.png",
+	createReq := dto.CreateProjectRequest{
 		BlurHash:    validBlurHash,
 		Title:       "title",
 		Subtitle:    "subtitle",
@@ -71,8 +75,7 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 	}
 	validBody, _ := json.Marshal(createReq)
 
-	invalidBlurHashReq := ProjectDTO{
-		Preview:     "preview.png",
+	invalidBlurHashReq := dto.CreateProjectRequest{
 		BlurHash:    "invalid-hash",
 		Title:       "title",
 		Subtitle:    "subtitle",
@@ -88,6 +91,7 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 		body         string
 		mockBlurHash func(m *metadata.MockBlurHashAPI)
 		mockRepo     func(m *mockRepo.MockProjectRepository)
+		mockFileRepo func(m *mockRepo.MockFileRepository)
 	}
 	type Expected struct {
 		code int
@@ -212,8 +216,7 @@ func TestProjectServiceHandler_Create_Routing(t *testing.T) {
 	f := newProjectHandlerTestFixture(t)
 
 	// Setup valid input and expected output
-	createReq := ProjectDTO{
-		Preview:     "preview.png",
+	createReq := dto.CreateProjectRequest{
 		BlurHash:    validBlurHash,
 		Title:       "title",
 		Subtitle:    "subtitle",
@@ -262,7 +265,6 @@ func TestProjectServiceHandler_Get(t *testing.T) {
 
 	validProject := &domain.Project{
 		Id:          fixedID,
-		Preview:     "preview.png",
 		BlurHash:    validBlurHash,
 		Title:       "title",
 		Subtitle:    "subtitle",
@@ -274,7 +276,21 @@ func TestProjectServiceHandler_Get(t *testing.T) {
 		UpdatedAt:   fixedTime,
 	}
 
-	validBody, _ := json.Marshal(validProject)
+	projectDTO := dto.ProjectDTO{
+		ID:          fixedID,
+		BlurHash:    validBlurHash,
+		Title:       "title",
+		Subtitle:    "subtitle",
+		Description: "desc",
+		Tags:        []string{"go", "react"},
+		Type:        string(domain.Web),
+		Link:        "http://example.com",
+		Previews:    []dto.FileDTO{},
+		CreatedAt:   fixedTime,
+		UpdatedAt:   fixedTime,
+	}
+
+	validBody, _ := json.Marshal(projectDTO)
 
 	type Given struct {
 		method   string
@@ -357,6 +373,12 @@ func TestProjectServiceHandler_Get(t *testing.T) {
 				tt.given.mockRepo(f.mockProjectRepo)
 			}
 
+			if name == "success" {
+				f.mockFileRepo.EXPECT().
+					FindByParent(mock.Anything, "project", tt.given.id, domain.Image).
+					Return([]domain.File{}, nil)
+			}
+
 			req := httptest.NewRequest(tt.given.method, "/project/"+tt.given.id, nil)
 			w := httptest.NewRecorder()
 
@@ -375,6 +397,9 @@ func TestProjectServiceHandler_Get(t *testing.T) {
 			}
 
 			f.mockProjectRepo.AssertExpectations(t)
+			if name == "success" {
+				f.mockFileRepo.AssertExpectations(t)
+			}
 		})
 	}
 }
@@ -385,7 +410,6 @@ func TestProjectServiceHandler_Get_Routing(t *testing.T) {
 
 	validProject := &domain.Project{
 		Id:          fixedID,
-		Preview:     "preview.png",
 		BlurHash:    validBlurHash,
 		Title:       "title",
 		Subtitle:    "subtitle",
@@ -396,7 +420,20 @@ func TestProjectServiceHandler_Get_Routing(t *testing.T) {
 		CreatedAt:   fixedTime,
 		UpdatedAt:   fixedTime,
 	}
-	expectedBody, _ := json.Marshal(validProject)
+	expectedDTO := dto.ProjectDTO{
+		ID:          fixedID,
+		BlurHash:    validBlurHash,
+		Title:       "title",
+		Subtitle:    "subtitle",
+		Description: "desc",
+		Tags:        []string{"go", "react"},
+		Type:        string(domain.Web),
+		Link:        "http://example.com",
+		Previews:    []dto.FileDTO{},
+		CreatedAt:   fixedTime,
+		UpdatedAt:   fixedTime,
+	}
+	expectedBody, _ := json.Marshal(expectedDTO)
 
 	f := newProjectHandlerTestFixture(t)
 
@@ -404,6 +441,10 @@ func TestProjectServiceHandler_Get_Routing(t *testing.T) {
 	f.mockProjectRepo.EXPECT().
 		Get(mock.Anything, fixedID).
 		Return(validProject, nil)
+
+	f.mockFileRepo.EXPECT().
+		FindByParent(mock.Anything, "project", fixedID, domain.Image).
+		Return([]domain.File{}, nil)
 
 	// Create HTTP request and response recorder
 	req := httptest.NewRequest(http.MethodGet, "/project/"+fixedID, nil)
@@ -432,7 +473,6 @@ func TestProjectServiceHandler_Update(t *testing.T) {
 
 	validProject := &domain.Project{
 		Id:          fixedID,
-		Preview:     "preview.png",
 		BlurHash:    validBlurHash,
 		Title:       "title",
 		Subtitle:    "subtitle",
@@ -444,8 +484,7 @@ func TestProjectServiceHandler_Update(t *testing.T) {
 
 	validBody, _ := json.Marshal(validProject)
 
-	invalidBlurHashReq := ProjectDTO{
-		Preview:     "preview.png",
+	invalidBlurHashReq := dto.CreateProjectRequest{
 		BlurHash:    "invalid-hash",
 		Title:       "title",
 		Subtitle:    "subtitle",
@@ -461,6 +500,7 @@ func TestProjectServiceHandler_Update(t *testing.T) {
 		body         string
 		mockBlurHash func(m *metadata.MockBlurHashAPI)
 		mockRepo     func(m *mockRepo.MockProjectRepository)
+		mockFileRepo func(m *mockRepo.MockFileRepository)
 	}
 
 	type Expected struct {
@@ -487,7 +527,19 @@ func TestProjectServiceHandler_Update(t *testing.T) {
 			},
 			expected: Expected{
 				code: http.StatusOK,
-				body: string(validBody),
+				body: toJSON(dto.ProjectDTO{
+					ID:          fixedID,
+					BlurHash:    validBlurHash,
+					Title:       "title",
+					Subtitle:    "subtitle",
+					Description: "desc",
+					Tags:        []string{"go", "react"},
+					Type:        string(domain.Web),
+					Link:        "http://example.com",
+					Previews:    []dto.FileDTO{},
+					CreatedAt:   validProject.CreatedAt,
+					UpdatedAt:   validProject.UpdatedAt,
+				}),
 			},
 		},
 		"invalid method": {
@@ -574,6 +626,12 @@ func TestProjectServiceHandler_Update(t *testing.T) {
 				tt.given.mockRepo(f.mockProjectRepo)
 			}
 
+			if name == "success" {
+				f.mockFileRepo.EXPECT().
+					FindByParent(mock.Anything, "project", fixedID, domain.Image).
+					Return([]domain.File{}, nil)
+			}
+
 			req := httptest.NewRequest(tt.given.method, "/project", strings.NewReader(tt.given.body))
 			w := httptest.NewRecorder()
 
@@ -593,16 +651,20 @@ func TestProjectServiceHandler_Update(t *testing.T) {
 
 			f.mockProjectRepo.AssertExpectations(t)
 			f.mockBlurHashAPI.AssertExpectations(t)
+
+			if name == "success" {
+				f.mockFileRepo.AssertExpectations(t)
+			}
 		})
 	}
 }
 
 func TestProjectServiceHandler_Update_Routing(t *testing.T) {
 	fixedID := "123-abc"
+	fixedTime := time.Date(2025, 1, 1, 12, 0, 0, 0, time.UTC)
 
 	validProject := &domain.Project{
 		Id:          fixedID,
-		Preview:     "preview.png",
 		BlurHash:    validBlurHash,
 		Title:       "title",
 		Subtitle:    "subtitle",
@@ -610,20 +672,40 @@ func TestProjectServiceHandler_Update_Routing(t *testing.T) {
 		Tags:        []string{"go", "react"},
 		Type:        domain.Web,
 		Link:        "http://example.com",
+		CreatedAt:   fixedTime,
+		UpdatedAt:   fixedTime,
 	}
 
 	reqBody, _ := json.Marshal(validProject)
-	expectedResp, _ := json.Marshal(validProject)
+
+	expectedResp, _ := json.Marshal(dto.ProjectDTO{
+		ID:          fixedID,
+		BlurHash:    validBlurHash,
+		Title:       "title",
+		Subtitle:    "subtitle",
+		Description: "desc",
+		Tags:        []string{"go", "react"},
+		Type:        string(domain.Web),
+		Link:        "http://example.com",
+		Previews:    []dto.FileDTO{},
+		CreatedAt:   fixedTime,
+		UpdatedAt:   fixedTime,
+	})
 
 	f := newProjectHandlerTestFixture(t)
 
 	// Mock blurhash validation to return true for happy path
 	f.mockBlurHashAPI.EXPECT().IsValid(validBlurHash).Return(true).Once()
 
-	// Setup mock expectation
+	// Mock projectRepo.Update call
 	f.mockProjectRepo.EXPECT().
 		Update(mock.Anything, validProject).
 		Return(validProject, nil)
+
+	// Mock fileRepo.FindByParent call to reload previews
+	f.mockFileRepo.EXPECT().
+		FindByParent(mock.Anything, "project", fixedID, domain.Image).
+		Return([]domain.File{}, nil)
 
 	// Create PUT request
 	req := httptest.NewRequest(http.MethodPut, "/project", bytes.NewReader(reqBody))
@@ -645,6 +727,7 @@ func TestProjectServiceHandler_Update_Routing(t *testing.T) {
 	assert.JSONEq(t, string(expectedResp), string(body))
 
 	f.mockProjectRepo.AssertExpectations(t)
+	f.mockFileRepo.AssertExpectations(t)
 }
 
 func TestProjectServiceHandler_Delete(t *testing.T) {
@@ -653,9 +736,8 @@ func TestProjectServiceHandler_Delete(t *testing.T) {
 	type Given struct {
 		method   string
 		id       string
-		mockRepo func(m *mockRepo.MockProjectRepository)
+		mockRepo func(*mockRepo.MockProjectRepository)
 	}
-
 	type Expected struct {
 		code int
 		body string
@@ -680,17 +762,7 @@ func TestProjectServiceHandler_Delete(t *testing.T) {
 				body: "",
 			},
 		},
-		"invalid method": {
-			given: Given{
-				method: http.MethodGet,
-				id:     fixedID,
-			},
-			expected: Expected{
-				code: http.StatusMethodNotAllowed,
-				body: "Method not allowed: only DELETE is supported\n",
-			},
-		},
-		"not found": {
+		"not_found": {
 			given: Given{
 				method: http.MethodDelete,
 				id:     fixedID,
@@ -705,19 +777,32 @@ func TestProjectServiceHandler_Delete(t *testing.T) {
 				body: "Project not found\n",
 			},
 		},
-		"repo error": {
+		"repo_error": {
 			given: Given{
 				method: http.MethodDelete,
 				id:     fixedID,
 				mockRepo: func(m *mockRepo.MockProjectRepository) {
 					m.EXPECT().
 						Delete(mock.Anything, fixedID).
-						Return(errors.New("db failure"))
+						Return(errors.New("db error"))
 				},
 			},
 			expected: Expected{
 				code: http.StatusInternalServerError,
-				body: "Failed to delete project: db failure\n",
+				body: "Failed to delete project: db error\n",
+			},
+		},
+		"method_not_allowed": {
+			given: Given{
+				method: http.MethodGet,
+				id:     fixedID,
+				mockRepo: func(m *mockRepo.MockProjectRepository) {
+					// No expectation needed as method check happens first
+				},
+			},
+			expected: Expected{
+				code: http.StatusMethodNotAllowed,
+				body: "Method not allowed: only DELETE is supported\n",
 			},
 		},
 	}
@@ -728,6 +813,13 @@ func TestProjectServiceHandler_Delete(t *testing.T) {
 
 			if tt.given.mockRepo != nil {
 				tt.given.mockRepo(f.mockProjectRepo)
+			}
+
+			// Mock fileRepo.DeleteByParent for ALL cases except method_not_allowed
+			if name != "method_not_allowed" {
+				f.mockFileRepo.EXPECT().
+					DeleteByParent(mock.Anything, "project", tt.given.id).
+					Return(nil)
 			}
 
 			req := httptest.NewRequest(tt.given.method, "/project/"+tt.given.id, nil)
@@ -748,6 +840,11 @@ func TestProjectServiceHandler_Delete(t *testing.T) {
 			}
 
 			f.mockProjectRepo.AssertExpectations(t)
+
+			// Assert fileRepo expectations for cases that call it
+			if name != "method_not_allowed" {
+				f.mockFileRepo.AssertExpectations(t)
+			}
 		})
 	}
 }
@@ -756,6 +853,10 @@ func TestProjectServiceHandler_Delete_Routing(t *testing.T) {
 	fixedID := "123-abc"
 
 	f := newProjectHandlerTestFixture(t)
+
+	f.mockFileRepo.EXPECT().
+		DeleteByParent(mock.Anything, "project", fixedID).
+		Return(nil)
 
 	// Setup mock expectation
 	f.mockProjectRepo.EXPECT().
@@ -782,6 +883,7 @@ func TestProjectServiceHandler_Delete_Routing(t *testing.T) {
 	assert.Empty(t, string(body))
 
 	// Verify the mock was called as expected
+	f.mockFileRepo.AssertExpectations(t)
 	f.mockProjectRepo.AssertExpectations(t)
 }
 
@@ -790,7 +892,6 @@ func TestProjectServiceHandler_List(t *testing.T) {
 	validProjects := []domain.Project{
 		{
 			Id:          "p1",
-			Preview:     "preview1",
 			BlurHash:    "hash1",
 			Title:       "title1",
 			Subtitle:    "subtitle1",
@@ -803,7 +904,6 @@ func TestProjectServiceHandler_List(t *testing.T) {
 		},
 		{
 			Id:          "p2",
-			Preview:     "preview2",
 			BlurHash:    "hash2",
 			Title:       "title2",
 			Subtitle:    "subtitle2",
@@ -842,7 +942,34 @@ func TestProjectServiceHandler_List(t *testing.T) {
 			},
 			expected: Expected{
 				code: http.StatusOK,
-				body: toJSON(validProjects),
+				body: toJSON([]dto.ProjectDTO{
+					{
+						ID:          "p1",
+						BlurHash:    "hash1",
+						Title:       "title1",
+						Subtitle:    "subtitle1",
+						Description: "desc1",
+						Tags:        []string{"go"},
+						Type:        string(domain.Web),
+						Link:        "http://example.com/1",
+						Previews:    []dto.FileDTO{},
+						CreatedAt:   fixedTime,
+						UpdatedAt:   fixedTime,
+					},
+					{
+						ID:          "p2",
+						BlurHash:    "hash2",
+						Title:       "title2",
+						Subtitle:    "subtitle2",
+						Description: "desc2",
+						Tags:        []string{"react"},
+						Type:        string(domain.Mobile),
+						Link:        "http://example.com/2",
+						Previews:    []dto.FileDTO{},
+						CreatedAt:   fixedTime,
+						UpdatedAt:   fixedTime,
+					},
+				}),
 			},
 		},
 		"success - with type filter": {
@@ -857,7 +984,21 @@ func TestProjectServiceHandler_List(t *testing.T) {
 			},
 			expected: Expected{
 				code: http.StatusOK,
-				body: toJSON([]domain.Project{validProjects[0]}),
+				body: toJSON([]dto.ProjectDTO{
+					{
+						ID:          "p1",
+						BlurHash:    "hash1",
+						Title:       "title1",
+						Subtitle:    "subtitle1",
+						Description: "desc1",
+						Tags:        []string{"go"},
+						Type:        string(domain.Web),
+						Link:        "http://example.com/1",
+						Previews:    []dto.FileDTO{},
+						CreatedAt:   fixedTime,
+						UpdatedAt:   fixedTime,
+					},
+				}),
 			},
 		},
 		"invalid method": {
@@ -915,6 +1056,20 @@ func TestProjectServiceHandler_List(t *testing.T) {
 				tt.given.mockRepo(f.mockProjectRepo)
 			}
 
+			switch name {
+			case "success - no filters":
+				f.mockFileRepo.EXPECT().
+					FindByParent(mock.Anything, "project", "p1", domain.Image).
+					Return([]domain.File{}, nil)
+				f.mockFileRepo.EXPECT().
+					FindByParent(mock.Anything, "project", "p2", domain.Image).
+					Return([]domain.File{}, nil)
+			case "success - with type filter":
+				f.mockFileRepo.EXPECT().
+					FindByParent(mock.Anything, "project", "p1", domain.Image).
+					Return([]domain.File{}, nil)
+			}
+
 			req := httptest.NewRequest(tt.given.method, "/projects"+tt.given.query, nil)
 			w := httptest.NewRecorder()
 
@@ -933,6 +1088,9 @@ func TestProjectServiceHandler_List(t *testing.T) {
 			}
 
 			f.mockProjectRepo.AssertExpectations(t)
+			if name == "success - no filters" || name == "success - with type filter" {
+				f.mockFileRepo.AssertExpectations(t)
+			}
 		})
 	}
 }
@@ -943,7 +1101,6 @@ func TestProjectServiceHandler_List_Routing(t *testing.T) {
 	validProjects := []domain.Project{
 		{
 			Id:          "p1",
-			Preview:     "preview1",
 			BlurHash:    "hash1",
 			Title:       "title1",
 			Subtitle:    "subtitle1",
@@ -956,7 +1113,6 @@ func TestProjectServiceHandler_List_Routing(t *testing.T) {
 		},
 		{
 			Id:          "p2",
-			Preview:     "preview2",
 			BlurHash:    "hash2",
 			Title:       "title2",
 			Subtitle:    "subtitle2",
@@ -969,7 +1125,35 @@ func TestProjectServiceHandler_List_Routing(t *testing.T) {
 		},
 	}
 
-	expectedBody, _ := json.Marshal(validProjects)
+	// Expected response is dto.ProjectDTO array
+	expectedBody, _ := json.Marshal([]dto.ProjectDTO{
+		{
+			ID:          "p1",
+			BlurHash:    "hash1",
+			Title:       "title1",
+			Subtitle:    "subtitle1",
+			Description: "desc1",
+			Tags:        []string{"go"},
+			Type:        string(domain.Web),
+			Link:        "http://example.com/1",
+			Previews:    []dto.FileDTO{},
+			CreatedAt:   fixedTime,
+			UpdatedAt:   fixedTime,
+		},
+		{
+			ID:          "p2",
+			BlurHash:    "hash2",
+			Title:       "title2",
+			Subtitle:    "subtitle2",
+			Description: "desc2",
+			Tags:        []string{"react"},
+			Type:        string(domain.Mobile),
+			Link:        "http://example.com/2",
+			Previews:    []dto.FileDTO{},
+			CreatedAt:   fixedTime,
+			UpdatedAt:   fixedTime,
+		},
+	})
 
 	f := newProjectHandlerTestFixture(t)
 
@@ -977,6 +1161,14 @@ func TestProjectServiceHandler_List_Routing(t *testing.T) {
 	f.mockProjectRepo.EXPECT().
 		List(mock.Anything, mock.AnythingOfType("domain.ProjectFilter")).
 		Return(validProjects, nil)
+
+	// Mock fileRepo.FindByParent for each project
+	f.mockFileRepo.EXPECT().
+		FindByParent(mock.Anything, "project", "p1", domain.Image).
+		Return([]domain.File{}, nil)
+	f.mockFileRepo.EXPECT().
+		FindByParent(mock.Anything, "project", "p2", domain.Image).
+		Return([]domain.File{}, nil)
 
 	// Create GET request to /projects
 	req := httptest.NewRequest(http.MethodGet, "/projects", nil)
@@ -997,5 +1189,6 @@ func TestProjectServiceHandler_List_Routing(t *testing.T) {
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	assert.JSONEq(t, string(expectedBody), string(body))
 
+	f.mockFileRepo.AssertExpectations(t)
 	f.mockProjectRepo.AssertExpectations(t)
 }

@@ -33,7 +33,6 @@ func (f *projectFakeRow) Scan(dest ...any) error {
 	if f.scanErr != nil {
 		return f.scanErr
 	}
-
 	switch len(dest) {
 	case 1:
 		if v, ok := dest[0].(*string); ok {
@@ -42,21 +41,20 @@ func (f *projectFakeRow) Scan(dest ...any) error {
 		}
 		return fmt.Errorf("expected *string for id, got %T", dest[0])
 
-	case 11:
+	case 10: // ← Changed from 11 to 10 (Preview field removed)
 		*dest[0].(*string) = f.project.Id
-		*dest[1].(*string) = f.project.Preview
-		*dest[2].(*string) = f.project.BlurHash
-		*dest[3].(*string) = f.project.Title
-		*dest[4].(*string) = f.project.Subtitle
-		*dest[5].(*string) = f.project.Description
+		*dest[1].(*string) = f.project.BlurHash    // ← Shifted from dest[2]
+		*dest[2].(*string) = f.project.Title       // ← Shifted from dest[3]
+		*dest[3].(*string) = f.project.Subtitle    // ← Shifted from dest[4]
+		*dest[4].(*string) = f.project.Description // ← Shifted from dest[5]
 
-		if v, ok := dest[6].(*[]string); ok {
+		if v, ok := dest[5].(*[]string); ok { // ← Shifted from dest[6]
 			*v = f.project.Tags
 		} else {
-			return fmt.Errorf("expected *[]string for tags, got %T", dest[6])
+			return fmt.Errorf("expected *[]string for tags, got %T", dest[5])
 		}
 
-		switch v := dest[7].(type) {
+		switch v := dest[6].(type) { // ← Shifted from dest[7]
 		case *string:
 			*v = string(f.project.Type)
 		case *domain.ProjectType:
@@ -65,9 +63,9 @@ func (f *projectFakeRow) Scan(dest ...any) error {
 			return fmt.Errorf("unexpected type for project.Type: %T", v)
 		}
 
-		*dest[8].(*string) = f.project.Link
-		*dest[9].(*time.Time) = f.project.CreatedAt
-		*dest[10].(*time.Time) = f.project.UpdatedAt
+		*dest[7].(*string) = f.project.Link         // ← Shifted from dest[8]
+		*dest[8].(*time.Time) = f.project.CreatedAt // ← Shifted from dest[9]
+		*dest[9].(*time.Time) = f.project.UpdatedAt // ← Shifted from dest[10]
 		return nil
 
 	default:
@@ -140,7 +138,6 @@ func TestProjectRepository_Create(t *testing.T) {
 	scanErr := errors.New("scan error")
 
 	validProject := domain.Project{
-		Preview:     "test-preview",
 		BlurHash:    validBlurHash,
 		Title:       "test-title",
 		Subtitle:    "test-subtitle",
@@ -151,7 +148,6 @@ func TestProjectRepository_Create(t *testing.T) {
 	}
 
 	invalidBlurHashProject := domain.Project{
-		Preview:     "preview.png",
 		BlurHash:    "invalid-hash",
 		Title:       "title",
 		Subtitle:    "subtitle",
@@ -229,28 +225,9 @@ func TestProjectRepository_Create(t *testing.T) {
 				err: errors.New("invalid project returned: ID missing"),
 			},
 		},
-		"Missing preview fails": {
-			given: Given{
-				project: domain.Project{
-					Preview:     "",
-					BlurHash:    validProject.BlurHash,
-					Title:       validProject.Title,
-					Subtitle:    validProject.Subtitle,
-					Description: validProject.Description,
-					Tags:        validProject.Tags,
-					Type:        validProject.Type,
-					Link:        validProject.Link,
-				},
-				mockQueryRow: nil,
-			},
-			expected: Expected{
-				err: errors.New("failed to validate project: preview missing"),
-			},
-		},
 		"Missing blurHash fails": {
 			given: Given{
 				project: domain.Project{
-					Preview:     validProject.Preview,
 					BlurHash:    "",
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -283,7 +260,6 @@ func TestProjectRepository_Create(t *testing.T) {
 					m.EXPECT().IsValid(validBlurHash).Return(true).Once()
 				},
 				project: domain.Project{
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       "",
 					Subtitle:    validProject.Subtitle,
@@ -304,7 +280,6 @@ func TestProjectRepository_Create(t *testing.T) {
 					m.EXPECT().IsValid(validBlurHash).Return(true).Once()
 				},
 				project: domain.Project{
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    "",
@@ -325,7 +300,6 @@ func TestProjectRepository_Create(t *testing.T) {
 					m.EXPECT().IsValid(validBlurHash).Return(true).Once()
 				},
 				project: domain.Project{
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -346,7 +320,6 @@ func TestProjectRepository_Create(t *testing.T) {
 					m.EXPECT().IsValid(validBlurHash).Return(true).Once()
 				},
 				project: domain.Project{
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -367,7 +340,6 @@ func TestProjectRepository_Create(t *testing.T) {
 					m.EXPECT().IsValid(validBlurHash).Return(true).Once()
 				},
 				project: domain.Project{
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -390,7 +362,6 @@ func TestProjectRepository_Create(t *testing.T) {
 					m.EXPECT().IsValid(validBlurHash).Return(true).Once()
 				},
 				project: domain.Project{
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -411,7 +382,6 @@ func TestProjectRepository_Create(t *testing.T) {
 					m.EXPECT().IsValid(validBlurHash).Return(true).Once()
 				},
 				project: domain.Project{
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -432,7 +402,6 @@ func TestProjectRepository_Create(t *testing.T) {
 					m.EXPECT().IsValid(validBlurHash).Return(true).Once()
 				},
 				project: domain.Project{
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -484,7 +453,6 @@ func TestProjectRepository_Get(t *testing.T) {
 
 	validProject := domain.Project{
 		Id:          id,
-		Preview:     "test-preview",
 		BlurHash:    validBlurHash,
 		Title:       "test-title",
 		Subtitle:    "test-subtitle",
@@ -562,7 +530,6 @@ func TestProjectRepository_Get(t *testing.T) {
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
 						Return(&projectFakeRow{project: domain.Project{
 							Id:          "",
-							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
 							Title:       validProject.Title,
 							Subtitle:    validProject.Subtitle,
@@ -580,32 +547,6 @@ func TestProjectRepository_Get(t *testing.T) {
 				err:     errors.New("invalid project returned: ID missing"),
 			},
 		},
-		"Missing preview fails": {
-			given: Given{
-				id: id,
-				mockQueryRow: func(m *database.MockDatabaseAPI) {
-					m.EXPECT().
-						QueryRow(mock.Anything, mock.Anything, []any{id}).
-						Return(&projectFakeRow{project: domain.Project{
-							Id:          validProject.Id,
-							Preview:     "",
-							BlurHash:    validProject.BlurHash,
-							Title:       validProject.Title,
-							Subtitle:    validProject.Subtitle,
-							Description: validProject.Description,
-							Tags:        validProject.Tags,
-							Type:        validProject.Type,
-							Link:        validProject.Link,
-							CreatedAt:   validProject.CreatedAt,
-							UpdatedAt:   validProject.UpdatedAt,
-						}})
-				},
-			},
-			expected: Expected{
-				project: nil,
-				err:     errors.New("invalid project returned: preview missing"),
-			},
-		},
 		"Missing blurHash fails": {
 			given: Given{
 				id: id,
@@ -614,7 +555,6 @@ func TestProjectRepository_Get(t *testing.T) {
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
 						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
-							Preview:     validProject.Preview,
 							BlurHash:    "",
 							Title:       validProject.Title,
 							Subtitle:    validProject.Subtitle,
@@ -643,7 +583,6 @@ func TestProjectRepository_Get(t *testing.T) {
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
 						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
-							Preview:     validProject.Preview,
 							BlurHash:    "invalid-from-db", // Invalid hash from DB
 							Title:       validProject.Title,
 							Subtitle:    validProject.Subtitle,
@@ -672,7 +611,6 @@ func TestProjectRepository_Get(t *testing.T) {
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
 						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
-							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
 							Title:       "",
 							Subtitle:    validProject.Subtitle,
@@ -701,7 +639,6 @@ func TestProjectRepository_Get(t *testing.T) {
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
 						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
-							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
 							Title:       validProject.Title,
 							Subtitle:    "",
@@ -730,7 +667,6 @@ func TestProjectRepository_Get(t *testing.T) {
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
 						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
-							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
 							Title:       validProject.Title,
 							Subtitle:    validProject.Subtitle,
@@ -759,7 +695,6 @@ func TestProjectRepository_Get(t *testing.T) {
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
 						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
-							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
 							Title:       validProject.Title,
 							Subtitle:    validProject.Subtitle,
@@ -788,7 +723,6 @@ func TestProjectRepository_Get(t *testing.T) {
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
 						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
-							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
 							Title:       validProject.Title,
 							Subtitle:    validProject.Subtitle,
@@ -817,7 +751,6 @@ func TestProjectRepository_Get(t *testing.T) {
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
 						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
-							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
 							Title:       validProject.Title,
 							Subtitle:    validProject.Subtitle,
@@ -846,7 +779,6 @@ func TestProjectRepository_Get(t *testing.T) {
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
 						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
-							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
 							Title:       validProject.Title,
 							Subtitle:    validProject.Subtitle,
@@ -875,7 +807,6 @@ func TestProjectRepository_Get(t *testing.T) {
 						QueryRow(mock.Anything, mock.Anything, []any{id}).
 						Return(&projectFakeRow{project: domain.Project{
 							Id:          validProject.Id,
-							Preview:     validProject.Preview,
 							BlurHash:    validProject.BlurHash,
 							Title:       validProject.Title,
 							Subtitle:    validProject.Subtitle,
@@ -930,7 +861,6 @@ func TestProjectRepository_Update(t *testing.T) {
 
 	validProject := &domain.Project{
 		Id:          "123-abc",
-		Preview:     "test-preview",
 		BlurHash:    validBlurHash,
 		Title:       "test-title",
 		Subtitle:    "test-subtitle",
@@ -1010,31 +940,10 @@ func TestProjectRepository_Update(t *testing.T) {
 				err:            nil,
 			},
 		},
-		"Missing preview fails": {
-			given: Given{
-				project: domain.Project{
-					Id:          validProject.Id,
-					Preview:     "",
-					BlurHash:    validProject.BlurHash,
-					Title:       validProject.Title,
-					Subtitle:    validProject.Subtitle,
-					Description: validProject.Description,
-					Tags:        validProject.Tags,
-					Type:        validProject.Type,
-					Link:        validProject.Link,
-				},
-				mockQueryRow: nil,
-			},
-			expected: Expected{
-				updatedProject: nil,
-				err:            errors.New("failed to validate project: preview missing"),
-			},
-		},
 		"Missing blurHash fails": {
 			given: Given{
 				project: domain.Project{
 					Id:          validProject.Id,
-					Preview:     validProject.Preview,
 					BlurHash:    "",
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -1054,7 +963,6 @@ func TestProjectRepository_Update(t *testing.T) {
 			given: Given{
 				project: domain.Project{
 					Id:          validProject.Id,
-					Preview:     validProject.Preview,
 					BlurHash:    "invalid-hash",
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -1080,7 +988,6 @@ func TestProjectRepository_Update(t *testing.T) {
 				},
 				project: domain.Project{
 					Id:          validProject.Id,
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       "",
 					Subtitle:    validProject.Subtitle,
@@ -1103,7 +1010,6 @@ func TestProjectRepository_Update(t *testing.T) {
 				},
 				project: domain.Project{
 					Id:          validProject.Id,
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    "",
@@ -1126,7 +1032,6 @@ func TestProjectRepository_Update(t *testing.T) {
 				},
 				project: domain.Project{
 					Id:          validProject.Id,
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -1149,7 +1054,6 @@ func TestProjectRepository_Update(t *testing.T) {
 				},
 				project: domain.Project{
 					Id:          validProject.Id,
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -1172,7 +1076,6 @@ func TestProjectRepository_Update(t *testing.T) {
 				},
 				project: domain.Project{
 					Id:          validProject.Id,
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -1195,7 +1098,6 @@ func TestProjectRepository_Update(t *testing.T) {
 				},
 				project: domain.Project{
 					Id:          validProject.Id,
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -1218,7 +1120,6 @@ func TestProjectRepository_Update(t *testing.T) {
 				},
 				project: domain.Project{
 					Id:          validProject.Id,
-					Preview:     validProject.Preview,
 					BlurHash:    validProject.BlurHash,
 					Title:       validProject.Title,
 					Subtitle:    validProject.Subtitle,
@@ -1363,7 +1264,6 @@ func TestProjectRepository_List(t *testing.T) {
 
 	validProject := domain.Project{
 		Id:          "123-abc",
-		Preview:     "test-preview",
 		BlurHash:    validBlurHash,
 		Title:       "test-title",
 		Subtitle:    "test-subtitle",
