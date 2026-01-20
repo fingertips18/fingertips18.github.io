@@ -476,22 +476,22 @@ func (h *projectServiceHandler) Delete(w http.ResponseWriter, r *http.Request, i
 		return
 	}
 
-	// Delete the project first
-	err := h.projectRepo.Delete(r.Context(), id)
+	// Delete associated files FIRST to prevent orphans
+	err := h.fileRepo.DeleteByParent(r.Context(), "project", id)
+	if err != nil {
+		http.Error(w, "Failed to delete project files: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Then delete the project
+	err = h.projectRepo.Delete(r.Context(), id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			http.Error(w, "Project not found", http.StatusNotFound)
 			return
 		}
-
 		http.Error(w, "Failed to delete project: "+err.Error(), http.StatusInternalServerError)
 		return
-	}
-
-	// Clean up associated files (best-effort after project is gone)
-	if err := h.fileRepo.DeleteByParent(r.Context(), "project", id); err != nil {
-		// Log but don't fail - project is already deleted
-		// Consider logging: log.Printf("Failed to delete previews for project %s: %v", id, err)
 	}
 
 	// Successful delete → 204 No Content
