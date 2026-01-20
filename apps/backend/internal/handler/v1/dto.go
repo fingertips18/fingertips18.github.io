@@ -45,37 +45,6 @@ type SkillFilterRequest struct {
 	Category      string `json:"category"`
 }
 
-type FileDTO struct {
-	Name     string  `json:"name"`
-	Size     int64   `json:"size"`
-	Type     string  `json:"type"`
-	CustomID *string `json:"custom_id,omitempty"`
-}
-
-type ImageUploadRequestDTO struct {
-	Files              []FileDTO `json:"files"`
-	ACL                *string   `json:"acl,omitempty"`
-	Metadata           any       `json:"metadata,omitempty"`
-	ContentDisposition *string   `json:"content_disposition,omitempty"`
-}
-
-type ImageUploadFileDTO struct {
-	Key                string         `json:"key"`
-	FileName           string         `json:"file_name"`
-	FileType           string         `json:"file_type"`
-	FileUrl            string         `json:"file_url"`
-	ContentDisposition string         `json:"content_disposition"`
-	PollingJwt         string         `json:"polling_jwt"`
-	PollingUrl         string         `json:"polling_url"`
-	CustomId           *string        `json:"custom_id,omitempty"`
-	URL                string         `json:"url"` // signed URL to upload
-	Fields             map[string]any `json:"fields,omitempty"`
-}
-
-type ImageUploadResponseDTO struct {
-	File ImageUploadFileDTO `json:"file"`
-}
-
 type IDResponse struct {
 	Id string `json:"id"`
 }

@@ -13,7 +13,7 @@ import { MAX_BYTES } from '@/constants/sizes';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { toast } from '@/lib/toast';
 import { Route } from '@/routes/route';
-import { ImageService } from '@/services/image';
+import { FileService } from '@/services/file';
 import { ProjectService } from '@/services/project';
 import { ProjectType } from '@/types/project';
 
@@ -127,7 +127,7 @@ export function Form() {
 
       const preview = values.preview[0];
 
-      const url = await ImageService.upload({
+      const url = await FileService.upload({
         file: preview,
         signal: abortRef.current?.signal,
       });
@@ -164,7 +164,6 @@ export function Form() {
 
       const projectId = await ProjectService.create({
         project: {
-          preview: imageURL,
           blurhash: values.blurhash,
           title: values.title,
           subTitle: values.subTitle,
@@ -205,8 +204,8 @@ export function Form() {
   const ariaLabel = imageLoading
     ? 'Uploading image, please wait'
     : projectLoading
-    ? 'Creating project, please wait'
-    : 'Submit';
+      ? 'Creating project, please wait'
+      : 'Submit';
 
   return (
     <BaseForm {...form}>

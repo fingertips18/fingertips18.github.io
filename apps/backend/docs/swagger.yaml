@@ -120,6 +120,59 @@ definitions:
       url:
         type: string
     type: object
+  dto.FileUploadDTO:
+    properties:
+      custom_id:
+        type: string
+      name:
+        type: string
+      size:
+        type: integer
+      type:
+        type: string
+    type: object
+  dto.FileUploadRequestDTO:
+    properties:
+      acl:
+        type: string
+      content_disposition:
+        type: string
+      files:
+        items:
+          $ref: '#/definitions/dto.FileUploadDTO'
+        type: array
+      metadata: {}
+    type: object
+  dto.FileUploadedDTO:
+    properties:
+      content_disposition:
+        type: string
+      custom_id:
+        type: string
+      fields:
+        additionalProperties: {}
+        type: object
+      file_name:
+        type: string
+      file_type:
+        type: string
+      file_url:
+        type: string
+      key:
+        type: string
+      polling_jwt:
+        type: string
+      polling_url:
+        type: string
+      url:
+        description: signed URL to upload
+        type: string
+    type: object
+  dto.FileUploadedResponseDTO:
+    properties:
+      file:
+        $ref: '#/definitions/dto.FileUploadedDTO'
+    type: object
   dto.ProjectDTO:
     properties:
       blurhash:
@@ -219,63 +272,10 @@ definitions:
       error:
         type: string
     type: object
-  v1.FileDTO:
-    properties:
-      custom_id:
-        type: string
-      name:
-        type: string
-      size:
-        type: integer
-      type:
-        type: string
-    type: object
   v1.IDResponse:
     properties:
       id:
         type: string
-    type: object
-  v1.ImageUploadFileDTO:
-    properties:
-      content_disposition:
-        type: string
-      custom_id:
-        type: string
-      fields:
-        additionalProperties: {}
-        type: object
-      file_name:
-        type: string
-      file_type:
-        type: string
-      file_url:
-        type: string
-      key:
-        type: string
-      polling_jwt:
-        type: string
-      polling_url:
-        type: string
-      url:
-        description: signed URL to upload
-        type: string
-    type: object
-  v1.ImageUploadRequestDTO:
-    properties:
-      acl:
-        type: string
-      content_disposition:
-        type: string
-      files:
-        items:
-          $ref: '#/definitions/v1.FileDTO'
-        type: array
-      metadata: {}
-    type: object
-  v1.ImageUploadResponseDTO:
-    properties:
-      file:
-        $ref: '#/definitions/v1.ImageUploadFileDTO'
     type: object
   v1.SkillDTO:
     properties:
@@ -717,6 +717,39 @@ paths:
       summary: Get a file by ID
       tags:
       - file
+  /file/upload:
+    post:
+      consumes:
+      - application/json
+      description: Handles file upload with the supplied metadata and returns the
+        Uploadthing URL of the stored file.
+      parameters:
+      - description: File upload payload
+        in: body
+        name: fileUpload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.FileUploadRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: File upload URL
+          schema:
+            $ref: '#/definitions/dto.FileUploadedResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload a file
+      tags:
+      - file
   /files:
     delete:
       description: Deletes all file records associated with a specific parent entity.
@@ -789,39 +822,6 @@ paths:
       summary: List files by parent
       tags:
       - file
-  /image/upload:
-    post:
-      consumes:
-      - application/json
-      description: Handles image upload with the supplied metadata and returns the
-        Uploadthing URL of the stored image.
-      parameters:
-      - description: Image upload payload
-        in: body
-        name: imageUpload
-        required: true
-        schema:
-          $ref: '#/definitions/v1.ImageUploadRequestDTO'
-      produces:
-      - application/json
-      responses:
-        "202":
-          description: Image upload URL
-          schema:
-            $ref: '#/definitions/v1.ImageUploadResponseDTO'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/domain.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/domain.ErrorResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: Upload an image
-      tags:
-      - image
   /project:
     post:
       consumes:

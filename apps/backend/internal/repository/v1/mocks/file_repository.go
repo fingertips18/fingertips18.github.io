@@ -439,3 +439,71 @@ func (_c *MockFileRepository_Update_Call) RunAndReturn(run func(ctx context.Cont
 	_c.Call.Return(run)
 	return _c
 }
+
+// Upload provides a mock function for the type MockFileRepository
+func (_mock *MockFileRepository) Upload(ctx context.Context, file *domain.FileUploadRequest) (*domain.FileUploaded, error) {
+	ret := _mock.Called(ctx, file)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Upload")
+	}
+
+	var r0 *domain.FileUploaded
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.FileUploadRequest) (*domain.FileUploaded, error)); ok {
+		return returnFunc(ctx, file)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *domain.FileUploadRequest) *domain.FileUploaded); ok {
+		r0 = returnFunc(ctx, file)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.FileUploaded)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *domain.FileUploadRequest) error); ok {
+		r1 = returnFunc(ctx, file)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockFileRepository_Upload_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Upload'
+type MockFileRepository_Upload_Call struct {
+	*mock.Call
+}
+
+// Upload is a helper method to define mock.On call
+//   - ctx context.Context
+//   - file *domain.FileUploadRequest
+func (_e *MockFileRepository_Expecter) Upload(ctx interface{}, file interface{}) *MockFileRepository_Upload_Call {
+	return &MockFileRepository_Upload_Call{Call: _e.mock.On("Upload", ctx, file)}
+}
+
+func (_c *MockFileRepository_Upload_Call) Run(run func(ctx context.Context, file *domain.FileUploadRequest)) *MockFileRepository_Upload_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *domain.FileUploadRequest
+		if args[1] != nil {
+			arg1 = args[1].(*domain.FileUploadRequest)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockFileRepository_Upload_Call) Return(fileUploaded *domain.FileUploaded, err error) *MockFileRepository_Upload_Call {
+	_c.Call.Return(fileUploaded, err)
+	return _c
+}
+
+func (_c *MockFileRepository_Upload_Call) RunAndReturn(run func(ctx context.Context, file *domain.FileUploadRequest) (*domain.FileUploaded, error)) *MockFileRepository_Upload_Call {
+	_c.Call.Return(run)
+	return _c
+}
