@@ -66,7 +66,7 @@ func NewProjectServiceHandler(cfg ProjectServiceConfig) ProjectHandler {
 		fileRepo = v1.NewFileRepository(
 			v1.FileRepositoryConfig{
 				DatabaseAPI: cfg.DatabaseAPI,
-				FileTable:   "file",
+				FileTable:   "File",
 			},
 		)
 	}
