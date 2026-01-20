@@ -30,6 +30,9 @@ type projectFakeRow struct {
 }
 
 func (f *projectFakeRow) Scan(dest ...any) error {
+	if f.scanErr != nil {
+		return f.scanErr
+	}
 	switch len(dest) {
 	case 1:
 		if v, ok := dest[0].(*string); ok {
