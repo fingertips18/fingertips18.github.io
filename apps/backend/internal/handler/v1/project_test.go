@@ -75,7 +75,7 @@ func TestProjectServiceHandler_Create(t *testing.T) {
 	}
 	validBody, _ := json.Marshal(createReq)
 
-	invalidBlurHashReq := dto.ProjectDTO{
+	invalidBlurHashReq := dto.CreateProjectRequest{
 		BlurHash:    "invalid-hash",
 		Title:       "title",
 		Subtitle:    "subtitle",
@@ -466,7 +466,7 @@ func TestProjectServiceHandler_Update(t *testing.T) {
 
 	validBody, _ := json.Marshal(validProject)
 
-	invalidBlurHashReq := dto.ProjectDTO{
+	invalidBlurHashReq := dto.CreateProjectRequest{
 		BlurHash:    "invalid-hash",
 		Title:       "title",
 		Subtitle:    "subtitle",
